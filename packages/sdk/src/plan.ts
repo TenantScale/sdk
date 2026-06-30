@@ -45,9 +45,7 @@ export class PlanStore {
       }
     }, PLAN_CACHE_TTL_MS * 2)
 
-    if (this.cleanupTimer && typeof (this.cleanupTimer as any).unref === 'function') {
-      ;(this.cleanupTimer as any).unref()
-    }
+    this.cleanupTimer?.unref()
   }
 
   /**

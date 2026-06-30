@@ -51,12 +51,16 @@ export async function validateApiKey(
     throw new AuthorizationError('Tenant account is inactive', 'TENANT_INACTIVE')
   }
 
-  // Fire-and-forget: update last_used
+  // Fire-and-forget: update last_used_at.
+  // This is intentionally silent on failure because:
+  // - The auth check has already succeeded — this is purely tracking/metrics
+  // - A failed update here should never block the API request
+  // - No logger is available at this layer (framework-agnostic pure logic)
   void supabase
     .from('api_keys')
     .update({ last_used_at: new Date().toISOString() })
     .eq('id', keyRecord.id)
-    .then(undefined, () => { /* intentionally ignored */ })
+    .then(undefined, () => { /* intentionally ignored — see comment above */ })
 
   return {
     raw: token,

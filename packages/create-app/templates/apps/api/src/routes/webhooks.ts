@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import { Hono } from 'hono'
 import { supabase } from '../db.js'
 
@@ -36,13 +37,28 @@ webhookRoutes.post('/webhooks', async (c) => {
   if (!tenantId) return c.json({ error: 'Unauthorized' }, 401)
 
   const body = await c.req.json()
+
+  // Input validation
+  try {
+    new URL(body.url)
+  } catch {
+    return c.json({ error: 'Invalid webhook URL' }, 400)
+  }
+  if (!Array.isArray(body.events) || body.events.length === 0) {
+    return c.json({ error: 'events must be a non-empty array of strings' }, 400)
+  }
+  if (body.description && typeof body.description === 'string' && body.description.length > 500) {
+    return c.json({ error: 'description must be at most 500 characters' }, 400)
+  }
+
   const { data, error } = await supabase
     .from('webhooks')
     .insert({
       tenant_id: tenantId,
       url: body.url,
-      events: body.events || [],
+      events: body.events,
       description: body.description || '',
+      secret: randomBytes(32).toString('hex'),
     })
     .select('id, url, events, description, is_active, created_at')
     .single()

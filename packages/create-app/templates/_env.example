@@ -5,3 +5,9 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
 # TenantScale API
 NEXT_PUBLIC_API_URL=http://localhost:3001
+CRON_SECRET=change-me-to-a-random-secret
+
+# Stripe (optional — only needed if billing features are enabled)
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=

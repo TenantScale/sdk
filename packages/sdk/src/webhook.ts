@@ -53,7 +53,7 @@ export class WebhookDispatcher {
   ): void {
     // Don't await — intentionally non-blocking
     void this.deliver(event, tenantId, data).catch(err => {
-      this.logger.error(err, `[Webhook] Error dispatching ${event}`)
+      this.logger.error({ err }, `[Webhook] Error dispatching ${event}`)
     })
   }
 
@@ -100,7 +100,7 @@ export class WebhookDispatcher {
         .filter((r): r is PromiseFulfilledResult<WebhookDeliveryResult> => r.status === 'fulfilled')
         .map(r => r.value)
     } catch (err) {
-      this.logger.error(err, '[Webhook] Dispatch error')
+      this.logger.error({ err }, '[Webhook] Dispatch error')
       return []
     }
   }
@@ -207,7 +207,7 @@ export class WebhookDispatcher {
         duration_ms: durationMs,
       })
     } catch (err) {
-      this.logger.warn(err, '[Webhook] Failed to log delivery')
+      this.logger.warn({ err }, '[Webhook] Failed to log delivery')
     }
   }
 }

@@ -20,6 +20,6 @@ app.route('/v1/portal', webhookRoutes)
 app.get('/health', (c) => c.json({ status: 'ok' }))
 
 const port = parseInt(process.env.PORT || '3001', 10)
-console.log(`API server running on http://localhost:${port}`)
+console.log(JSON.stringify({ level: 'info', msg: `API server running on http://localhost:${port}` }))
 
 serve({ fetch: app.fetch, port })

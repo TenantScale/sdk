@@ -77,9 +77,7 @@ export class RateLimiter {
       }
     }, CLEANUP_INTERVAL_MS)
 
-    if (this.cleanupTimer && typeof (this.cleanupTimer as any).unref === 'function') {
-      ;(this.cleanupTimer as any).unref()
-    }
+    this.cleanupTimer?.unref()
   }
 
   /**

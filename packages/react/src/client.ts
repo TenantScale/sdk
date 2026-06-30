@@ -73,6 +73,16 @@ export class TenantScaleClient {
     // Cache successful GET responses
     if (method === 'GET' && cacheKey) {
       this.cache.set(cacheKey, { data, expiry: Date.now() + 60_000 })
+
+      // Evict oldest entries when cache exceeds max size (100)
+      if (this.cache.size > 100) {
+        const entries = [...this.cache.entries()]
+        entries.sort(([, a], [, b]) => a.expiry - b.expiry)
+        const toDelete = entries.slice(0, this.cache.size - 100)
+        for (const [key] of toDelete) {
+          this.cache.delete(key)
+        }
+      }
     }
 
     return data
