@@ -30,8 +30,8 @@ export function parsePaginationParams(
     limitStr = query['limit']
   }
 
-  const page = Math.max(1, parseInt(pageStr ?? '1', 10))
-  const limit = Math.min(Math.max(1, parseInt(limitStr ?? String(defaultLimit), 10)), MAX_PAGE_LIMIT)
+  const page = Math.max(1, parseInt(pageStr ?? '1', 10) || 1)
+  const limit = Math.min(Math.max(1, parseInt(limitStr ?? String(defaultLimit), 10) || 1), MAX_PAGE_LIMIT)
   const offset = (page - 1) * limit
   return { page, limit, offset }
 }
