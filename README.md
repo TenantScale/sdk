@@ -255,7 +255,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) to get started. Every contributor is reco
 
 - [Discord](https://discord.gg/wg5VZTNQ5) — questions, ideas, show-and-tell
 - [GitHub Discussions](https://github.com/TenantScale/sdk/discussions) — long-form Q&A
-- [Twitter / X](https://x.com/tenantscale) — product updates
 
 ## 🔒 Security
 
