@@ -122,13 +122,13 @@ describe('parsePaginationParams', () => {
     expect(result.offset).toBe(0)
   })
 
-  // Test: Limit negative (clamp to 1)
+  // Test: Limit negative (fall back to default limit)
   // Category: Unhappy Path
-  // What it proves: Negative limit is clamped to minimum 1
-  // Risk if missing: Negative limits could cause DB errors or infinite results
-  it('clamps negative limit to 1', () => {
+  // What it proves: Negative limit falls back to the default limit
+  // Risk if missing: Negative limits would silently clamp to 1 instead of using the intended default
+  it('falls back to default limit when limit is negative', () => {
     const result = parsePaginationParams({ page: '1', limit: '-10' })
-    expect(result.limit).toBe(1)
+    expect(result.limit).toBe(50)
   })
 
   // Test: Limit > 100 (clamp to MAX_PAGE_LIMIT=100)
@@ -140,13 +140,13 @@ describe('parsePaginationParams', () => {
     expect(result.limit).toBe(100)
   })
 
-  // Test: Limit string "abc" (NaN → falls back to minimum 1)
+  // Test: Limit string "abc" (NaN → falls back to default limit)
   // Category: Unhappy Path
-  // What it proves: Non-numeric limit clamps to minimum of 1
+  // What it proves: Non-numeric limit falls back to the default limit
   // Risk if missing: Invalid input would produce NaN, causing DB query failures
-  it('clamps non-numeric limit to minimum of 1', () => {
+  it('falls back to default limit when limit is non-numeric', () => {
     const result = parsePaginationParams({ page: '1', limit: 'abc' })
-    expect(result.limit).toBe(1)
+    expect(result.limit).toBe(50)
   })
 
   // Test: Page string "abc" (NaN → falls back to 1)
@@ -169,12 +169,12 @@ describe('parsePaginationParams', () => {
 
   // Test: Zero values
   // Category: Unhappy Path
-  // What it proves: Zero values for both page and limit clamp correctly
+  // What it proves: Zero page clamps to 1, zero limit falls back to default
   // Risk if missing: Zero values on both could cause division by zero downstream
-  it('clamps both zero page and zero limit', () => {
+  it('clamps zero page to 1 and falls back to default limit for zero limit', () => {
     const result = parsePaginationParams({ page: '0', limit: '0' })
     expect(result.page).toBe(1)
-    expect(result.limit).toBe(1)
+    expect(result.limit).toBe(50)
     expect(result.offset).toBe(0)
   })
 
@@ -205,6 +205,61 @@ describe('parsePaginationParams', () => {
     const params = new URLSearchParams('foo=bar')
     const result = parsePaginationParams(params)
     expect(result).toEqual({ page: 1, limit: 50, offset: 0 })
+  })
+
+  // Test: limit=0 with custom defaultLimit=20
+  // Category: Unhappy Path
+  // What it proves: Zero limit falls back to the provided default limit
+  // Risk if missing: Zero limit would silently clamp to 1 instead of using the caller's default
+  it('falls back to custom default limit when limit is 0', () => {
+    const result = parsePaginationParams({ page: '1', limit: '0' }, 20)
+    expect(result.limit).toBe(20)
+  })
+
+  // Test: limit=-1 with custom defaultLimit=20
+  // Category: Unhappy Path
+  // What it proves: Negative limit falls back to the provided default limit
+  // Risk if missing: Explicit default limit would be ignored for negative inputs
+  it('falls back to custom default limit when limit is -1', () => {
+    const result = parsePaginationParams({ page: '1', limit: '-1' }, 20)
+    expect(result.limit).toBe(20)
+  })
+
+  // Test: page=-1 clamps to 1
+  // Category: Unhappy Path
+  // What it proves: Page value -1 is invalid and clamps to 1
+  // Risk if missing: Negative page could cause negative offset
+  it('clamps page -1 to 1', () => {
+    const result = parsePaginationParams({ page: '-1', limit: '25' })
+    expect(result.page).toBe(1)
+    expect(result.offset).toBe(0)
+  })
+
+  // Test: limit=999 clamps to MAX_PAGE_LIMIT
+  // Category: Unhappy Path
+  // What it proves: Limit exceeding MAX_PAGE_LIMIT is capped at 100
+  // Risk if missing: Excessively large limit values could be used for DoS
+  it('clamps limit 999 to MAX_PAGE_LIMIT', () => {
+    const result = parsePaginationParams({ page: '1', limit: '999' })
+    expect(result.limit).toBe(100)
+  })
+
+  // Test: NaN page string falls back to 1
+  // Category: Unhappy Path
+  // What it proves: The string "NaN" is treated as invalid and falls back to default
+  // Risk if missing: NaN string could produce NaN page value
+  it('falls back to page 1 when page is "NaN"', () => {
+    const result = parsePaginationParams({ page: 'NaN', limit: '25' })
+    expect(result.page).toBe(1)
+  })
+
+  // Test: NaN limit string falls back to default limit
+  // Category: Unhappy Path
+  // What it proves: The string "NaN" for limit falls back to the default limit
+  // Risk if missing: NaN string could produce NaN limit value
+  it('falls back to default limit when limit is "NaN"', () => {
+    const result = parsePaginationParams({ page: '1', limit: 'NaN' })
+    expect(result.limit).toBe(50)
   })
 })
 
