@@ -12,6 +12,20 @@ jobs:
         with:
           fetch-depth: 0
       - name: Check DCO sign-off
-        uses: cpanato/dco-check-action@v1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          bad=0
+          for sha in $(git rev-list ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}); do
+            msg=$(git log --format="%B" -n 1 "$sha")
+            if ! echo "$msg" | grep -qi "Signed-off-by:"; then
+              echo "❌ Commit $sha missing DCO sign-off (use \`git commit -s\`)"
+              echo "   Subject: $(git log --format='%s' -n 1 "$sha")"
+              bad=$((bad + 1))
+            fi
+          done
+          if [ "$bad" -gt 0 ]; then
+            echo ""
+            echo "Fix: rebase and sign existing commits with: git rebase --signoff HEAD~$bad"
+            exit 1
+          fi
+          echo "✅ All commits have DCO sign-off"
