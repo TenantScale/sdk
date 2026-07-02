@@ -60,13 +60,17 @@ export function errorResponse(err: unknown): Response {
     })
   }
 
-  // Unknown error
+  // Unknown error — log sanitized details, never leak stack traces
   const message =
     process.env.NODE_ENV === 'production'
       ? 'Internal server error'
-      : (err instanceof Error ? err.message : String(err))
+      : 'Internal error (check server logs)'
 
-  console.error('[TenantScale] Unhandled error:', err)
+  if (err instanceof Error) {
+    console.error('[TenantScale] Unhandled error:', err.message)
+  } else {
+    console.error('[TenantScale] Unhandled error:', err)
+  }
 
   return new Response(
     JSON.stringify({
