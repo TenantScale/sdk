@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "next": "^16.2.10",
-    "typescript": "^5.7.0"
+    "typescript": "^6.0.3"
   },
   "license": "MIT",
   "repository": {
