@@ -131,7 +131,7 @@ export class RateLimiter {
         .single()
 
       if (error) {
-        this.logger.warn({ errMsg: error.message, tenantId }, '[RateLimiter] Failed to increment — allowing request')
+        this.logger.warn({ tenantId, reason: 'db_increment_failed' }, '[RateLimiter] Failed to increment — allowing request')
         return { allowed: true, remaining: dailyLimit, limit: dailyLimit, current: 0 }
       }
 
@@ -149,7 +149,7 @@ export class RateLimiter {
       }
     } catch (err) {
       if (err instanceof RateLimitExceededError) throw err
-      this.logger.error({ errMsg: err instanceof Error ? err.message : String(err), tenantId }, '[RateLimiter] Rate limit check threw — allowing request')
+      this.logger.error({ tenantId, reason: 'rate_limit_check_exception' }, '[RateLimiter] Rate limit check threw — allowing request')
       return { allowed: true, remaining: dailyLimit, limit: dailyLimit, current: 0 }
     }
   }
