@@ -1,33 +1,45 @@
 sdk:
-  - packages/sdk/**/*
+  - changed-files:
+      - any-glob-to-any-file: packages/sdk/**/*
 
 hono:
-  - packages/hono/**/*
+  - changed-files:
+      - any-glob-to-any-file: packages/hono/**/*
 
 express:
-  - packages/express/**/*
+  - changed-files:
+      - any-glob-to-any-file: packages/express/**/*
 
 next:
-  - packages/next/**/*
+  - changed-files:
+      - any-glob-to-any-file: packages/next/**/*
 
 react:
-  - packages/react/**/*
+  - changed-files:
+      - any-glob-to-any-file: packages/react/**/*
 
 cli:
-  - packages/cli/**/*
+  - changed-files:
+      - any-glob-to-any-file: packages/cli/**/*
 
 create-app:
-  - packages/create-app/**/*
+  - changed-files:
+      - any-glob-to-any-file: packages/create-app/**/*
 
 mcp:
-  - packages/mcp/**/*
+  - changed-files:
+      - any-glob-to-any-file: packages/mcp/**/*
 
 documentation:
-  - packages/sdk/README.md
-  - "**/*.md"
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/sdk/README.md
+          - "**/*.md"
 
 dependencies:
-  - pnpm-lock.yaml
+  - changed-files:
+      - any-glob-to-any-file: pnpm-lock.yaml
 
 ci:
-  - .github/**/*
+  - changed-files:
+      - any-glob-to-any-file: .github/**/*
