@@ -14,6 +14,11 @@ jobs:
       - name: Check DCO sign-off
         shell: bash
         run: |
+          # Skip DCO check for bots (Dependabot, etc.) — their commits are GitHub-verified
+          if [ "${{ github.actor }}" = "dependabot[bot]" ] || [ "${{ github.event.pull_request.user.type }}" = "Bot" ]; then
+            echo "🤖 Bot PR — DCO check skipped (trusted automation)"
+            exit 0
+          fi
           bad=0
           for sha in $(git rev-list ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}); do
             msg=$(git log --format="%B" -n 1 "$sha")
