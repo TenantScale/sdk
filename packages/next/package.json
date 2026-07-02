@@ -26,7 +26,7 @@
     "next": "^14.0.0 || ^15.0.0"
   },
   "devDependencies": {
-    "next": "^15.0.0",
+    "next": "^16.2.10",
     "typescript": "^5.7.0"
   },
   "license": "MIT",
