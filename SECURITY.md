@@ -12,7 +12,7 @@ TenantScale is a middleware library that handles API key authentication, plan en
 
 **Please do not report security vulnerabilities through public GitHub issues.**
 
-Instead, report via email to **thatdevmat@gmail.com**
+Instead, report via email to **matthew@thatdevmat.com**
 
 You should receive a response within 48 hours. If you don't, please follow up.
 
