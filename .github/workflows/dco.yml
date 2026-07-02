@@ -1,0 +1,17 @@
+name: DCO
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check DCO sign-off
+        uses: cpanato/dco-check-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}

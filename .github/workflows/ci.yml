@@ -25,6 +25,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Type check
+        run: cd packages/sdk && pnpm run typecheck
+
       - name: Lint
         run: pnpm lint
         continue-on-error: true

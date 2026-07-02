@@ -1,0 +1,33 @@
+sdk:
+  - packages/sdk/**/*
+
+hono:
+  - packages/hono/**/*
+
+express:
+  - packages/express/**/*
+
+next:
+  - packages/next/**/*
+
+react:
+  - packages/react/**/*
+
+cli:
+  - packages/cli/**/*
+
+create-app:
+  - packages/create-app/**/*
+
+mcp:
+  - packages/mcp/**/*
+
+documentation:
+  - packages/sdk/README.md
+  - "**/*.md"
+
+dependencies:
+  - pnpm-lock.yaml
+
+ci:
+  - .github/**/*
