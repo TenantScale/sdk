@@ -7,7 +7,6 @@ import Stripe from 'stripe'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { CreateCheckoutOptions, CreatePortalOptions, PlanPriceMapping, Logger } from './types.js'
 
-const DEFAULT_API_VERSION = '2026-06-24.dahlia'
 const DEFAULT_TIMEOUT_MS = 15_000
 const DEFAULT_MAX_RETRIES = 2
 
@@ -19,7 +18,7 @@ export class StripeClient {
   private _client: Stripe | null = null
   private logger: Logger
   private secretKey: string
-  private apiVersion: string
+  private apiVersion?: string
 
   constructor(
     private supabase: SupabaseClient,
@@ -30,7 +29,7 @@ export class StripeClient {
     },
   ) {
     this.secretKey = options.secretKey
-    this.apiVersion = options.apiVersion ?? DEFAULT_API_VERSION
+    this.apiVersion = options.apiVersion
     this.logger = options.logger ?? console
   }
 
@@ -40,6 +39,7 @@ export class StripeClient {
       typescript: true,
       maxNetworkRetries: DEFAULT_MAX_RETRIES,
       timeout: DEFAULT_TIMEOUT_MS,
+      apiVersion: this.apiVersion as any,
     })
     return this._client
   }

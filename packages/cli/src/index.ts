@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import pc from 'picocolors';
 import { initAction } from './commands/init.js';
 import { migrateAction } from './commands/migrate.js';
 

@@ -4,8 +4,7 @@
 // Analyses package.json dependencies and source imports
 // to determine what web framework(s) the project uses.
 
-import { existsSync, readFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
 import { findFiles } from '../utils/file-glob.js'
 
 export interface FrameworkInfo {
@@ -137,9 +136,6 @@ export function detectFramework(projectDir: string, sourceFiles: string[]): Fram
       isMonorepo,
     }
   }
-
-  // Fix for Set iteration with ES2022 target
-  const setScore = topScore === 0 ? 0 : topScore
 
   // If scores are very close, confidence drops
   const confidence = secondScore > 0 ? topScore / (topScore + secondScore) : 1

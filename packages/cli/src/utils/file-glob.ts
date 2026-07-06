@@ -3,7 +3,7 @@
 // ──────────────────────────────────────────────────────
 
 import { readdirSync, statSync, readFileSync } from 'node:fs'
-import { join, relative, resolve } from 'node:path'
+import { join, resolve } from 'node:path'
 
 export interface GlobOptions {
   /** File extensions to match (e.g. ['.ts', '.js']) */

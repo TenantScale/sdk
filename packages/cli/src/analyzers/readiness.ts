@@ -146,7 +146,6 @@ export function scoreReadiness(
   let auditScore = 0
   const auditMax = 15
 
-  const hasCustomAudit = sourceFilesContain(/* will be injected */)
   // We'll compute this from available data
   if (database.tables.some(t => t.name === 'audit_events' || t.name === 'audit_logs')) {
     auditScore += 10
