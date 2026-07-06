@@ -41,6 +41,13 @@ export default defineWorkspace([
   },
   {
     test: {
+      name: 'koa',
+      root: './packages/koa',
+      include: ['src/__tests__/**/*.test.ts'],
+    },
+  },
+  {
+    test: {
       name: 'cli',
       root: './packages/cli',
       include: ['src/__tests__/**/*.test.ts'],

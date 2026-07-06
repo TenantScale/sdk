@@ -1,0 +1,39 @@
+{
+  "name": "@tenantscale/koa",
+  "version": "0.1.0",
+  "description": "Koa middleware adapter for TenantScale — API key auth, plan enforcement, rate limiting, audit logging",
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@tenantscale/sdk": "workspace:*"
+  },
+  "peerDependencies": {
+    "koa": "^2.15.0"
+  },
+  "devDependencies": {
+    "@types/koa": "^2.13.0",
+    "koa": "^2.15.3",
+    "typescript": "^5.7.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TenantScale/sdk.git",
+    "directory": "packages/koa"
+  }
+}

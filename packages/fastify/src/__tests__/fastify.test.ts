@@ -128,6 +128,73 @@ describe('fastify adapter', () => {
     expect(res.statusCode).toBe(403)
   })
 
+  it('returns 403 for role mismatches', async () => {
+    const ts = createMockTenantScale()
+    ts.validateSession.mockResolvedValue(mockPortalSession)
+    ts.requirePortalRole.mockImplementation(() => {
+      throw new AuthorizationError('Missing role')
+    })
+    const app = Fastify()
+    app.addHook('preHandler', requirePortalSession({ ts }))
+    app.addHook('preHandler', requirePortalRole({ ts }, 'super_admin'))
+    app.get('/test', async () => ({ ok: true }))
+
+    const res = await app.inject({ method: 'GET', url: '/test', headers: { authorization: 'Bearer jwt_valid' } })
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('returns 429 for IP-based rate limits', async () => {
+    const ts = createMockTenantScale()
+    ts.rateLimiter.checkIpCreationLimit.mockResolvedValue({ blocked: true, resetAtMs: Date.now() + 30000 })
+    const app = Fastify()
+    app.addHook('preHandler', rateLimitByIp({ ts }))
+    app.get('/test', async () => ({ ok: true }))
+
+    const res = await app.inject({ method: 'GET', url: '/test' })
+    expect(res.statusCode).toBe(429)
+  })
+
+  it('returns 429 when the API key hits its daily rate limit', async () => {
+    const ts = createMockTenantScale()
+    ts.validateApiKey.mockResolvedValue(mockApiKey)
+    ts.rateLimiter.checkDailyLimit.mockResolvedValue({ allowed: false, limit: 100 })
+    const app = Fastify()
+    app.addHook('preHandler', authenticateApiKey({ ts }))
+    app.addHook('preHandler', rateLimitByApiKey({ ts }))
+    app.get('/test', async () => ({ ok: true }))
+
+    const res = await app.inject({ method: 'GET', url: '/test', headers: { 'x-api-key': 'tk_test_abc' } })
+    expect(res.statusCode).toBe(429)
+  })
+
+  it('requires super admin access after a portal session', async () => {
+    const ts = createMockTenantScale()
+    ts.validateSession.mockResolvedValue(mockPortalSession)
+    ts.requireSuperAdmin.mockImplementation(() => {
+      throw new AuthorizationError('Not a super admin')
+    })
+    const app = Fastify()
+    app.addHook('preHandler', requirePortalSession({ ts }))
+    app.addHook('preHandler', requireSuperAdmin({ ts }))
+    app.get('/test', async () => ({ ok: true }))
+
+    const res = await app.inject({ method: 'GET', url: '/test', headers: { authorization: 'Bearer jwt_valid' } })
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('logs an audit event when authentication succeeds', async () => {
+    const ts = createMockTenantScale()
+    ts.validateApiKey.mockResolvedValue(mockApiKey)
+    const app = Fastify()
+    app.addHook('preHandler', authenticateApiKey({ ts }))
+    app.addHook('preHandler', auditLog({ ts }, { action: 'read', resource: '/test' }))
+    app.get('/test', async () => ({ ok: true }))
+
+    const res = await app.inject({ method: 'GET', url: '/test', headers: { 'x-api-key': 'tk_test_abc' } })
+    expect(res.statusCode).toBe(200)
+    expect(ts.logAuditEvent).toHaveBeenCalled()
+  })
+
   it('uses the error handler for TenantScale errors', async () => {
     const app = Fastify()
     app.setErrorHandler(errorHandler())
