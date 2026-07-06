@@ -16,7 +16,7 @@ function resolveClientIp(ctx: Context): string {
     return forwarded.split(',')[0]?.trim() ?? '127.0.0.1'
   }
 
-  return ctx.get('x-real-ip') ?? '127.0.0.1'
+  return ctx.get('x-real-ip').trim() || '127.0.0.1'
 }
 
 function getHeader(ctx: Context, name: string): string | undefined {
