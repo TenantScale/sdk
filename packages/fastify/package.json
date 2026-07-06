@@ -1,0 +1,38 @@
+{
+  "name": "@tenantscale/fastify",
+  "version": "0.1.0",
+  "description": "Fastify middleware adapter for TenantScale — API key auth, plan enforcement, rate limiting, audit logging",
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@tenantscale/sdk": "workspace:*"
+  },
+  "peerDependencies": {
+    "fastify": "^5.0.0"
+  },
+  "devDependencies": {
+    "fastify": "^5.2.1",
+    "typescript": "^5.7.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TenantScale/sdk.git",
+    "directory": "packages/fastify"
+  }
+}

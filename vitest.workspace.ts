@@ -34,6 +34,13 @@ export default defineWorkspace([
   },
   {
     test: {
+      name: 'fastify',
+      root: './packages/fastify',
+      include: ['src/__tests__/**/*.test.ts'],
+    },
+  },
+  {
+    test: {
       name: 'cli',
       root: './packages/cli',
       include: ['src/__tests__/**/*.test.ts'],

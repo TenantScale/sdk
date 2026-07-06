@@ -7,6 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { Mock } from 'vitest'
+import { cookies } from 'next/headers'
 import {
   AuthenticationError,
   AuthorizationError,
@@ -31,6 +32,11 @@ import {
 import {
   errorResponse,
 } from '../error-handler.js'
+import { createAppRouterHandler } from '../app-router.js'
+
+vi.mock('next/headers', () => ({
+  cookies: vi.fn(),
+}))
 
 // ── Mocks ──
 
@@ -273,6 +279,36 @@ describe('withSession', () => {
 // createHandler (factory)
 // ──────────────────────────────────────────────────────
 
+describe('createAppRouterHandler', () => {
+  let ts: ReturnType<typeof createMockTenantScale>
+
+  beforeEach(() => {
+    ts = createMockTenantScale()
+    ts.validateSession.mockResolvedValue(mockPortalSession)
+    vi.mocked(cookies).mockReset()
+  })
+
+  it('should read session tokens from cookies and expose tenant context', async () => {
+    vi.mocked(cookies).mockResolvedValue({
+      get: vi.fn().mockReturnValue({ name: 'tenant_session', value: 'jwt_valid' }),
+    } as any)
+
+    const h = createAppRouterHandler({ ts })
+    const routeHandler = h.withSession(async (_request, { session, tenantId }) => {
+      return new Response(JSON.stringify({ email: session.email, tenantId }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    })
+
+    const res = await routeHandler(createMockRequest(), mockRouteParams)
+    expect(res.status).toBe(200)
+    expect(ts.validateSession).toHaveBeenCalledWith('jwt_valid')
+    const body = await res.json()
+    expect(body).toEqual({ email: 'admin@test.com', tenantId: 'tenant_1' })
+  })
+})
+
 describe('createHandler', () => {
   let ts: ReturnType<typeof createMockTenantScale>
 
@@ -400,7 +436,7 @@ describe('errorResponse', () => {
 
     const res = errorResponse(new Error('Connection pool exhausted'))
     const body = await res.json()
-    expect(body.error).toBe('Connection pool exhausted')
+    expect(body.error).toBe('Internal error (check server logs)')
 
     process.env.NODE_ENV = prev
   })

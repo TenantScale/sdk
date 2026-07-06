@@ -1,38 +1,23 @@
 // ──────────────────────────────────────────────────────
-// @tenantscale/next — Barrel exports
+// @tenantscale/fastify — Barrel exports
 // ──────────────────────────────────────────────────────
 
-// Types
 export type {
-  NextAdapterOptions,
-  ApiKeyContext,
-  SessionContext,
-  RouteHandlerConfig,
-  PlanLimitConfig,
-  RouteParams,
+  FastifyAdapterOptions,
   ErrorResponse,
 } from './types.js'
 export type { ApiKeyInfo, PortalSessionInfo } from './types.js'
 
-// Auth functions
 export {
   authenticateApiKey,
+  requireScope,
   requirePortalSession,
-} from './authenticate.js'
+  requirePortalRole,
+  requireSuperAdmin,
+  requirePlanLimit,
+  rateLimitByApiKey,
+  rateLimitByIp,
+  auditLog,
+} from './middleware.js'
 
-// Route handler wrappers
-export {
-  createHandler,
-  withApiKey,
-  withSession,
-} from './handler.js'
-
-// Error handling
-export {
-  errorResponse,
-} from './error-handler.js'
-
-// App Router helpers
-export {
-  createAppRouterHandler,
-} from './app-router.js'
+export { errorHandler } from './error-handler.js'
