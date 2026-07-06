@@ -262,7 +262,7 @@ export function auditLog(
       ip: resolveClientIp(req),
       user_agent: req.headers['user-agent']?.toString() ?? null,
     }).catch(err => {
-      options.ts.logger.error('Audit log write failed:', err)
+      options.ts.logger?.error?.('Audit log write failed:', err)
     })
 
   }

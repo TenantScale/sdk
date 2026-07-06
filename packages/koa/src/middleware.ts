@@ -279,7 +279,9 @@ export function auditLog(
       details: config.getDetails?.(ctx),
       ip: resolveClientIp(ctx),
       user_agent: ctx.get('user-agent') ?? undefined,
-    }).catch(() => {})
+    }).catch(err => {
+      options.ts.logger?.error?.('Audit log write failed:', err)
+    })
 
     await next()
   }
