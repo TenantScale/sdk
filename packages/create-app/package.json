@@ -36,5 +36,8 @@
     "scaffold",
     "starter",
     "create-app"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

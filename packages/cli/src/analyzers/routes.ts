@@ -70,13 +70,6 @@ const TENANT_PATTERNS = [
   /\btenantId\b/,
 ]
 
-// Middleware patterns that follow route definitions
-const MIDDLEWARE_PATTERNS = [
-  /\.use\s*\(/,
-  /\buse\s*\(/,
-  /\bapply\s*\(/,
-]
-
 /**
  * Analyze route definitions across the codebase.
  */

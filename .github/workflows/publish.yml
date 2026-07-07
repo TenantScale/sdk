@@ -1,0 +1,63 @@
+# ──────────────────────────────────────────────────────
+# Publish — npm publish triggered by version tags
+# ──────────────────────────────────────────────────────
+# To publish a new release:
+#   1. Bump versions (pnpm changeset version or manual)
+#   2. Commit and push
+#   3. git tag v$(node -p "require('./packages/sdk/package.json').version")
+#   4. git push origin --tags
+# ──────────────────────────────────────────────────────
+
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # needed for npm provenance
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Type check (core)
+        run: cd packages/sdk && pnpm run typecheck
+
+      - name: Build all packages
+        run: pnpm build
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Verify tag matches package version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(node -p "require('./packages/sdk/package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "❌ Tag v$TAG_VERSION does not match SDK package version $PKG_VERSION"
+            exit 1
+          fi
+          echo "✅ Tag v$TAG_VERSION matches SDK package version $PKG_VERSION"
+
+      - name: Publish to npm
+        run: pnpm publish -r --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

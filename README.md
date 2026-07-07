@@ -252,6 +252,25 @@ We'd love your help! TenantScale is built for the community and by the community
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) to get started. Every contributor is recognized.
 
+## ✨ Contributors
+
+Thanks to every contributor who makes TenantScale better!
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ThatDevMat"><img src="https://avatars.githubusercontent.com/u/17392257?v=4" width="80" alt="ThatDevMat"/><br /><sub><b>ThatDevMat</b></sub></a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/cnYui"><img src="https://avatars.githubusercontent.com/u/157269834?v=4" width="80" alt="cnYui"/><br /><sub><b>cnYui</b></sub></a></td>
+    </tr>
+  </tbody>
+</table>
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
 ## 💬 Community
 
 - [Discord](https://discord.gg/wg5VZTNQ5) — questions, ideas, show-and-tell

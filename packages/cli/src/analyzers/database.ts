@@ -5,8 +5,8 @@
 // schemas to discover tables, foreign keys, and existing
 // tenant isolation status.
 
-import { existsSync, readFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import { findFiles, readFileSafe } from '../utils/file-glob.js'
 
 export interface TableInfo {
@@ -61,7 +61,6 @@ const TENANT_LIKELY_NAMES = [
 ]
 
 const CREATE_TABLE_RE = /create\s+table\s+(?:if\s+not\s+exists\s+)?(?:public\.)?(\w+)/gi
-const COLUMN_RE = /^\s+(\w+)\s+/gm
 
 /**
  * Analyze the database schema of the project.

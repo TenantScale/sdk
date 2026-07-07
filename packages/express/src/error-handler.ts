@@ -14,12 +14,8 @@
 import type { Request, Response, NextFunction } from 'express'
 import {
   TenantScaleError,
-  AuthenticationError,
-  AuthorizationError,
   PlanLimitExceededError,
   RateLimitExceededError,
-  NotFoundError,
-  ConflictError,
 } from '@tenantscale/sdk'
 import type { ExpressAdapterOptions, ErrorResponse } from './types.js'
 

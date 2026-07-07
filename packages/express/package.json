@@ -35,5 +35,8 @@
     "type": "git",
     "url": "https://github.com/TenantScale/sdk.git",
     "directory": "packages/express"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

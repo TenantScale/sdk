@@ -45,5 +45,8 @@
     "hooks",
     "tenant-isolation",
     "b2b"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

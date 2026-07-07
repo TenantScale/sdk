@@ -10,7 +10,6 @@ import type { Request, Response, NextFunction } from 'express'
 import type { ApiKeyInfo, PortalSessionInfo } from '@tenantscale/sdk'
 import {
   AuthenticationError,
-  AuthorizationError,
   RateLimitExceededError,
   PlanLimitExceededError,
 } from '@tenantscale/sdk'

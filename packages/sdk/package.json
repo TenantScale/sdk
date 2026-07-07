@@ -42,5 +42,8 @@
     "tenant-isolation",
     "b2b",
     "supabase"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }
