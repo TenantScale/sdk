@@ -161,6 +161,7 @@ All packages are **MIT-licensed** and published on npm.
 | [`@tenantscale/hono`](packages/hono) | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/hono" alt="size"> | Hono middleware — same middleware API, built for Hono's context model |
 | [`@tenantscale/next`](packages/next) | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/next" alt="size"> | Next.js App Router — `authenticateApiKey`, `createHandler`, `withApiKey` |
 | [`@tenantscale/react`](packages/react) | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/react" alt="size"> | React hooks — `useTenant`, `usePlan`, `useApiKeys`, `useTeam`, `useAuditLog`, `useWebhooks` |
+| [`@tenantscale/drizzle`](packages/drizzle) | — | Drizzle ORM tenant query guard — auto-scopes queries to the current tenant |
 | [`@tenantscale/cli`](packages/cli) | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/cli" alt="size"> | CLI — `tenantscale init` to scaffold, `tenantscale migrate` to analyze existing apps |
 | [`create-tenantscale-app`](packages/create-app) | <img src="https://img.shields.io/bundlephobia/minzip/create-tenantscale-app" alt="size"> | Full-stack starter — scaffolds Next.js portal + Hono API + Supabase migrations |
 | [`@tenantscale/mcp`](packages/mcp) | — | MCP server for AI tools — validate tenant queries, generate RLS policies, suggest endpoints |
@@ -233,7 +234,7 @@ pnpm install && pnpm dev
 | 🔜 | **Fastify adapter** — [help wanted!](https://github.com/TenantScale/sdk/issues) |
 | 🔜 | **Koa adapter** — [help wanted!](https://github.com/TenantScale/sdk/issues) |
 | 🔜 | **Prisma adapter** — automatic tenant-scoped query guard |
-| 🔜 | **Drizzle adapter** — automatic tenant-scoped query guard |
+| ✅ | **Drizzle adapter** — automatic tenant-scoped query guard |
 | 🔜 | **SSO / SAML** — enterprise identity provider integration |
 | 🔜 | **RBAC** — custom roles per tenant |
 
