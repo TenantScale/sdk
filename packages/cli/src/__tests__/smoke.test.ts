@@ -49,7 +49,8 @@ describe('CLI smoke tests', () => {
 
   it('CLI --version outputs the version', () => {
     const result = run('--version', __dirname)
-    expect(result.stdout.trim()).toBe('0.1.0')
+    const { version } = require('../../package.json')
+    expect(result.stdout.trim()).toBe(version)
   })
 })
 
