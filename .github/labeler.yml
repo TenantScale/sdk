@@ -18,6 +18,18 @@ react:
   - changed-files:
       - any-glob-to-any-file: packages/react/**/*
 
+fastify:
+  - changed-files:
+      - any-glob-to-any-file: packages/fastify/**/*
+
+koa:
+  - changed-files:
+      - any-glob-to-any-file: packages/koa/**/*
+
+drizzle:
+  - changed-files:
+      - any-glob-to-any-file: packages/drizzle/**/*
+
 cli:
   - changed-files:
       - any-glob-to-any-file: packages/cli/**/*
