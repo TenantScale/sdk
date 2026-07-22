@@ -1,6 +1,6 @@
 {
   "name": "@tenantscale/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Scaffold multi-tenant SaaS projects with TenantScale",
   "type": "module",
   "bin": {

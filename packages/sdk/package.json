@@ -1,6 +1,6 @@
 {
   "name": "@tenantscale/sdk",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "description": "Framework-agnostic multi-tenant SDK for B2B SaaS — tenant isolation, audit logging, plan enforcement, and API key management.",
   "type": "module",
   "main": "./dist/index.js",
