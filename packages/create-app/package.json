@@ -4,7 +4,7 @@
   "description": "Scaffold a full-stack multi-tenant SaaS app with Next.js, Hono, and TenantScale",
   "type": "module",
   "bin": {
-    "@tenantscale/create-app": "./dist/index.js"
+    "create-app": "./dist/index.js"
   },
   "files": [
     "dist",
