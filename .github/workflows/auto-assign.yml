@@ -1,0 +1,144 @@
+name: Auto-Assign
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+
+jobs:
+  auto-assign:
+    runs-on: ubuntu-latest
+    # Skip pull request review comments
+    if: ${{ !contains(github.event.issue.html_url, '/pull/') }}
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = context.payload.comment;
+            const issue = context.payload.issue;
+            const commenter = comment.user.login;
+            const commentBody = comment.body.toLowerCase();
+
+            // Skip bots
+            if (comment.user.type === 'Bot') {
+              console.log('Skipping bot comment');
+              return;
+            }
+
+            // Skip closed issues
+            if (issue.state === 'closed') {
+              console.log('Skipping closed issue');
+              return;
+            }
+
+            // Skip pull request review comments
+            if (issue.pull_request) {
+              console.log('Skipping PR comment');
+              return;
+            }
+
+            // Check for assignment intent phrases
+            const assignPhrases = [
+              /i['']?\s*(d like|ll|can|want to|will|am going to)\s*(work on|take|pick up|handle|do|fix|implement|address|tackle)/i,
+              /assign\s*(this|me|it|the issue)/i,
+              /can\s*(i|me)\s*(work on|take|pick up|handle|do|fix|implement)/i,
+              /claim\s*(this|the issue)/i,
+              /i['']?m\s*(going to|happy to|willing to|interested in)\s*(work on|take|pick up|handle|do|fix|implement)/i,
+              /let me\s*(work on|take|pick up|handle|do|fix|implement|tackle)/i,
+              /i can\s*(take this|pick this up|handle this|do this|fix this)/i,
+              /could i\s*(work on|take|pick up|handle|do|fix|implement)/i,
+              /i think i can\s*(handle|do|fix|implement)/i,
+              /i volunteer/i,
+            ];
+
+            const matches = assignPhrases.some(pattern => pattern.test(commentBody));
+            if (!matches) {
+              console.log('No assignment intent detected in comment');
+              return;
+            }
+
+            // Check current assignees
+            const assignees = issue.assignees.map(a => a.login);
+
+            if (assignees.length > 0) {
+              // If someone else is already assigned, don't reassign
+              if (!assignees.includes(commenter)) {
+                console.log(`Issue already assigned to ${assignees.join(', ')} — not reassigning`);
+                return;
+              } else {
+                // Already assigned to this person — just confirm
+                console.log(`${commenter} is already assigned — sending confirmation`);
+                await github.rest.issues.createComment({
+                  issue_number: issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: `You're already assigned to this issue! 🚀 Go ahead and start working on it. If you need help, check the contributing guide or ask in our [Discord](https://discord.gg/tenantscale).`,
+                });
+                return;
+              }
+            }
+
+            // Assign the commenter
+            await github.rest.issues.addAssignees({
+              issue_number: issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              assignees: [commenter],
+            });
+
+            // Add "assigned" label — create it if it doesn't exist
+            const { data: allLabels } = await github.rest.issues.listLabelsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            const labelNames = allLabels.map(l => l.name);
+
+            const labelsToAdd = ['assigned'];
+            if (!labelNames.includes('assigned')) {
+              await github.rest.issues.createLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'assigned',
+                color: 'fbca04',
+                description: 'This issue has been assigned to a contributor',
+              });
+            }
+
+            // Remove "available" label if present
+            const issueLabels = issue.labels.map(l => l.name);
+            if (issueLabels.includes('available')) {
+              await github.rest.issues.removeLabel({
+                issue_number: issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'available',
+              });
+            }
+
+            // Add labels
+            await github.rest.issues.addLabels({
+              issue_number: issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: labelsToAdd,
+            });
+
+            // Post confirmation
+            await github.rest.issues.createComment({
+              issue_number: issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: [
+                '',
+                `✅ @${commenter}, you've been assigned to this issue! Go ahead and start working on it.`,
+                '',
+                '👉 **Before you start:**',
+                `- Read the [Contributing Guide](https://github.com/TenantScale/${context.repo.repo}/blob/main/CONTRIBUTING.md)`,
+                '- Run `git commit -s` for DCO sign-off on your commits',
+                '- Questions? Ask in our [Discord](https://discord.gg/tenantscale)',
+                '',
+                'Good luck! 🚀',
+              ].join('\n'),
+            });
