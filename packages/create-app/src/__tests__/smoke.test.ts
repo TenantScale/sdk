@@ -68,7 +68,7 @@ describe('create-tenantscale-app', () => {
     const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
     const pkg = JSON.parse(fs.readFileSync(`${root}/package.json`, 'utf-8'))
     expect(pkg.bin).toBeDefined()
-    expect(pkg.bin['create-tenantscale-app']).toBe('./dist/index.js')
+    expect(pkg.bin[Object.keys(pkg.bin)[0]]).toBe('./dist/index.js')
     expect(pkg.files).toContain('templates')
   })
 

@@ -1,10 +1,10 @@
 {
-  "name": "create-tenantscale-app",
+  "name": "@tenantscale/create-app",
   "version": "0.1.0",
   "description": "Scaffold a full-stack multi-tenant SaaS app with Next.js, Hono, and TenantScale",
   "type": "module",
   "bin": {
-    "create-tenantscale-app": "./dist/index.js"
+    "@tenantscale/create-app": "./dist/index.js"
   },
   "files": [
     "dist",
