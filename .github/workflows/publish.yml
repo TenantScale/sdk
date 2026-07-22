@@ -58,6 +58,10 @@ jobs:
           echo "✅ Tag v$TAG_VERSION matches SDK package version $PKG_VERSION"
 
       - name: Publish to npm
-        run: pnpm publish -r --access public --no-git-checks
+        run: |
+          # pnpm doesn't expand ${NODE_AUTH_TOKEN} from setup-node's .npmrc,
+          # so we set the token in pnpm's own config before publishing
+          pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}" --location=project
+          pnpm publish -r --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
