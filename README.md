@@ -161,6 +161,8 @@ All packages are **MIT-licensed** and published on npm.
 | [`@tenantscale/hono`](packages/hono) | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/hono" alt="size"> | Hono middleware — same middleware API, built for Hono's context model |
 | [`@tenantscale/next`](packages/next) | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/next" alt="size"> | Next.js App Router — `authenticateApiKey`, `createHandler`, `withApiKey` |
 | [`@tenantscale/react`](packages/react) | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/react" alt="size"> | React hooks — `useTenant`, `usePlan`, `useApiKeys`, `useTeam`, `useAuditLog`, `useWebhooks` |
+| [`@tenantscale/fastify`](packages/fastify) | — | Fastify middleware — `authenticateApiKey`, `requireScope`, `errorHandler` |
+| [`@tenantscale/koa`](packages/koa) | — | Koa middleware — full adapter: auth, session validation, plan limits, rate limits, audit logging |
 | [`@tenantscale/drizzle`](packages/drizzle) | — | Drizzle ORM tenant query guard — auto-scopes queries to the current tenant |
 | [`@tenantscale/cli`](packages/cli) | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/cli" alt="size"> | CLI — `tenantscale init` to scaffold, `tenantscale migrate` to analyze existing apps |
 | [`create-tenantscale-app`](packages/create-app) | <img src="https://img.shields.io/bundlephobia/minzip/create-tenantscale-app" alt="size"> | Full-stack starter — scaffolds Next.js portal + Hono API + Supabase migrations |
@@ -231,8 +233,8 @@ pnpm install && pnpm dev
 | ✅ | Next.js adapter |
 | ✅ | React hooks |
 | ✅ | CLI + create-tenantscale-app |
-| 🔜 | **Fastify adapter** — [help wanted!](https://github.com/TenantScale/sdk/issues) |
-| 🔜 | **Koa adapter** — [help wanted!](https://github.com/TenantScale/sdk/issues) |
+| ✅ | **Fastify adapter** — contributed by [@peakcoder](https://github.com/GHisDW) |
+| ✅ | **Koa adapter** — contributed by [@ashudhanda](https://github.com/ashudhanda) |
 | 🔜 | **Prisma adapter** — automatic tenant-scoped query guard |
 | ✅ | **Drizzle adapter** — automatic tenant-scoped query guard |
 | 🔜 | **SSO / SAML** — enterprise identity provider integration |
@@ -265,6 +267,9 @@ Thanks to every contributor who makes TenantScale better!
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ThatDevMat"><img src="https://avatars.githubusercontent.com/u/17392257?v=4" width="80" alt="ThatDevMat"/><br /><sub><b>ThatDevMat</b></sub></a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/cnYui"><img src="https://avatars.githubusercontent.com/u/157269834?v=4" width="80" alt="cnYui"/><br /><sub><b>cnYui</b></sub></a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ashudhanda"><img src="https://avatars.githubusercontent.com/u/50889381?v=4" width="80" alt="ashudhanda"/><br /><sub><b>ashudhanda</b></sub></a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/GHisDW"><img src="https://avatars.githubusercontent.com/u/108889895?v=4" width="80" alt="GHisDW"/><br /><sub><b>GHisDW (peakcoder)</b></sub></a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/AniSam0000"><img src="https://avatars.githubusercontent.com/u/80982381?v=4" width="80" alt="AniSam0000"/><br /><sub><b>AniSam0000</b></sub></a></td>
     </tr>
   </tbody>
 </table>

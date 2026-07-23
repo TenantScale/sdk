@@ -171,6 +171,27 @@ tenantscale-sdk/
 │   │   │   ├── client.ts
 │   │   │   └── ssr.ts
 │   │   └── __tests__/       # 8 tests
+│   ├── fastify/            # Fastify adapter (@tenantscale/fastify)
+│   │   ├── src/
+│   │   │   ├── middleware.ts
+│   │   │   ├── error-handler.ts
+│   │   │   └── types.ts
+│   │   └── __tests__/       # 12 tests
+│   ├── koa/                # Koa adapter (@tenantscale/koa)
+│   │   ├── src/
+│   │   │   ├── middleware.ts
+│   │   │   ├── error-handler.ts
+│   │   │   └── types.ts
+│   │   └── __tests__/       # 10 tests
+│   ├── drizzle/            # Drizzle ORM query guard (@tenantscale/drizzle)
+│   │   ├── src/
+│   │   │   └── index.ts
+│   │   └── __tests__/       # 6 tests
+│   ├── mcp/                # MCP server (@tenantscale/mcp)
+│   │   ├── src/
+│   │   │   ├── tools.ts
+│   │   │   └── index.ts
+│   │   └── __tests__/       # 4 tests
 │   ├── cli/                # CLI tools (@tenantscale/cli)
 │   │   ├── src/
 │   │   │   ├── commands/    # init, migrate
@@ -332,6 +353,7 @@ Look at `packages/hono/src/middleware.ts` for a complete adapter reference. The 
 ### Before you open
 
 - [ ] All tests pass locally (`pnpm test`)
+- [ ] `pnpm format:check` passes (no formatting issues)
 - [ ] `pnpm build` completes without errors
 - [ ] `pnpm lint` reports zero issues
 - [ ] New code has corresponding tests
@@ -342,10 +364,11 @@ Look at `packages/hono/src/middleware.ts` for a complete adapter reference. The 
 
 When you open a PR, CI automatically runs:
 
-1. **Lint** — ESLint + Prettier formatting
-2. **Build** — TypeScript compilation for all packages
-3. **Test** — Full test suite with coverage
-4. **Commit message lint** — PR title must follow conventional commits
+1. **Format check** — Prettier formatting (`pnpm format:check`)
+2. **Lint** — ESLint across all packages
+3. **Build** — TypeScript compilation for all packages
+4. **Test** — Full test suite with coverage
+5. **DCO** — Every commit must have a `Signed-off-by` trailer
 
 All must pass before merge. If a check fails, check the Actions tab for details.
 
