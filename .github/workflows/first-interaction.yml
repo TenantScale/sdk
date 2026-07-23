@@ -3,6 +3,8 @@ name: Welcome
 on:
   pull_request_target:
     types: [opened]
+  issues:
+    types: [opened]
 
 permissions:
   pull-requests: write
@@ -12,19 +14,57 @@ jobs:
   welcome:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/first-interaction@v3
+      - uses: actions/github-script@v7
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          issue_message: |
-            👋 Thanks for opening your first issue in **TenantScale SDK**! We appreciate your help in making multi-tenant B2B SaaS better for everyone.
+          script: |
+            const isPR = context.payload.pull_request !== undefined;
+            const actor = context.actor;
 
-            Please make sure to check our [Contributing Guide](https://github.com/TenantScale/sdk/blob/main/CONTRIBUTING.md).
-          pr_message: |
-            🎉 Thanks for opening your first pull request in **TenantScale SDK**! We'll review it as soon as possible.
+            // Query the API for the actor's previous PRs/issues — per_page=2 is cheapest
+            // to reliably detect "first" (length 1 = first, 2+ = returning)
+            let existingCount;
+            if (isPR) {
+              const { data: existing } = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'all',
+                author: actor,
+                per_page: 2,
+              });
+              existingCount = existing.length;
+            } else {
+              const { data: existing } = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'all',
+                creator: actor,
+                per_page: 2,
+                filter: 'all',
+              });
+              // Exclude PRs from the count (issues.listForRepo returns both)
+              existingCount = existing.filter(i => !i.pull_request).length;
+            }
+
+            const isFirst = existingCount === 1;
+
+            if (isFirst) {
+              const message = isPR
+                ? `🎉 Thanks for opening your first pull request in **TenantScale SDK**! We'll review it as soon as possible.
 
             Quick checklist:
-            - ✅ Commits have DCO sign-off (`git commit -s`)
-            - ✅ `pnpm test` and `pnpm build` pass locally
+            - ✅ Commits have DCO sign-off (\`git commit -s\`)
+            - ✅ \`pnpm test\` and \`pnpm build\` pass locally
             - ✅ Tests updated for new functionality
 
-            Welcome to the community! 🚀
+            Welcome to the community! 🚀`
+                : `👋 Thanks for opening your first issue in **TenantScale SDK**! We appreciate your help in making multi-tenant B2B SaaS better for everyone.
+
+            Please make sure to check our [Contributing Guide](https://github.com/TenantScale/sdk/blob/main/CONTRIBUTING.md).`;
+
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message,
+              });
+            }
