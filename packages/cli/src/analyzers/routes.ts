@@ -39,12 +39,8 @@ const METHOD_PATTERNS: Record<string, RegExp[]> = {
     /(app|router)\.(get|post|put|patch|delete|all)\s*\(\s*['"`](\/[^'"`]*)['"`]/g,
     /\.on\s*\(\s*['"`](GET|POST|PUT|PATCH|DELETE)['"`]\s*,\s*['"`](\/[^'"`]*)['"`]/g,
   ],
-  nextjs: [
-    /export\s+(default\s+)?async\s+function\s+(GET|POST|PUT|PATCH|DELETE|OPTIONS)\s*\(/g,
-  ],
-  fastify: [
-    /(app|server)\.(get|post|put|patch|delete|all)\s*\(\s*['"`](\/[^'"`]*)['"`]/g,
-  ],
+  nextjs: [/export\s+(default\s+)?async\s+function\s+(GET|POST|PUT|PATCH|DELETE|OPTIONS)\s*\(/g],
+  fastify: [/(app|server)\.(get|post|put|patch|delete|all)\s*\(\s*['"`](\/[^'"`]*)['"`]/g],
 }
 
 // Patterns that indicate auth/tenant protection
@@ -73,10 +69,7 @@ const TENANT_PATTERNS = [
 /**
  * Analyze route definitions across the codebase.
  */
-export function analyzeRoutes(
-  sourceFiles: string[],
-  framework: FrameworkInfo,
-): RouteAnalysis {
+export function analyzeRoutes(sourceFiles: string[], framework: FrameworkInfo): RouteAnalysis {
   const routes: RouteInfo[] = []
   const filesWithRoutes: string[] = []
   const evidence: string[] = []
@@ -92,14 +85,16 @@ export function analyzeRoutes(
 
     if (fw === 'nextjs') {
       // Next.js App Router: each file is one route handler
-      const exportMatch = content.match(/export\s+(default\s+)?async\s+function\s+(GET|POST|PUT|PATCH|DELETE|OPTIONS)\s*\(/)
+      const exportMatch = content.match(
+        /export\s+(default\s+)?async\s+function\s+(GET|POST|PUT|PATCH|DELETE|OPTIONS)\s*\(/,
+      )
       if (exportMatch) {
         fileHasRoute = true
         const method = exportMatch[2]
         const path = inferNextRoutePath(file)
 
-        const hasAuth = AUTH_PATTERNS.some(p => p.test(content))
-        const hasTenant = TENANT_PATTERNS.some(p => p.test(content))
+        const hasAuth = AUTH_PATTERNS.some((p) => p.test(content))
+        const hasTenant = TENANT_PATTERNS.some((p) => p.test(content))
 
         routes.push({
           file,
@@ -136,9 +131,12 @@ export function analyzeRoutes(
           const method = match[2]
           const path = '/'
           routes.push({
-            file, method, path, lineNumber: 1,
-            hasAuth: AUTH_PATTERNS.some(p => p.test(content)),
-            hasTenantFilter: TENANT_PATTERNS.some(p => p.test(content)),
+            file,
+            method,
+            path,
+            lineNumber: 1,
+            hasAuth: AUTH_PATTERNS.some((p) => p.test(content)),
+            hasTenantFilter: TENANT_PATTERNS.some((p) => p.test(content)),
             suggestedProtection: 'api_key',
           })
         }
@@ -171,9 +169,11 @@ export function analyzeRoutes(
 
           // Check if this route is near auth middleware (same file)
           const lineNum = getLineNumber(lines, match[0])
-          const nearbyLines = lines.slice(Math.max(0, lineNum - 5), Math.min(lines.length, lineNum + 5)).join('\n')
-          const hasAuth = AUTH_PATTERNS.some(p => p.test(nearbyLines) || p.test(content))
-          const hasTenant = TENANT_PATTERNS.some(p => p.test(nearbyLines))
+          const nearbyLines = lines
+            .slice(Math.max(0, lineNum - 5), Math.min(lines.length, lineNum + 5))
+            .join('\n')
+          const hasAuth = AUTH_PATTERNS.some((p) => p.test(nearbyLines) || p.test(content))
+          const hasTenant = TENANT_PATTERNS.some((p) => p.test(nearbyLines))
 
           routes.push({
             file,
@@ -182,7 +182,8 @@ export function analyzeRoutes(
             lineNumber: lineNum,
             hasAuth,
             hasTenantFilter: hasTenant,
-            suggestedProtection: path.startsWith('/api/') || path.startsWith('/v') ? 'api_key' : 'session',
+            suggestedProtection:
+              path.startsWith('/api/') || path.startsWith('/v') ? 'api_key' : 'session',
           })
         }
       }
@@ -194,13 +195,16 @@ export function analyzeRoutes(
   }
 
   // Deduplicate
-  const uniqueRoutes = routes.filter((r, i, arr) =>
-    i === arr.findIndex(x => x.file === r.file && x.method === r.method && x.path === r.path)
+  const uniqueRoutes = routes.filter(
+    (r, i, arr) =>
+      i === arr.findIndex((x) => x.file === r.file && x.method === r.method && x.path === r.path),
   )
 
-  const protected_count = uniqueRoutes.filter(r => r.hasAuth || r.hasTenantFilter).length
+  const protected_count = uniqueRoutes.filter((r) => r.hasAuth || r.hasTenantFilter).length
 
-  evidence.push(`Found ${uniqueRoutes.length} route definitions across ${filesWithRoutes.length} files`)
+  evidence.push(
+    `Found ${uniqueRoutes.length} route definitions across ${filesWithRoutes.length} files`,
+  )
   evidence.push(`${protected_count} routes have auth/tenant protection`)
   evidence.push(`${uniqueRoutes.length - protected_count} routes appear unprotected`)
 

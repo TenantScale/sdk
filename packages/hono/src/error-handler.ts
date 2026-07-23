@@ -12,11 +12,7 @@
 // ```
 
 import type { Context } from 'hono'
-import {
-  TenantScaleError,
-  PlanLimitExceededError,
-  RateLimitExceededError,
-} from '@tenantscale/sdk'
+import { TenantScaleError, PlanLimitExceededError, RateLimitExceededError } from '@tenantscale/sdk'
 import type { HonoAdapterOptions, ErrorResponse } from './types.js'
 
 /**
@@ -38,14 +34,18 @@ export function errorHandler(options?: HonoAdapterOptions) {
   return (err: Error, c: Context): Response => {
     // Not a TenantScale error — re-throw for generic handler
     if (!(err instanceof TenantScaleError)) {
-      const message = process.env.NODE_ENV === 'production'
-        ? 'Internal server error'
-        : err.message || 'Internal server error'
-      return c.json({
-        error: message,
-        code: 'INTERNAL_ERROR',
-        statusCode: 500,
-      }, 500)
+      const message =
+        process.env.NODE_ENV === 'production'
+          ? 'Internal server error'
+          : err.message || 'Internal server error'
+      return c.json(
+        {
+          error: message,
+          code: 'INTERNAL_ERROR',
+          statusCode: 500,
+        },
+        500,
+      )
     }
 
     const body: ErrorResponse = {

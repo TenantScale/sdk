@@ -23,7 +23,13 @@ import type { TenantSsrContext } from './types.js'
 interface SsrResponse {
   user: { id: string; email: string }
   tenant: { id: string; name: string; slug: string; role: string; is_super_admin: boolean }
-  plan: { id: string; name: string; price_monthly: number; features: Record<string, unknown>; limits: Record<string, number | null> }
+  plan: {
+    id: string
+    name: string
+    price_monthly: number
+    features: Record<string, unknown>
+    limits: Record<string, number | null>
+  }
   deployment: { mode: 'self_hosted' | 'cloud' }
 }
 
@@ -46,7 +52,7 @@ export async function getTenantSsr(
   const res = await fetcher(url, {
     headers: {
       'Content-Type': 'application/json',
-      'Cookie': cookieString,
+      Cookie: cookieString,
     },
   })
 

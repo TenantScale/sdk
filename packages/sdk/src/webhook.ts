@@ -46,13 +46,9 @@ export class WebhookDispatcher {
    * Dispatch an event to all active webhooks subscribed to this event type.
    * Fire-and-forget — doesn't block the caller.
    */
-  dispatch(
-    event: string,
-    tenantId: string,
-    data: Record<string, unknown>,
-  ): void {
+  dispatch(event: string, tenantId: string, data: Record<string, unknown>): void {
     // Don't await — intentionally non-blocking
-    void this.deliver(event, tenantId, data).catch(err => {
+    void this.deliver(event, tenantId, data).catch((err) => {
       this.logger.error({ err }, `[Webhook] Error dispatching ${event}`)
     })
   }
@@ -93,12 +89,12 @@ export class WebhookDispatcher {
 
       // Deliver to each webhook in parallel
       const results = await Promise.allSettled(
-        webhooks.map(hook => this.send(hook, body, event, 1))
+        webhooks.map((hook) => this.send(hook, body, event, 1)),
       )
 
       return results
         .filter((r): r is PromiseFulfilledResult<WebhookDeliveryResult> => r.status === 'fulfilled')
-        .map(r => r.value)
+        .map((r) => r.value)
     } catch (err) {
       this.logger.error({ err }, '[Webhook] Dispatch error')
       return []
@@ -114,9 +110,7 @@ export class WebhookDispatcher {
     const start = Date.now()
 
     // Sign the payload with HMAC-SHA256
-    const signature = createHmac('sha256', hook.secret)
-      .update(body)
-      .digest('hex')
+    const signature = createHmac('sha256', hook.secret).update(body).digest('hex')
 
     const deliveryId = createHash('sha256').update(body).digest('hex').slice(0, 12)
 
@@ -141,7 +135,17 @@ export class WebhookDispatcher {
       const responseText = await response.text().catch(() => '')
 
       // Log delivery
-      await this.logDelivery(hook.id, event, hook.url, null, response.status, responseText, response.ok ? 'delivered' : 'failed', response.ok ? null : `HTTP ${response.status}`, duration)
+      await this.logDelivery(
+        hook.id,
+        event,
+        hook.url,
+        null,
+        response.status,
+        responseText,
+        response.ok ? 'delivered' : 'failed',
+        response.ok ? null : `HTTP ${response.status}`,
+        duration,
+      )
 
       return {
         webhook_id: hook.id,
@@ -161,12 +165,22 @@ export class WebhookDispatcher {
           { attempt, maxRetries: this.maxRetries, url: hook.url, error: errorMsg, delay },
           `[Webhook] Delivery failed, retrying in ${delay}ms`,
         )
-        await new Promise(resolve => setTimeout(resolve, delay))
+        await new Promise((resolve) => setTimeout(resolve, delay))
         return this.send(hook, body, event, attempt + 1)
       }
 
       // Log delivery failure
-      await this.logDelivery(hook.id, event, hook.url, null, null, null, 'failed', `${errorMsg} (after ${this.maxRetries} attempts)`, duration)
+      await this.logDelivery(
+        hook.id,
+        event,
+        hook.url,
+        null,
+        null,
+        null,
+        'failed',
+        `${errorMsg} (after ${this.maxRetries} attempts)`,
+        duration,
+      )
 
       this.logger.error(
         { url: hook.url, error: errorMsg, maxRetries: this.maxRetries },

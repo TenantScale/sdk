@@ -3,19 +3,16 @@
 // ──────────────────────────────────────────────────────
 
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import {
-  TenantScaleError,
-  PlanLimitExceededError,
-  RateLimitExceededError,
-} from '@tenantscale/sdk'
+import { TenantScaleError, PlanLimitExceededError, RateLimitExceededError } from '@tenantscale/sdk'
 import type { FastifyAdapterOptions, ErrorResponse } from './types.js'
 
 export function errorHandler(_options?: FastifyAdapterOptions) {
   return (err: Error, _req: FastifyRequest, reply: FastifyReply) => {
     if (!(err instanceof TenantScaleError)) {
-      const message = process.env.NODE_ENV === 'production'
-        ? 'Internal server error'
-        : err.message || 'Internal server error'
+      const message =
+        process.env.NODE_ENV === 'production'
+          ? 'Internal server error'
+          : err.message || 'Internal server error'
       reply.code(500).send({
         error: message,
         code: 'INTERNAL_ERROR',

@@ -72,7 +72,11 @@ describe('fastify adapter', () => {
     app.addHook('preHandler', authenticateApiKey({ ts }))
     app.get('/test', async (req: any) => ({ tenantId: req.tenantId, scopes: req.tenantKey.scopes }))
 
-    const res = await app.inject({ method: 'GET', url: '/test', headers: { 'x-api-key': 'tk_test_abc' } })
+    const res = await app.inject({
+      method: 'GET',
+      url: '/test',
+      headers: { 'x-api-key': 'tk_test_abc' },
+    })
     expect(res.statusCode).toBe(200)
     expect(JSON.parse(res.body)).toEqual({ tenantId: 'tenant_1', scopes: ['admin', 'read'] })
   })
@@ -98,7 +102,11 @@ describe('fastify adapter', () => {
     app.addHook('preHandler', requireScope({ ts }, 'super_admin'))
     app.get('/test', async () => ({ ok: true }))
 
-    const res = await app.inject({ method: 'GET', url: '/test', headers: { 'x-api-key': 'tk_test_abc' } })
+    const res = await app.inject({
+      method: 'GET',
+      url: '/test',
+      headers: { 'x-api-key': 'tk_test_abc' },
+    })
     expect(res.statusCode).toBe(403)
   })
 
@@ -109,7 +117,11 @@ describe('fastify adapter', () => {
     app.addHook('preHandler', requirePortalSession({ ts }))
     app.get('/test', async (req: any) => ({ email: req.portalSession.email }))
 
-    const res = await app.inject({ method: 'GET', url: '/test', headers: { authorization: 'Bearer jwt_valid' } })
+    const res = await app.inject({
+      method: 'GET',
+      url: '/test',
+      headers: { authorization: 'Bearer jwt_valid' },
+    })
     expect(res.statusCode).toBe(200)
     expect(JSON.parse(res.body)).toEqual({ email: 'admin@test.com' })
   })
@@ -139,13 +151,20 @@ describe('fastify adapter', () => {
     app.addHook('preHandler', requirePortalRole({ ts }, 'super_admin'))
     app.get('/test', async () => ({ ok: true }))
 
-    const res = await app.inject({ method: 'GET', url: '/test', headers: { authorization: 'Bearer jwt_valid' } })
+    const res = await app.inject({
+      method: 'GET',
+      url: '/test',
+      headers: { authorization: 'Bearer jwt_valid' },
+    })
     expect(res.statusCode).toBe(403)
   })
 
   it('returns 429 for IP-based rate limits', async () => {
     const ts = createMockTenantScale()
-    ts.rateLimiter.checkIpCreationLimit.mockResolvedValue({ blocked: true, resetAtMs: Date.now() + 30000 })
+    ts.rateLimiter.checkIpCreationLimit.mockResolvedValue({
+      blocked: true,
+      resetAtMs: Date.now() + 30000,
+    })
     const app = Fastify()
     app.addHook('preHandler', rateLimitByIp({ ts }))
     app.get('/test', async () => ({ ok: true }))
@@ -163,7 +182,11 @@ describe('fastify adapter', () => {
     app.addHook('preHandler', rateLimitByApiKey({ ts }))
     app.get('/test', async () => ({ ok: true }))
 
-    const res = await app.inject({ method: 'GET', url: '/test', headers: { 'x-api-key': 'tk_test_abc' } })
+    const res = await app.inject({
+      method: 'GET',
+      url: '/test',
+      headers: { 'x-api-key': 'tk_test_abc' },
+    })
     expect(res.statusCode).toBe(429)
   })
 
@@ -178,7 +201,11 @@ describe('fastify adapter', () => {
     app.addHook('preHandler', requireSuperAdmin({ ts }))
     app.get('/test', async () => ({ ok: true }))
 
-    const res = await app.inject({ method: 'GET', url: '/test', headers: { authorization: 'Bearer jwt_valid' } })
+    const res = await app.inject({
+      method: 'GET',
+      url: '/test',
+      headers: { authorization: 'Bearer jwt_valid' },
+    })
     expect(res.statusCode).toBe(403)
   })
 
@@ -190,7 +217,11 @@ describe('fastify adapter', () => {
     app.addHook('preHandler', auditLog({ ts }, { action: 'read', resource: '/test' }))
     app.get('/test', async () => ({ ok: true }))
 
-    const res = await app.inject({ method: 'GET', url: '/test', headers: { 'x-api-key': 'tk_test_abc' } })
+    const res = await app.inject({
+      method: 'GET',
+      url: '/test',
+      headers: { 'x-api-key': 'tk_test_abc' },
+    })
     expect(res.statusCode).toBe(200)
     expect(ts.logAuditEvent).toHaveBeenCalled()
   })

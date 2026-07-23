@@ -15,24 +15,13 @@ export type {
 export type { ApiKeyInfo, PortalSessionInfo } from './types.js'
 
 // Auth functions
-export {
-  authenticateApiKey,
-  requirePortalSession,
-} from './authenticate.js'
+export { authenticateApiKey, requirePortalSession } from './authenticate.js'
 
 // Route handler wrappers
-export {
-  createHandler,
-  withApiKey,
-  withSession,
-} from './handler.js'
+export { createHandler, withApiKey, withSession } from './handler.js'
 
 // Error handling
-export {
-  errorResponse,
-} from './error-handler.js'
+export { errorResponse } from './error-handler.js'
 
 // App Router helpers
-export {
-  createAppRouterHandler,
-} from './app-router.js'
+export { createAppRouterHandler } from './app-router.js'

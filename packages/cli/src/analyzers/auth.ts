@@ -22,13 +22,13 @@ export interface AuthInfo {
 
 // Auth library detection
 const AUTH_LIBRARIES: Record<string, RegExp[]> = {
-  'jsonwebtoken': [/jsonwebtoken/],
+  jsonwebtoken: [/jsonwebtoken/],
   'next-auth': [/next-auth/, /@auth\/\w+/],
   'express-jwt': [/express-jwt/],
-  'passport': [/passport/],
-  'supabase': [/@supabase\/supabase-js/, /supabase/],
-  'clerk': [/@clerk\//],
-  'workos': [/@workos-inc\/node/],
+  passport: [/passport/],
+  supabase: [/@supabase\/supabase-js/, /supabase/],
+  clerk: [/@clerk\//],
+  workos: [/@workos-inc\/node/],
 }
 
 // Auth pattern detection in source code
@@ -62,7 +62,7 @@ export function analyzeAuth(sourceFiles: string[], _framework: FrameworkInfo): A
   let sessionCount = 0
 
   // First check package.json for auth libraries
-  const pkgFiles = sourceFiles.filter(f => f.endsWith('package.json'))
+  const pkgFiles = sourceFiles.filter((f) => f.endsWith('package.json'))
   for (const f of pkgFiles) {
     const content = readFileSafe(f)
     if (!content) continue
@@ -71,7 +71,7 @@ export function analyzeAuth(sourceFiles: string[], _framework: FrameworkInfo): A
       const deps = { ...pkg.dependencies, ...pkg.devDependencies }
       for (const [libName, patterns] of Object.entries(AUTH_LIBRARIES)) {
         for (const dep of Object.keys(deps)) {
-          if (patterns.some(p => p.test(dep))) {
+          if (patterns.some((p) => p.test(dep))) {
             detectedLibrary = libName
             evidence.push(`Found auth library: ${libName} (${dep})`)
             break
@@ -79,7 +79,9 @@ export function analyzeAuth(sourceFiles: string[], _framework: FrameworkInfo): A
         }
         if (detectedLibrary) break
       }
-    } catch { /* skip */ }
+    } catch {
+      /* skip */
+    }
   }
 
   // Scan source files for auth patterns
@@ -89,7 +91,8 @@ export function analyzeAuth(sourceFiles: string[], _framework: FrameworkInfo): A
     if (!content) continue
 
     // Check for auth middleware files specifically
-    const isMiddleware = file.toLowerCase().includes('auth') ||
+    const isMiddleware =
+      file.toLowerCase().includes('auth') ||
       file.toLowerCase().includes('middleware') ||
       file.toLowerCase().includes('protect')
 
@@ -127,7 +130,8 @@ export function analyzeAuth(sourceFiles: string[], _framework: FrameworkInfo): A
   }
 
   // TenantScale compatibility
-  const compatibleWithTenantScale = approach === 'api-key' || approach === 'jwt' || detectedLibrary === 'supabase'
+  const compatibleWithTenantScale =
+    approach === 'api-key' || approach === 'jwt' || detectedLibrary === 'supabase'
 
   return {
     approach,

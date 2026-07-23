@@ -1,8 +1,8 @@
-import { readdirSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join, resolve, relative } from 'node:path';
-import { createInterface } from 'node:readline';
-import { execSync } from 'node:child_process';
-import pc from 'picocolors';
+import { readdirSync, existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { join, resolve, relative } from 'node:path'
+import { createInterface } from 'node:readline'
+import { execSync } from 'node:child_process'
+import pc from 'picocolors'
 
 // ── readline prompt helper ──────────────────────────────────────────────────
 
@@ -10,15 +10,15 @@ function createPrompt(question: string, defaultValue?: string): Promise<string> 
   const rl = createInterface({
     input: process.stdin,
     output: process.stdout,
-  });
+  })
 
   return new Promise((resolve) => {
-    const hint = defaultValue ? ` [${defaultValue}]` : "";
-    rl.question(`${pc.cyan("?")} ${question}${pc.dim(hint)} `, (answer) => {
-      rl.close();
-      resolve(answer.trim() || defaultValue || "");
-    });
-  });
+    const hint = defaultValue ? ` [${defaultValue}]` : ''
+    rl.question(`${pc.cyan('?')} ${question}${pc.dim(hint)} `, (answer) => {
+      rl.close()
+      resolve(answer.trim() || defaultValue || '')
+    })
+  })
 }
 
 // ── framework templates (embedded) ──────────────────────────────────────────
@@ -65,7 +65,7 @@ declare module "hono" {
     };
   }
 }
-`;
+`
 }
 
 function expressMiddleware(): string {
@@ -107,7 +107,7 @@ declare global {
     }
   }
 }
-`;
+`
 }
 
 // ── file content builders ───────────────────────────────────────────────────
@@ -119,7 +119,7 @@ ALTER TABLE ${tableName} ADD COLUMN tenant_id UUID NOT NULL REFERENCES tenants(i
 CREATE INDEX idx_${tableName}_tenant_id ON ${tableName}(tenant_id);
 -- Enable RLS
 ALTER TABLE ${tableName} ENABLE ROW LEVEL SECURITY;
-`;
+`
 }
 
 function envContent(): string {
@@ -127,26 +127,26 @@ function envContent(): string {
 TENANTSCALE_API_KEY=your_api_key_here
 
 # Add other environment variables below
-`;
+`
 }
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 
 function validateDirectory(dir: string): string | null {
   if (existsSync(dir)) {
-    const contents = readdirSync(dir);
+    const contents = readdirSync(dir)
     if (contents.length > 0) {
-      return `Directory "${dir}" already exists and is not empty.`;
+      return `Directory "${dir}" already exists and is not empty.`
     }
   }
-  return null;
+  return null
 }
 
 function run(cmd: string, cwd: string) {
   try {
-    execSync(cmd, { cwd, stdio: "inherit" });
+    execSync(cmd, { cwd, stdio: 'inherit' })
   } catch {
-    throw new Error(`Failed to run: ${cmd}`);
+    throw new Error(`Failed to run: ${cmd}`)
   }
 }
 
@@ -154,114 +154,114 @@ function run(cmd: string, cwd: string) {
 
 export async function initAction(
   dirArg?: string,
-  options?: { framework?: string; table?: string; nonInteractive?: boolean }
+  options?: { framework?: string; table?: string; nonInteractive?: boolean },
 ) {
   // Determine project directory
-  let projectDir = dirArg || "./my-multi-tenant-app";
+  let projectDir = dirArg || './my-multi-tenant-app'
 
   // Ask for project directory
   if (!options?.nonInteractive) {
-    const answer = await createPrompt("Project directory:", projectDir);
-    if (answer) projectDir = answer;
+    const answer = await createPrompt('Project directory:', projectDir)
+    if (answer) projectDir = answer
   }
 
-  const resolvedDir = resolve(projectDir);
+  const resolvedDir = resolve(projectDir)
 
   // Validate
-  const err = validateDirectory(resolvedDir);
+  const err = validateDirectory(resolvedDir)
   if (err) {
-    throw new Error(err);
+    throw new Error(err)
   }
 
   // Ask for framework
-  let framework = (options?.framework || "none").toLowerCase();
+  let framework = (options?.framework || 'none').toLowerCase()
   if (!options?.nonInteractive) {
-    const answer = await createPrompt("Framework (hono, express, none):", framework);
-    if (answer) framework = answer.toLowerCase();
+    const answer = await createPrompt('Framework (hono, express, none):', framework)
+    if (answer) framework = answer.toLowerCase()
   }
 
-  if (!["hono", "express", "none"].includes(framework)) {
-    throw new Error(`Unknown framework "${framework}". Choose hono, express, or none.`);
+  if (!['hono', 'express', 'none'].includes(framework)) {
+    throw new Error(`Unknown framework "${framework}". Choose hono, express, or none.`)
   }
 
   // Ask for table name
-  let tableName = options?.table || "projects";
+  let tableName = options?.table || 'projects'
   if (!options?.nonInteractive) {
-    const answer = await createPrompt("Table to add tenant_id column:", tableName);
-    if (answer) tableName = answer;
+    const answer = await createPrompt('Table to add tenant_id column:', tableName)
+    if (answer) tableName = answer
   }
 
   // ── scaffold ──────────────────────────────────────────────────────────────
 
-  console.log(pc.dim(`\nScaffolding project at ${resolvedDir}...\n`));
+  console.log(pc.dim(`\nScaffolding project at ${resolvedDir}...\n`))
 
   // Create directory structure
-  const migrationDir = join(resolvedDir, "supabase", "migrations");
-  mkdirSync(migrationDir, { recursive: true });
+  const migrationDir = join(resolvedDir, 'supabase', 'migrations')
+  mkdirSync(migrationDir, { recursive: true })
 
-  if (framework !== "none") {
-    const middlewareDir = join(resolvedDir, "src", "middleware");
-    mkdirSync(middlewareDir, { recursive: true });
+  if (framework !== 'none') {
+    const middlewareDir = join(resolvedDir, 'src', 'middleware')
+    mkdirSync(middlewareDir, { recursive: true })
   }
 
   // Write migration
-  const migrationPath = join(migrationDir, `${Date.now()}_add_tenant_id.sql`);
-  writeFileSync(migrationPath, migrationContent(tableName), "utf-8");
-  console.log(pc.green("  \u2713"), `Created ${relative(process.cwd(), migrationPath)}`);
+  const migrationPath = join(migrationDir, `${Date.now()}_add_tenant_id.sql`)
+  writeFileSync(migrationPath, migrationContent(tableName), 'utf-8')
+  console.log(pc.green('  \u2713'), `Created ${relative(process.cwd(), migrationPath)}`)
 
   // Write middleware
-  if (framework === "hono") {
-    const middlewarePath = join(resolvedDir, "src", "middleware", "tenant.ts");
-    writeFileSync(middlewarePath, honoMiddleware(), "utf-8");
-    console.log(pc.green("  \u2713"), `Created ${relative(process.cwd(), middlewarePath)}`);
-  } else if (framework === "express") {
-    const middlewarePath = join(resolvedDir, "src", "middleware", "tenant.ts");
-    writeFileSync(middlewarePath, expressMiddleware(), "utf-8");
-    console.log(pc.green("  \u2713"), `Created ${relative(process.cwd(), middlewarePath)}`);
+  if (framework === 'hono') {
+    const middlewarePath = join(resolvedDir, 'src', 'middleware', 'tenant.ts')
+    writeFileSync(middlewarePath, honoMiddleware(), 'utf-8')
+    console.log(pc.green('  \u2713'), `Created ${relative(process.cwd(), middlewarePath)}`)
+  } else if (framework === 'express') {
+    const middlewarePath = join(resolvedDir, 'src', 'middleware', 'tenant.ts')
+    writeFileSync(middlewarePath, expressMiddleware(), 'utf-8')
+    console.log(pc.green('  \u2713'), `Created ${relative(process.cwd(), middlewarePath)}`)
   }
 
   // Write .env
-  const envPath = join(resolvedDir, ".env");
-  writeFileSync(envPath, envContent(), "utf-8");
-  console.log(pc.green("  \u2713"), `Created ${relative(process.cwd(), envPath)}`);
+  const envPath = join(resolvedDir, '.env')
+  writeFileSync(envPath, envContent(), 'utf-8')
+  console.log(pc.green('  \u2713'), `Created ${relative(process.cwd(), envPath)}`)
 
   // Write template migration (full reference)
-  const templatesDir = join(resolvedDir, "templates");
-  mkdirSync(templatesDir, { recursive: true });
-  const templateSqlPath = join(templatesDir, "migration.sql");
-  writeFileSync(templateSqlPath, templateMigrationContent(tableName), "utf-8");
-  console.log(pc.green("  \u2713"), `Created ${relative(process.cwd(), templateSqlPath)}`);
+  const templatesDir = join(resolvedDir, 'templates')
+  mkdirSync(templatesDir, { recursive: true })
+  const templateSqlPath = join(templatesDir, 'migration.sql')
+  writeFileSync(templateSqlPath, templateMigrationContent(tableName), 'utf-8')
+  console.log(pc.green('  \u2713'), `Created ${relative(process.cwd(), templateSqlPath)}`)
 
   // Detect package manager
-  const pm = process.env.npm_config_user_agent?.startsWith("pnpm")
-    ? "pnpm"
-    : process.env.npm_config_user_agent?.startsWith("yarn")
-      ? "yarn"
-      : "npm";
+  const pm = process.env.npm_config_user_agent?.startsWith('pnpm')
+    ? 'pnpm'
+    : process.env.npm_config_user_agent?.startsWith('yarn')
+      ? 'yarn'
+      : 'npm'
 
   // npm init and install
-  const initCmd = pm === 'pnpm' ? `${pm} init` : `${pm} init -y`;
-  console.log(pc.dim(`\n  Running ${initCmd}...`));
-  run(initCmd, resolvedDir);
+  const initCmd = pm === 'pnpm' ? `${pm} init` : `${pm} init -y`
+  console.log(pc.dim(`\n  Running ${initCmd}...`))
+  run(initCmd, resolvedDir)
 
-  console.log(pc.dim(`  Installing @tenantscale/sdk...`));
-  run(`${pm} install @tenantscale/sdk`, resolvedDir);
+  console.log(pc.dim(`  Installing @tenantscale/sdk...`))
+  run(`${pm} install @tenantscale/sdk`, resolvedDir)
 
   // ── success message ───────────────────────────────────────────────────────
 
-  console.log("");
-  console.log(pc.bgGreen(pc.black(" SUCCESS ")));
-  console.log("");
-  console.log(`  ${pc.bold("Your TenantScale project is ready!")}`);
-  console.log(`  ${pc.dim("Location:")} ${resolvedDir}`);
-  console.log("");
-  console.log(`  ${pc.bold("Next steps:")}`);
-  console.log(`    ${pc.cyan("$")} cd ${relative(process.cwd(), resolvedDir)}`);
-  console.log(`    ${pc.cyan("$")} ${pm} run dev`);
-  console.log("");
-  console.log(`  ${pc.dim("Add tenant_id to more tables by editing the migration in")}`);
-  console.log(`  ${pc.dim("supabase/migrations/")} before running it.`);
-  console.log("");
+  console.log('')
+  console.log(pc.bgGreen(pc.black(' SUCCESS ')))
+  console.log('')
+  console.log(`  ${pc.bold('Your TenantScale project is ready!')}`)
+  console.log(`  ${pc.dim('Location:')} ${resolvedDir}`)
+  console.log('')
+  console.log(`  ${pc.bold('Next steps:')}`)
+  console.log(`    ${pc.cyan('$')} cd ${relative(process.cwd(), resolvedDir)}`)
+  console.log(`    ${pc.cyan('$')} ${pm} run dev`)
+  console.log('')
+  console.log(`  ${pc.dim('Add tenant_id to more tables by editing the migration in')}`)
+  console.log(`  ${pc.dim('supabase/migrations/')} before running it.`)
+  console.log('')
 }
 
 /**
@@ -274,5 +274,5 @@ ALTER TABLE ${tableName} ADD COLUMN tenant_id UUID NOT NULL REFERENCES tenants(i
 CREATE INDEX idx_${tableName}_tenant_id ON ${tableName}(tenant_id);
 -- Enable RLS
 ALTER TABLE ${tableName} ENABLE ROW LEVEL SECURITY;
-`;
+`
 }

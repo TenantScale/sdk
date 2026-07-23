@@ -27,10 +27,7 @@ import { errorResponse } from './error-handler.js'
 // ── Signature of a Next.js Route Handler ──
 // Matches the (request, { params }) pattern used by App Router.
 
-type NextRouteHandler = (
-  request: Request,
-  routeParams: RouteParams,
-) => Response | Promise<Response>
+type NextRouteHandler = (request: Request, routeParams: RouteParams) => Response | Promise<Response>
 
 // ── User-provided handler that receives auth context ──
 
@@ -111,15 +108,19 @@ export function createHandler(options: NextAdapterOptions): HandlerFactory {
 
           // Automatic audit logging on successful auth
           if (audit) {
-            options.ts.logAuditEvent({
-              tenant_id: tenantId,
-              actor_id: apiKey.key_record_id,
-              actor_type: 'admin_api',
-              action: 'api_key.authenticated',
-              resource: request.url,
-              ip: getClientIp(request),
-              user_agent: request.headers.get('user-agent') ?? undefined,
-            }).catch(() => { /* fire-and-forget */ })
+            options.ts
+              .logAuditEvent({
+                tenant_id: tenantId,
+                actor_id: apiKey.key_record_id,
+                actor_type: 'admin_api',
+                action: 'api_key.authenticated',
+                resource: request.url,
+                ip: getClientIp(request),
+                user_agent: request.headers.get('user-agent') ?? undefined,
+              })
+              .catch(() => {
+                /* fire-and-forget */
+              })
           }
 
           return await handler(request, { apiKey, tenantId }, routeParams)
@@ -158,10 +159,7 @@ export function createHandler(options: NextAdapterOptions): HandlerFactory {
  * })
  * ```
  */
-export function withApiKey(
-  options: NextAdapterOptions,
-  handler: ApiKeyHandler,
-): NextRouteHandler {
+export function withApiKey(options: NextAdapterOptions, handler: ApiKeyHandler): NextRouteHandler {
   return createHandler(options).withApiKey(handler)
 }
 

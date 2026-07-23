@@ -2,10 +2,7 @@
 // @tenantscale/koa — Barrel exports
 // ──────────────────────────────────────────────────────
 
-export type {
-  KoaAdapterOptions,
-  ErrorResponse,
-} from './types.js'
+export type { KoaAdapterOptions, ErrorResponse } from './types.js'
 export type { ApiKeyInfo, PortalSessionInfo } from './types.js'
 
 export {

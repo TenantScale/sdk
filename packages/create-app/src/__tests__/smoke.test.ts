@@ -53,7 +53,9 @@ describe('create-tenantscale-app', () => {
     expect(existsSync(join(tmpDir, 'supabase/migrations/001_init.sql'))).toBe(true)
 
     // Template variable substitution
-    const pkg = JSON.parse(await import('fs').then(fs => fs.readFileSync(join(tmpDir, 'package.json'), 'utf-8')))
+    const pkg = JSON.parse(
+      await import('fs').then((fs) => fs.readFileSync(join(tmpDir, 'package.json'), 'utf-8')),
+    )
     expect(pkg.name).toBe('test-app')
 
     // Cleanup

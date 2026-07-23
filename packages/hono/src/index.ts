@@ -3,10 +3,7 @@
 // ──────────────────────────────────────────────────────
 
 // Types
-export type {
-  HonoAdapterOptions,
-  ErrorResponse,
-} from './types.js'
+export type { HonoAdapterOptions, ErrorResponse } from './types.js'
 export type { ApiKeyInfo, PortalSessionInfo } from './types.js'
 
 // Middleware
@@ -23,6 +20,4 @@ export {
 } from './middleware.js'
 
 // Error handler
-export {
-  errorHandler,
-} from './error-handler.js'
+export { errorHandler } from './error-handler.js'

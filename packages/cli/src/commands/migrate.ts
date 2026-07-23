@@ -30,10 +30,7 @@ export interface MigrateOptions {
  * Main action for the 'migrate' command.
  * Analyzes an existing codebase and generates tenant isolation migration artifacts.
  */
-export async function migrateAction(
-  dirArg?: string,
-  options: MigrateOptions = {},
-): Promise<void> {
+export async function migrateAction(dirArg?: string, options: MigrateOptions = {}): Promise<void> {
   const logger = createLogger()
   const projectDir = resolve(dirArg || process.cwd())
 
@@ -67,13 +64,17 @@ export async function migrateAction(
         true,
       )
       if (!useDetected) {
-        const fwChoice = await select('Select framework:', [
-          { name: 'Express', value: 'express' },
-          { name: 'Hono', value: 'hono' },
-          { name: 'Next.js', value: 'nextjs' },
-          { name: 'Fastify', value: 'fastify' },
-          { name: 'None / Other', value: 'none' },
-        ], detectedFramework.framework)
+        const fwChoice = await select(
+          'Select framework:',
+          [
+            { name: 'Express', value: 'express' },
+            { name: 'Hono', value: 'hono' },
+            { name: 'Next.js', value: 'nextjs' },
+            { name: 'Fastify', value: 'fastify' },
+            { name: 'None / Other', value: 'none' },
+          ],
+          detectedFramework.framework,
+        )
         frameworkOverride = fwChoice
       }
     } else {
@@ -102,21 +103,20 @@ export async function migrateAction(
     logger.warn('Could not detect a database ORM. Database analysis will be limited.')
   } else {
     logger.info(`Database ORM: ${pc.bold(database.orm)}`)
-    logger.info(`Found ${database.tables.length} table(s), ${database.tenantTables.length} may need tenant isolation`)
+    logger.info(
+      `Found ${database.tables.length} table(s), ${database.tenantTables.length} may need tenant isolation`,
+    )
 
     if (isInteractive && database.tenantTables.length > 0) {
-      const tableChoices = database.tenantTables.map(t => ({
+      const tableChoices = database.tenantTables.map((t) => ({
         name: `${t.name}${t.hasTenantId ? pc.green(' (already has tenant_id)') : ''}`,
         value: t.name,
         checked: !t.hasTenantId,
       }))
       if (tableChoices.length > 0) {
-        const selected = await multiSelect(
-          'Which tables are tenant-scoped?',
-          tableChoices,
-        )
+        const selected = await multiSelect('Which tables are tenant-scoped?', tableChoices)
         // Filter to only selected tables
-        database.tenantTables = database.tenantTables.filter(t => selected.includes(t.name))
+        database.tenantTables = database.tenantTables.filter((t) => selected.includes(t.name))
       }
     }
   }
@@ -144,14 +144,14 @@ export async function migrateAction(
   // Set up context functions for readiness scoring
   const allSourceContent = allSourceFiles
     .slice(0, 40)
-    .map(f => readFileSafe(f) || '')
+    .map((f) => readFileSafe(f) || '')
     .join('\n')
 
   __setScoreContext(
     () => allSourceContent.toLowerCase().includes('audit'),
     () => {
       const ratePatterns = [/rate.?limit/i, /express-rate-limit/i, /rateLimiter/, /throttle/]
-      return ratePatterns.some(p => p.test(allSourceContent))
+      return ratePatterns.some((p) => p.test(allSourceContent))
     },
   )
 
@@ -228,11 +228,18 @@ export async function migrateAction(
   if (readiness.actions.length > 0) {
     console.log(pc.bold(pc.cyan('Recommended actions:')))
     for (const action of readiness.actions.slice(0, 5)) {
-      const icon = action.priority === 'critical' ? pc.red('●') : action.priority === 'high' ? pc.yellow('●') : pc.blue('●')
+      const icon =
+        action.priority === 'critical'
+          ? pc.red('●')
+          : action.priority === 'high'
+            ? pc.yellow('●')
+            : pc.blue('●')
       console.log(`  ${icon} ${action.title}`)
     }
     if (readiness.actions.length > 5) {
-      console.log(`  ${pc.dim(`...and ${readiness.actions.length - 5} more. See README.md for details.`)}`)
+      console.log(
+        `  ${pc.dim(`...and ${readiness.actions.length - 5} more. See README.md for details.`)}`,
+      )
     }
   }
 
@@ -248,10 +255,16 @@ export async function migrateAction(
   console.log(pc.dim(`  └── plan.json           — Machine-readable analysis`))
   console.log('')
   console.log(pc.cyan('Next steps:'))
-  console.log(`  ${pc.cyan('1.')} ${pc.dim('Review the report:')} cat ${relative(projectDir, outputDir)}/README.md`)
-  console.log(`  ${pc.cyan('2.')} ${pc.dim('Install packages:')} npm install @tenantscale/sdk @tenantscale/${framework.framework}`)
+  console.log(
+    `  ${pc.cyan('1.')} ${pc.dim('Review the report:')} cat ${relative(projectDir, outputDir)}/README.md`,
+  )
+  console.log(
+    `  ${pc.cyan('2.')} ${pc.dim('Install packages:')} npm install @tenantscale/sdk @tenantscale/${framework.framework}`,
+  )
   console.log(`  ${pc.cyan('3.')} ${pc.dim('Apply migrations:')} npx supabase db push`)
-  console.log(`  ${pc.cyan('4.')} ${pc.dim('Add middleware:')} import from '${relative(projectDir, outputDir)}/tenant-middleware'`)
+  console.log(
+    `  ${pc.cyan('4.')} ${pc.dim('Add middleware:')} import from '${relative(projectDir, outputDir)}/tenant-middleware'`,
+  )
   console.log('')
 }
 

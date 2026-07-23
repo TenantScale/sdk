@@ -30,26 +30,31 @@ export function useTeam(): UseQueryResult<TeamMember[]> & {
     }
   }, [client])
 
-  useEffect(() => { fetchTeam() }, [fetchTeam])
+  useEffect(() => {
+    fetchTeam()
+  }, [fetchTeam])
 
   // ── inviteMember mutation ──
   const [inviting, setInviting] = useState(false)
   const [inviteError, setInviteError] = useState<Error | null>(null)
   const inviteMember = {
-    execute: useCallback(async (input: { email: string; role: string }) => {
-      setInviting(true)
-      setInviteError(null)
-      try {
-        await client.inviteMember(input.email, input.role)
-        await fetchTeam()
-      } catch (err) {
-        const e = err instanceof Error ? err : new Error(String(err))
-        setInviteError(e)
-        throw e
-      } finally {
-        setInviting(false)
-      }
-    }, [client, fetchTeam]),
+    execute: useCallback(
+      async (input: { email: string; role: string }) => {
+        setInviting(true)
+        setInviteError(null)
+        try {
+          await client.inviteMember(input.email, input.role)
+          await fetchTeam()
+        } catch (err) {
+          const e = err instanceof Error ? err : new Error(String(err))
+          setInviteError(e)
+          throw e
+        } finally {
+          setInviting(false)
+        }
+      },
+      [client, fetchTeam],
+    ),
     isLoading: inviting,
     error: inviteError,
   } satisfies UseMutationResult<{ email: string; role: string }, void>
@@ -58,20 +63,23 @@ export function useTeam(): UseQueryResult<TeamMember[]> & {
   const [removing, setRemoving] = useState(false)
   const [removeError, setRemoveError] = useState<Error | null>(null)
   const removeMember = {
-    execute: useCallback(async (id: string) => {
-      setRemoving(true)
-      setRemoveError(null)
-      try {
-        await client.removeMember(id)
-        await fetchTeam()
-      } catch (err) {
-        const e = err instanceof Error ? err : new Error(String(err))
-        setRemoveError(e)
-        throw e
-      } finally {
-        setRemoving(false)
-      }
-    }, [client, fetchTeam]),
+    execute: useCallback(
+      async (id: string) => {
+        setRemoving(true)
+        setRemoveError(null)
+        try {
+          await client.removeMember(id)
+          await fetchTeam()
+        } catch (err) {
+          const e = err instanceof Error ? err : new Error(String(err))
+          setRemoveError(e)
+          throw e
+        } finally {
+          setRemoving(false)
+        }
+      },
+      [client, fetchTeam],
+    ),
     isLoading: removing,
     error: removeError,
   } satisfies UseMutationResult<string, void>
@@ -80,23 +88,35 @@ export function useTeam(): UseQueryResult<TeamMember[]> & {
   const [changing, setChanging] = useState(false)
   const [changeError, setChangeError] = useState<Error | null>(null)
   const changeRole = {
-    execute: useCallback(async (input: { id: string; role: string }) => {
-      setChanging(true)
-      setChangeError(null)
-      try {
-        await client.changeMemberRole(input.id, input.role)
-        await fetchTeam()
-      } catch (err) {
-        const e = err instanceof Error ? err : new Error(String(err))
-        setChangeError(e)
-        throw e
-      } finally {
-        setChanging(false)
-      }
-    }, [client, fetchTeam]),
+    execute: useCallback(
+      async (input: { id: string; role: string }) => {
+        setChanging(true)
+        setChangeError(null)
+        try {
+          await client.changeMemberRole(input.id, input.role)
+          await fetchTeam()
+        } catch (err) {
+          const e = err instanceof Error ? err : new Error(String(err))
+          setChangeError(e)
+          throw e
+        } finally {
+          setChanging(false)
+        }
+      },
+      [client, fetchTeam],
+    ),
     isLoading: changing,
     error: changeError,
   } satisfies UseMutationResult<{ id: string; role: string }, void>
 
-  return { data: members, members, isLoading, error, refetch: fetchTeam, inviteMember, removeMember, changeRole }
+  return {
+    data: members,
+    members,
+    isLoading,
+    error,
+    refetch: fetchTeam,
+    inviteMember,
+    removeMember,
+    changeRole,
+  }
 }

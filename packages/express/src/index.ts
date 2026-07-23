@@ -25,8 +25,4 @@ export {
 } from './middleware.js'
 
 // Error handlers
-export {
-  errorHandler,
-  genericErrorHandler,
-  createErrorHandlers,
-} from './error-handler.js'
+export { errorHandler, genericErrorHandler, createErrorHandlers } from './error-handler.js'

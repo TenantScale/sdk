@@ -239,8 +239,12 @@ describe('createAuditEvent', () => {
   // Risk if missing: Different actor types couldn't be set
   it('allows setting different actor_type values', () => {
     expect(createAuditEvent('t1', 'a', 'r', { actor_type: 'user' }).actor_type).toBe('user')
-    expect(createAuditEvent('t1', 'a', 'r', { actor_type: 'admin_api' }).actor_type).toBe('admin_api')
-    expect(createAuditEvent('t1', 'a', 'r', { actor_type: 'admin_impersonation' }).actor_type).toBe('admin_impersonation')
+    expect(createAuditEvent('t1', 'a', 'r', { actor_type: 'admin_api' }).actor_type).toBe(
+      'admin_api',
+    )
+    expect(createAuditEvent('t1', 'a', 'r', { actor_type: 'admin_impersonation' }).actor_type).toBe(
+      'admin_impersonation',
+    )
     expect(createAuditEvent('t1', 'a', 'r', { actor_type: 'system' }).actor_type).toBe('system')
   })
 })
@@ -312,9 +316,7 @@ describe('logAuditEvent', () => {
     }
 
     await logAuditEvent(mockSupabase as any, input)
-    expect(mockInsert).toHaveBeenCalledWith(
-      expect.objectContaining({ actor_id: null })
-    )
+    expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({ actor_id: null }))
   })
 
   // Test: Insert with undefined details → default empty object
@@ -334,9 +336,7 @@ describe('logAuditEvent', () => {
     }
 
     await logAuditEvent(mockSupabase as any, input)
-    expect(mockInsert).toHaveBeenCalledWith(
-      expect.objectContaining({ details: {} })
-    )
+    expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({ details: {} }))
   })
 
   // Test: Insert with null user_agent and ip
@@ -357,9 +357,7 @@ describe('logAuditEvent', () => {
     }
 
     await logAuditEvent(mockSupabase as any, input)
-    expect(mockInsert).toHaveBeenCalledWith(
-      expect.objectContaining({ ip: null, user_agent: null })
-    )
+    expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({ ip: null, user_agent: null }))
   })
 
   // Test: Insert failure is caught and doesn't throw
@@ -391,7 +389,7 @@ describe('logAuditEvent', () => {
 
     await logAuditEvent(mockSupabase as any, input)
     expect(mockInsert).toHaveBeenCalledWith(
-      expect.objectContaining({ tenant_id: '', action: '', resource: '' })
+      expect.objectContaining({ tenant_id: '', action: '', resource: '' }),
     )
   })
 

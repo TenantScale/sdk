@@ -23,14 +23,14 @@ describe('tenantFilter', () => {
   it('works with string tenant IDs', () => {
     const mockColumn = { name: 'tenant_id' } as any
     const filter = tenantFilter(mockColumn, 'tenant-123')
-    
+
     expect(filter).toBeDefined()
   })
 
   it('works with numeric tenant IDs', () => {
     const mockColumn = { name: 'tenant_id' } as any
     const filter = tenantFilter(mockColumn, '123')
-    
+
     expect(filter).toBeDefined()
   })
 })

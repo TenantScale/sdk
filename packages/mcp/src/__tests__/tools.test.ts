@@ -7,7 +7,7 @@ import { callTenantScaleTool } from '../tools'
 
 async function callToolText(name: string, args: Record<string, unknown>) {
   const result = await callTenantScaleTool(name, args)
-  return result.content.map(item => item.text).join('\n')
+  return result.content.map((item) => item.text).join('\n')
 }
 
 describe('@tenantscale/mcp tool handlers', () => {

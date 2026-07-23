@@ -6,15 +6,15 @@ import { lookup } from 'node:dns/promises'
 
 // Private/reserved IPv4 CIDR ranges
 const PRIVATE_RANGES = [
-  { start: ipToInt('127.0.0.0'), end: ipToInt('127.255.255.255') },   // Loopback
-  { start: ipToInt('10.0.0.0'), end: ipToInt('10.255.255.255') },     // Private A
-  { start: ipToInt('172.16.0.0'), end: ipToInt('172.31.255.255') },   // Private B
+  { start: ipToInt('127.0.0.0'), end: ipToInt('127.255.255.255') }, // Loopback
+  { start: ipToInt('10.0.0.0'), end: ipToInt('10.255.255.255') }, // Private A
+  { start: ipToInt('172.16.0.0'), end: ipToInt('172.31.255.255') }, // Private B
   { start: ipToInt('192.168.0.0'), end: ipToInt('192.168.255.255') }, // Private C
   { start: ipToInt('169.254.0.0'), end: ipToInt('169.254.255.255') }, // Link-local
-  { start: ipToInt('0.0.0.0'), end: ipToInt('0.255.255.255') },       // Current network
-  { start: ipToInt('100.64.0.0'), end: ipToInt('100.127.255.255') },  // Carrier-grade NAT
-  { start: ipToInt('198.18.0.0'), end: ipToInt('198.19.255.255') },   // Benchmarking
-  { start: ipToInt('240.0.0.0'), end: ipToInt('255.255.255.255') },   // Reserved/Future
+  { start: ipToInt('0.0.0.0'), end: ipToInt('0.255.255.255') }, // Current network
+  { start: ipToInt('100.64.0.0'), end: ipToInt('100.127.255.255') }, // Carrier-grade NAT
+  { start: ipToInt('198.18.0.0'), end: ipToInt('198.19.255.255') }, // Benchmarking
+  { start: ipToInt('240.0.0.0'), end: ipToInt('255.255.255.255') }, // Reserved/Future
 ]
 
 /** Blocked internal hostnames that should never receive webhooks */
@@ -41,7 +41,7 @@ function ipToInt(ip: string): number {
 function isPrivateIp(ip: string): boolean {
   if (ip.includes(':')) return false // Skip IPv6 for now (minimal support needed)
   const intIp = ipToInt(ip)
-  return PRIVATE_RANGES.some(r => intIp >= r.start && intIp <= r.end)
+  return PRIVATE_RANGES.some((r) => intIp >= r.start && intIp <= r.end)
 }
 
 /**
@@ -84,7 +84,7 @@ export async function validateWebhookUrl(urlStr: string): Promise<URL> {
   // For hostnames, resolve DNS and check all resolved IPs
   try {
     const addresses = await lookup(hostname)
-    const ips = Array.isArray(addresses) ? addresses.map(a => a.address) : [addresses.address]
+    const ips = Array.isArray(addresses) ? addresses.map((a) => a.address) : [addresses.address]
     for (const ip of ips) {
       if (isPrivateIp(ip)) {
         throw new Error(`Blocked private/resolved IP for ${hostname}: ${ip}`)

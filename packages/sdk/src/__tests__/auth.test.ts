@@ -30,7 +30,16 @@ function makeMockSupabase(overrides: Record<string, unknown> = {}) {
     ...overrides,
   }
 
-  return { supabase, mockSingle, mockEq, mockSelect, mockFrom, mockUpdate, mockUpdateEq, mockUpdateThen }
+  return {
+    supabase,
+    mockSingle,
+    mockEq,
+    mockSelect,
+    mockFrom,
+    mockUpdate,
+    mockUpdateEq,
+    mockUpdateThen,
+  }
 }
 
 /** A valid key record returned by the mock DB */
@@ -124,7 +133,9 @@ describe('validateApiKey', () => {
     const { supabase, mockSingle } = makeMockSupabase()
     mockSingle.mockResolvedValue({ data: null, error: new Error('DB connection failed') })
 
-    await expect(validateApiKey(supabase as any, 'tk_something')).rejects.toThrow(AuthenticationError)
+    await expect(validateApiKey(supabase as any, 'tk_something')).rejects.toThrow(
+      AuthenticationError,
+    )
     await expect(validateApiKey(supabase as any, 'tk_something')).rejects.toThrow('Invalid API key')
   })
 
@@ -136,8 +147,12 @@ describe('validateApiKey', () => {
     const { supabase, mockSingle } = makeMockSupabase()
     mockSingle.mockResolvedValue({ data: null, error: null })
 
-    await expect(validateApiKey(supabase as any, 'tk_nonexistent')).rejects.toThrow(AuthenticationError)
-    await expect(validateApiKey(supabase as any, 'tk_nonexistent')).rejects.toThrow('Invalid API key')
+    await expect(validateApiKey(supabase as any, 'tk_nonexistent')).rejects.toThrow(
+      AuthenticationError,
+    )
+    await expect(validateApiKey(supabase as any, 'tk_nonexistent')).rejects.toThrow(
+      'Invalid API key',
+    )
   })
 
   // Test: validateApiKey with deactivated key throws AuthorizationError
@@ -151,8 +166,12 @@ describe('validateApiKey', () => {
       error: null,
     })
 
-    await expect(validateApiKey(supabase as any, 'tk_deactivated')).rejects.toThrow(AuthorizationError)
-    await expect(validateApiKey(supabase as any, 'tk_deactivated')).rejects.toThrow('API key is deactivated')
+    await expect(validateApiKey(supabase as any, 'tk_deactivated')).rejects.toThrow(
+      AuthorizationError,
+    )
+    await expect(validateApiKey(supabase as any, 'tk_deactivated')).rejects.toThrow(
+      'API key is deactivated',
+    )
     try {
       await validateApiKey(supabase as any, 'tk_deactivated')
     } catch (e: any) {
@@ -173,7 +192,9 @@ describe('validateApiKey', () => {
     })
 
     await expect(validateApiKey(supabase as any, 'tk_expired')).rejects.toThrow(AuthenticationError)
-    await expect(validateApiKey(supabase as any, 'tk_expired')).rejects.toThrow('API key has expired')
+    await expect(validateApiKey(supabase as any, 'tk_expired')).rejects.toThrow(
+      'API key has expired',
+    )
     try {
       await validateApiKey(supabase as any, 'tk_expired')
     } catch (e: any) {
@@ -192,8 +213,12 @@ describe('validateApiKey', () => {
       error: null,
     })
 
-    await expect(validateApiKey(supabase as any, 'tk_tenant_inactive')).rejects.toThrow(AuthorizationError)
-    await expect(validateApiKey(supabase as any, 'tk_tenant_inactive')).rejects.toThrow('Tenant account is inactive')
+    await expect(validateApiKey(supabase as any, 'tk_tenant_inactive')).rejects.toThrow(
+      AuthorizationError,
+    )
+    await expect(validateApiKey(supabase as any, 'tk_tenant_inactive')).rejects.toThrow(
+      'Tenant account is inactive',
+    )
     try {
       await validateApiKey(supabase as any, 'tk_tenant_inactive')
     } catch (e: any) {
@@ -357,7 +382,7 @@ describe('requireScope', () => {
   it('throws AuthorizationError when no required scope matches', () => {
     expect(() => requireScope(baseKey, 'delete:all')).toThrow(AuthorizationError)
     expect(() => requireScope(baseKey, 'delete:all')).toThrow(
-      'This endpoint requires one of these scopes: delete:all'
+      'This endpoint requires one of these scopes: delete:all',
     )
     try {
       requireScope(baseKey, 'delete:all')

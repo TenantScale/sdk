@@ -2,10 +2,7 @@
 // @tenantscale/fastify — Barrel exports
 // ──────────────────────────────────────────────────────
 
-export type {
-  FastifyAdapterOptions,
-  ErrorResponse,
-} from './types.js'
+export type { FastifyAdapterOptions, ErrorResponse } from './types.js'
 export type { ApiKeyInfo, PortalSessionInfo } from './types.js'
 
 export {

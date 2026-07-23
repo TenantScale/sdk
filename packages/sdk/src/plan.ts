@@ -87,7 +87,10 @@ export class PlanStore {
       .single()
 
     if (planError || !plan) {
-      this.logger.warn({ tenantId, planId: tenant.plan_id, error: planError }, 'Failed to fetch plan')
+      this.logger.warn(
+        { tenantId, planId: tenant.plan_id, error: planError },
+        'Failed to fetch plan',
+      )
       return null
     }
 

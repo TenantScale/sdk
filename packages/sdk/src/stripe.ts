@@ -5,7 +5,12 @@
 
 import Stripe from 'stripe'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { CreateCheckoutOptions, CreatePortalOptions, PlanPriceMapping, Logger } from './types.js'
+import type {
+  CreateCheckoutOptions,
+  CreatePortalOptions,
+  PlanPriceMapping,
+  Logger,
+} from './types.js'
 
 const DEFAULT_TIMEOUT_MS = 15_000
 const DEFAULT_MAX_RETRIES = 2
@@ -94,11 +99,7 @@ export class StripeClient {
    * Get or create a Stripe Customer for a tenant.
    * Looks up an existing mapping first to avoid duplicates.
    */
-  async getOrCreateCustomer(
-    tenantId: string,
-    email?: string,
-    name?: string,
-  ): Promise<string> {
+  async getOrCreateCustomer(tenantId: string, email?: string, name?: string): Promise<string> {
     // Check existing mapping
     const { data: existing } = await this.supabase
       .from('stripe_customers')
@@ -118,15 +119,16 @@ export class StripeClient {
     })
 
     // Store mapping
-    const { error: insertError } = await this.supabase
-      .from('stripe_customers')
-      .insert({
-        tenant_id: tenantId,
-        stripe_customer_id: customer.id,
-      })
+    const { error: insertError } = await this.supabase.from('stripe_customers').insert({
+      tenant_id: tenantId,
+      stripe_customer_id: customer.id,
+    })
 
     if (insertError) {
-      this.logger.warn({ tenantId, error: insertError }, 'Failed to persist Stripe customer mapping')
+      this.logger.warn(
+        { tenantId, error: insertError },
+        'Failed to persist Stripe customer mapping',
+      )
     }
 
     this.logger.info({ tenantId, stripeCustomerId: customer.id }, 'Created Stripe customer')
@@ -222,19 +224,26 @@ export class StripeClient {
   /**
    * Map a Stripe subscription status to our DB enum.
    */
-  mapSubscriptionStatus(
-    stripeStatus: Stripe.Subscription.Status,
-  ): string {
+  mapSubscriptionStatus(stripeStatus: Stripe.Subscription.Status): string {
     switch (stripeStatus) {
-      case 'active': return 'active'
-      case 'past_due': return 'past_due'
-      case 'canceled': return 'canceled'
-      case 'unpaid': return 'unpaid'
-      case 'incomplete': return 'incomplete'
-      case 'incomplete_expired': return 'incomplete_expired'
-      case 'trialing': return 'trialing'
-      case 'paused': return 'paused'
-      default: return 'incomplete'
+      case 'active':
+        return 'active'
+      case 'past_due':
+        return 'past_due'
+      case 'canceled':
+        return 'canceled'
+      case 'unpaid':
+        return 'unpaid'
+      case 'incomplete':
+        return 'incomplete'
+      case 'incomplete_expired':
+        return 'incomplete_expired'
+      case 'trialing':
+        return 'trialing'
+      case 'paused':
+        return 'paused'
+      default:
+        return 'incomplete'
     }
   }
 

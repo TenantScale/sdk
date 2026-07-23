@@ -17,10 +17,7 @@ import { AuthenticationError, AuthorizationError } from './types.js'
  * @returns Resolved API key info with tenant_id, scopes, etc.
  * @throws AuthenticationError if the key is invalid, expired, or the tenant is inactive
  */
-export async function validateApiKey(
-  supabase: SupabaseClient,
-  token: string,
-): Promise<ApiKeyInfo> {
+export async function validateApiKey(supabase: SupabaseClient, token: string): Promise<ApiKeyInfo> {
   if (!token) {
     throw new AuthenticationError('Empty API key')
   }
@@ -60,7 +57,9 @@ export async function validateApiKey(
     .from('api_keys')
     .update({ last_used_at: new Date().toISOString() })
     .eq('id', keyRecord.id)
-    .then(undefined, () => { /* intentionally ignored — see comment above */ })
+    .then(undefined, () => {
+      /* intentionally ignored — see comment above */
+    })
 
   return {
     raw: token,
@@ -76,7 +75,7 @@ export async function validateApiKey(
  * The key's scopes must include at least one of the required scopes.
  */
 export function hasRequiredScope(apiKey: ApiKeyInfo, ...requiredScopes: string[]): boolean {
-  return requiredScopes.some(s => apiKey.scopes.includes(s))
+  return requiredScopes.some((s) => apiKey.scopes.includes(s))
 }
 
 /**

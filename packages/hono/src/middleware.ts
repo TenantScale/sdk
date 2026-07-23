@@ -67,10 +67,13 @@ export function authenticateApiKey(options: HonoAdapterOptions) {
     const header = getHeader(c, headerName)
 
     if (!header?.startsWith('Bearer ')) {
-      return c.json({
-        error: 'Missing or invalid Authorization header',
-        code: 'AUTH_FAILED',
-      }, 401)
+      return c.json(
+        {
+          error: 'Missing or invalid Authorization header',
+          code: 'AUTH_FAILED',
+        },
+        401,
+      )
     }
 
     const token = header.slice(7).trim()
@@ -86,24 +89,31 @@ export function authenticateApiKey(options: HonoAdapterOptions) {
 
       // Automatic audit logging on successful auth
       if (audit) {
-        options.ts.logAuditEvent({
-          tenant_id: keyInfo.tenant_id,
-          actor_id: keyInfo.key_record_id,
-          actor_type: 'admin_api',
-          action: 'api_key.authenticated',
-          resource: c.req.path,
-          ip: resolveClientIp(c),
-          user_agent: c.req.header('user-agent') ?? undefined,
-        }).catch(() => { /* fire-and-forget */ })
+        options.ts
+          .logAuditEvent({
+            tenant_id: keyInfo.tenant_id,
+            actor_id: keyInfo.key_record_id,
+            actor_type: 'admin_api',
+            action: 'api_key.authenticated',
+            resource: c.req.path,
+            ip: resolveClientIp(c),
+            user_agent: c.req.header('user-agent') ?? undefined,
+          })
+          .catch(() => {
+            /* fire-and-forget */
+          })
       }
 
       await next()
     } catch (err) {
       const err_ = err as { code?: string; message?: string; statusCode?: number }
-      return c.json({
-        error: err_.message ?? 'Invalid API key',
-        code: err_.code ?? 'AUTH_FAILED',
-      }, (err_.statusCode ?? 401) as 401 | 403)
+      return c.json(
+        {
+          error: err_.message ?? 'Invalid API key',
+          code: err_.code ?? 'AUTH_FAILED',
+        },
+        (err_.statusCode ?? 401) as 401 | 403,
+      )
     }
   }
 }
@@ -133,10 +143,13 @@ export function requireScope(options: HonoAdapterOptions, ...scopes: string[]) {
       options.ts.requireScope(apiKey, ...scopes)
       await next()
     } catch {
-      return c.json({
-        error: `This endpoint requires one of these scopes: ${scopes.join(', ')}`,
-        code: 'MISSING_SCOPE',
-      }, 403)
+      return c.json(
+        {
+          error: `This endpoint requires one of these scopes: ${scopes.join(', ')}`,
+          code: 'MISSING_SCOPE',
+        },
+        403,
+      )
     }
   }
 }
@@ -164,10 +177,13 @@ export function requirePortalSession(options: HonoAdapterOptions) {
     const header = getHeader(c, headerName)
 
     if (!header?.startsWith('Bearer ')) {
-      return c.json({
-        error: 'Missing or invalid Authorization header',
-        code: 'AUTH_FAILED',
-      }, 401)
+      return c.json(
+        {
+          error: 'Missing or invalid Authorization header',
+          code: 'AUTH_FAILED',
+        },
+        401,
+      )
     }
 
     const jwt = header.slice(7).trim()
@@ -186,10 +202,13 @@ export function requirePortalSession(options: HonoAdapterOptions) {
       await next()
     } catch (err) {
       const err_ = err as { code?: string; message?: string; statusCode?: number }
-      return c.json({
-        error: err_.message ?? 'Invalid session',
-        code: err_.code ?? 'SESSION_INVALID',
-      }, (err_.statusCode ?? 401) as 401 | 403)
+      return c.json(
+        {
+          error: err_.message ?? 'Invalid session',
+          code: err_.code ?? 'SESSION_INVALID',
+        },
+        (err_.statusCode ?? 401) as 401 | 403,
+      )
     }
   }
 }
@@ -219,10 +238,13 @@ export function requirePortalRole(options: HonoAdapterOptions, ...roles: string[
       options.ts.requirePortalRole(session, ...roles)
       await next()
     } catch {
-      return c.json({
-        error: `This endpoint requires one of these roles: ${roles.join(', ')}`,
-        code: 'MISSING_ROLE',
-      }, 403)
+      return c.json(
+        {
+          error: `This endpoint requires one of these roles: ${roles.join(', ')}`,
+          code: 'MISSING_ROLE',
+        },
+        403,
+      )
     }
   }
 }
@@ -294,20 +316,26 @@ export function requirePlanLimit(
       const current = typeof currentCount === 'function' ? await currentCount(c) : currentCount
 
       if (current >= limit) {
-        return c.json({
-          error: `Plan limit reached: ${feature}. Upgrade your plan to increase this limit.`,
-          code: 'PLAN_LIMIT_REACHED',
-          details: { limit, current, feature },
-        }, 403)
+        return c.json(
+          {
+            error: `Plan limit reached: ${feature}. Upgrade your plan to increase this limit.`,
+            code: 'PLAN_LIMIT_REACHED',
+            details: { limit, current, feature },
+          },
+          403,
+        )
       }
 
       await next()
     } catch (err) {
       const err_ = err as { code?: string; message?: string; statusCode?: number }
-      return c.json({
-        error: err_.message ?? 'Plan check failed',
-        code: err_.code ?? 'PLAN_ERROR',
-      }, (err_.statusCode ?? 500) as 400 | 403 | 500)
+      return c.json(
+        {
+          error: err_.message ?? 'Plan check failed',
+          code: err_.code ?? 'PLAN_ERROR',
+        },
+        (err_.statusCode ?? 500) as 400 | 403 | 500,
+      )
     }
   }
 }
@@ -344,20 +372,26 @@ export function rateLimitByApiKey(options: HonoAdapterOptions) {
       c.header('X-RateLimit-Remaining-Daily', String(result.remaining))
 
       if (!result.allowed) {
-        return c.json({
-          error: `Daily API call limit reached (${result.limit}). Upgrade your plan for more.`,
-          code: 'DAILY_LIMIT_EXCEEDED',
-          details: { planLimit: result.limit },
-        }, 429)
+        return c.json(
+          {
+            error: `Daily API call limit reached (${result.limit}). Upgrade your plan for more.`,
+            code: 'DAILY_LIMIT_EXCEEDED',
+            details: { planLimit: result.limit },
+          },
+          429,
+        )
       }
 
       await next()
     } catch (err) {
       const err_ = err as { code?: string; message?: string; statusCode?: number }
-      return c.json({
-        error: err_.message ?? 'Rate limit check failed',
-        code: err_.code ?? 'RATE_LIMIT_ERROR',
-      }, (err_.statusCode ?? 500) as 400 | 429 | 500)
+      return c.json(
+        {
+          error: err_.message ?? 'Rate limit check failed',
+          code: err_.code ?? 'RATE_LIMIT_ERROR',
+        },
+        (err_.statusCode ?? 500) as 400 | 429 | 500,
+      )
     }
   }
 }
@@ -382,19 +416,25 @@ export function rateLimitByIp(options: HonoAdapterOptions) {
       if (result.blocked) {
         const retryAfter = Math.ceil((result.resetAtMs - Date.now()) / 1000)
         c.header('Retry-After', String(Math.max(1, retryAfter)))
-        return c.json({
-          error: `IP rate limit exceeded. Try again in ${Math.max(1, retryAfter)}s.`,
-          code: 'IP_RATE_LIMITED',
-        }, 429)
+        return c.json(
+          {
+            error: `IP rate limit exceeded. Try again in ${Math.max(1, retryAfter)}s.`,
+            code: 'IP_RATE_LIMITED',
+          },
+          429,
+        )
       }
 
       await next()
     } catch (err) {
       const err_ = err as { code?: string; message?: string; statusCode?: number }
-      return c.json({
-        error: err_.message ?? 'Rate limit check failed',
-        code: err_.code ?? 'RATE_LIMIT_ERROR',
-      }, (err_.statusCode ?? 500) as 400 | 429 | 500)
+      return c.json(
+        {
+          error: err_.message ?? 'Rate limit check failed',
+          code: err_.code ?? 'RATE_LIMIT_ERROR',
+        },
+        (err_.statusCode ?? 500) as 400 | 429 | 500,
+      )
     }
   }
 }
@@ -444,18 +484,20 @@ export function auditLog(
     const actorId = portalSession?.user_id ?? apiKey?.created_by ?? null
 
     // Fire-and-forget — don't block the response
-    options.ts.logAuditEvent({
-      tenant_id: tenantId,
-      actor_id: actorId,
-      actor_type: config.actorType ?? (portalSession ? 'user' : 'admin_api'),
-      action: config.action,
-      resource: config.resource,
-      details: config.getDetails?.(c) ?? {},
-      ip,
-      user_agent: c.req.header('user-agent') ?? null,
-    }).catch(err => {
-      options.ts.logger.error('Audit log write failed:', err)
-    })
+    options.ts
+      .logAuditEvent({
+        tenant_id: tenantId,
+        actor_id: actorId,
+        actor_type: config.actorType ?? (portalSession ? 'user' : 'admin_api'),
+        action: config.action,
+        resource: config.resource,
+        details: config.getDetails?.(c) ?? {},
+        ip,
+        user_agent: c.req.header('user-agent') ?? null,
+      })
+      .catch((err) => {
+        options.ts.logger.error('Audit log write failed:', err)
+      })
 
     await next()
   }

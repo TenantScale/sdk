@@ -20,18 +20,9 @@ import type { ApiKeyInfo, PortalSessionInfo } from '@tenantscale/sdk'
 
 // ── Module under test ──
 
-import {
-  authenticateApiKey,
-  requirePortalSession,
-} from '../authenticate.js'
-import {
-  createHandler,
-  withApiKey,
-  withSession,
-} from '../handler.js'
-import {
-  errorResponse,
-} from '../error-handler.js'
+import { authenticateApiKey, requirePortalSession } from '../authenticate.js'
+import { createHandler, withApiKey, withSession } from '../handler.js'
+import { errorResponse } from '../error-handler.js'
 import { createAppRouterHandler } from '../app-router.js'
 
 vi.mock('next/headers', () => ({
@@ -366,10 +357,7 @@ describe('createHandler', () => {
       })
     })
 
-    const apiRes = await apiHandler(
-      createMockRequest({ 'x-api-key': 'tk_test' }),
-      mockRouteParams,
-    )
+    const apiRes = await apiHandler(createMockRequest({ 'x-api-key': 'tk_test' }), mockRouteParams)
     expect(await apiRes.json()).toEqual({ from: 'api', tenantId: 'tenant_1' })
 
     const sessionRes = await sessionHandler(

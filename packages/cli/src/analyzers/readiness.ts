@@ -57,13 +57,13 @@ export function scoreReadiness(
   }
 
   // Already has tenant_id on some tables
-  const tenantReadyTables = database.tables.filter(t => t.hasTenantId).length
+  const tenantReadyTables = database.tables.filter((t) => t.hasTenantId).length
   if (tenantReadyTables > 0) {
     dbScore += Math.min(tenantReadyTables * 3, 10)
   }
 
   // Tables needing migration
-  const needsMigration = database.tenantTables.filter(t => !t.hasTenantId).length
+  const needsMigration = database.tenantTables.filter((t) => !t.hasTenantId).length
   if (needsMigration === 0 && database.tables.length > 0) {
     dbScore += 10 // fully migrated
   } else if (needsMigration > 0) {
@@ -73,7 +73,10 @@ export function scoreReadiness(
       priority: 'critical',
       category: 'database',
       title: `Add tenant_id to ${needsMigration} table(s)`,
-      description: `Tables: ${database.tenantTables.filter(t => !t.hasTenantId).map(t => t.name).join(', ')}. Migration SQL will be generated.`,
+      description: `Tables: ${database.tenantTables
+        .filter((t) => !t.hasTenantId)
+        .map((t) => t.name)
+        .join(', ')}. Migration SQL will be generated.`,
       effort: needsMigration <= 2 ? '15 minutes' : '30 minutes',
     })
   }
@@ -86,7 +89,8 @@ export function scoreReadiness(
       priority: 'high',
       category: 'database',
       title: 'Enable Row Level Security on tenant-scoped tables',
-      description: 'RLS policies will be generated for each table to enforce tenant isolation at the database level.',
+      description:
+        'RLS policies will be generated for each table to enforce tenant isolation at the database level.',
       effort: '15 minutes',
     })
   }
@@ -137,7 +141,8 @@ export function scoreReadiness(
       priority: 'critical',
       category: 'auth',
       title: 'Implement API key or JWT-based authentication',
-      description: 'No authentication detected. TenantScale requires API keys or Supabase sessions for tenant isolation.',
+      description:
+        'No authentication detected. TenantScale requires API keys or Supabase sessions for tenant isolation.',
       effort: '1-2 hours',
     })
   }
@@ -147,10 +152,14 @@ export function scoreReadiness(
   const auditMax = 15
 
   // We'll compute this from available data
-  if (database.tables.some(t => t.name === 'audit_events' || t.name === 'audit_logs')) {
+  if (database.tables.some((t) => t.name === 'audit_events' || t.name === 'audit_logs')) {
     auditScore += 10
   }
-  if (routes.evidence.some(e => e.toLowerCase().includes('audit') || e.toLowerCase().includes('log'))) {
+  if (
+    routes.evidence.some(
+      (e) => e.toLowerCase().includes('audit') || e.toLowerCase().includes('log'),
+    )
+  ) {
     auditScore += 5
   }
 
@@ -165,7 +174,8 @@ export function scoreReadiness(
       priority: 'medium',
       category: 'audit',
       title: 'Add audit logging for tenant operations',
-      description: 'No audit log table or audit events detected. TenantScale can add structured audit logging for compliance.',
+      description:
+        'No audit log table or audit events detected. TenantScale can add structured audit logging for compliance.',
       effort: '30 minutes',
     })
   }
@@ -175,7 +185,11 @@ export function scoreReadiness(
   const rateMax = 10
 
   const rateEvidence = routes.evidence.join(' ').toLowerCase()
-  if (rateEvidence.includes('rate') || rateEvidence.includes('limit') || rateEvidence.includes('throttle')) {
+  if (
+    rateEvidence.includes('rate') ||
+    rateEvidence.includes('limit') ||
+    rateEvidence.includes('throttle')
+  ) {
     rateScore += 5
   }
 
@@ -189,7 +203,8 @@ export function scoreReadiness(
       priority: 'medium',
       category: 'rate-limit',
       title: 'Configure per-tenant rate limiting',
-      description: 'No rate limiting detected. TenantScale can add plan-based rate limiting per tenant.',
+      description:
+        'No rate limiting detected. TenantScale can add plan-based rate limiting per tenant.',
       effort: '15 minutes',
     })
   }
@@ -202,11 +217,14 @@ export function scoreReadiness(
   // ── Summary ──
   let summary: string
   if (overall >= 70) {
-    summary = 'Your project is mostly ready for tenant isolation. A few migrations and middleware additions needed.'
+    summary =
+      'Your project is mostly ready for tenant isolation. A few migrations and middleware additions needed.'
   } else if (overall >= 40) {
-    summary = 'Your project has some multi-tenant foundations. The generated migration plan will get you the rest of the way.'
+    summary =
+      'Your project has some multi-tenant foundations. The generated migration plan will get you the rest of the way.'
   } else {
-    summary = 'Your project needs significant work to add tenant isolation. The generated plan provides a step-by-step guide.'
+    summary =
+      'Your project needs significant work to add tenant isolation. The generated plan provides a step-by-step guide.'
   }
 
   if (needsMigration > 0) {
@@ -214,7 +232,8 @@ export function scoreReadiness(
       priority: 'high',
       category: 'database',
       title: 'Backfill tenant_id for existing rows',
-      description: 'After adding columns, migrate existing data to associate rows with the correct tenant.',
+      description:
+        'After adding columns, migrate existing data to associate rows with the correct tenant.',
       effort: '1-2 hours (depends on data volume)',
     })
   }
@@ -244,10 +263,7 @@ let hasRateLimitPattern = (): boolean => false
 /**
  * Internal: set context for scoring. Called from migrate.ts.
  */
-export function __setScoreContext(
-  sourceFn: () => boolean,
-  rateFn: () => boolean,
-): void {
+export function __setScoreContext(sourceFn: () => boolean, rateFn: () => boolean): void {
   sourceFilesContain = sourceFn
   hasRateLimitPattern = rateFn
 }

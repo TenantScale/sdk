@@ -3,11 +3,7 @@
 // ──────────────────────────────────────────────────────
 
 import type { Context, Next } from 'koa'
-import {
-  TenantScaleError,
-  PlanLimitExceededError,
-  RateLimitExceededError,
-} from '@tenantscale/sdk'
+import { TenantScaleError, PlanLimitExceededError, RateLimitExceededError } from '@tenantscale/sdk'
 import type { KoaAdapterOptions, ErrorResponse } from './types.js'
 
 export function errorHandler(_options?: KoaAdapterOptions) {
@@ -18,9 +14,10 @@ export function errorHandler(_options?: KoaAdapterOptions) {
       const error = err as Error & { statusCode?: number; code?: string }
 
       if (!(error instanceof TenantScaleError)) {
-        const message = process.env.NODE_ENV === 'production'
-          ? 'Internal server error'
-          : error.message || 'Internal server error'
+        const message =
+          process.env.NODE_ENV === 'production'
+            ? 'Internal server error'
+            : error.message || 'Internal server error'
         ctx.status = 500
         ctx.body = {
           error: message,

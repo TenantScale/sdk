@@ -42,9 +42,16 @@ export function createLogger(): Logger {
       console.log(pc.dim('─'.repeat(Math.min(title.length + 2, 60))))
     },
     table(rows) {
-      const maxLabelWidth = Math.max(...rows.map(r => r.label.length))
+      const maxLabelWidth = Math.max(...rows.map((r) => r.label.length))
       for (const row of rows) {
-        const icon = row.status === 'ok' ? pc.green('✓') : row.status === 'warn' ? pc.yellow('⚠') : row.status === 'error' ? pc.red('✗') : ' '
+        const icon =
+          row.status === 'ok'
+            ? pc.green('✓')
+            : row.status === 'warn'
+              ? pc.yellow('⚠')
+              : row.status === 'error'
+                ? pc.red('✗')
+                : ' '
         const padded = row.label.padEnd(maxLabelWidth)
         console.log(`  ${icon} ${pc.bold(padded)}  ${row.value}`)
       }

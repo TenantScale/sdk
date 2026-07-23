@@ -25,7 +25,15 @@ export function generateReport(
 ): ReportResult {
   const timestamp = new Date().toISOString().split('T')[0]
 
-  const markdown = generateMarkdown(timestamp, outputDir, framework, database, routes, auth, readiness)
+  const markdown = generateMarkdown(
+    timestamp,
+    outputDir,
+    framework,
+    database,
+    routes,
+    auth,
+    readiness,
+  )
   const planJson = generatePlanJson(timestamp, framework, database, routes, auth, readiness)
 
   return {
@@ -53,7 +61,7 @@ function generateMarkdown(
   auth: AuthInfo,
   readiness: ReadinessScore,
 ): string {
-  const needsMigration = database.tenantTables.filter(t => !t.hasTenantId)
+  const needsMigration = database.tenantTables.filter((t) => !t.hasTenantId)
 
   let md = `# TenantScale Migration Report
 
@@ -83,7 +91,14 @@ ${readiness.summary}
     md += `No actions needed — your project appears ready for TenantScale!\n`
   } else {
     for (const action of readiness.actions) {
-      const priorityIcon = action.priority === 'critical' ? '🔴' : action.priority === 'high' ? '🟡' : action.priority === 'medium' ? '🔵' : '⚪'
+      const priorityIcon =
+        action.priority === 'critical'
+          ? '🔴'
+          : action.priority === 'high'
+            ? '🟡'
+            : action.priority === 'medium'
+              ? '🔵'
+              : '⚪'
       md += `### ${priorityIcon} [${action.priority.toUpperCase()}] ${action.title}\n\n`
       md += `${action.description}\n\n`
       md += `> Estimated effort: ${action.effort}\n\n`
@@ -100,7 +115,7 @@ ${readiness.summary}
     for (const table of needsMigration) {
       md += `| ${table.name} | ❌ | Add tenant_id column + RLS |\n`
     }
-    for (const table of database.tables.filter(t => t.hasTenantId)) {
+    for (const table of database.tables.filter((t) => t.hasTenantId)) {
       md += `| ${table.name} | ✅ | Already migrated |\n`
     }
   }
@@ -120,7 +135,7 @@ ${readiness.summary}
       md += `### Unprotected Routes\n\n`
       md += `| File | Method | Path |\n`
       md += `|------|--------|------|\n`
-      for (const route of routes.routes.filter(r => !r.hasAuth)) {
+      for (const route of routes.routes.filter((r) => !r.hasAuth)) {
         md += `| ${shortPath(route.file)} | ${route.method} | ${route.path} |\n`
       }
       md += '\n'
@@ -191,9 +206,12 @@ function generatePlanJson(
       readiness: {
         overall: readiness.overall,
         categories: Object.fromEntries(
-          Object.entries(readiness.categories).map(([k, v]) => [k, { score: v.score, max: v.max, label: v.label }])
+          Object.entries(readiness.categories).map(([k, v]) => [
+            k,
+            { score: v.score, max: v.max, label: v.label },
+          ]),
         ),
-        actions: readiness.actions.map(a => ({
+        actions: readiness.actions.map((a) => ({
           priority: a.priority,
           category: a.category,
           title: a.title,
@@ -201,7 +219,7 @@ function generatePlanJson(
       },
       database: {
         totalTables: database.tables.length,
-        tenantTables: database.tenantTables.map(t => ({
+        tenantTables: database.tenantTables.map((t) => ({
           name: t.name,
           needsMigration: !t.hasTenantId,
         })),

@@ -28,26 +28,14 @@ const FRAMEWORK_DEPS: Record<string, RegExp[]> = {
 }
 
 const FRAMEWORK_IMPORT_PATTERNS: Record<string, RegExp[]> = {
-  express: [
-    /from\s+['"]express['"]/,
-    /require\(['"]express['"]\)/,
-  ],
-  hono: [
-    /from\s+['"]hono['"]/,
-    /from\s+['"]hono\//,
-    /new\s+Hono\s*\(/,
-    /createMiddleware\s*\(/,
-  ],
+  express: [/from\s+['"]express['"]/, /require\(['"]express['"]\)/],
+  hono: [/from\s+['"]hono['"]/, /from\s+['"]hono\//, /new\s+Hono\s*\(/, /createMiddleware\s*\(/],
   nextjs: [
     /from\s+['"]next\//,
     /from\s+['"]next\/api['"]/,
     /export\s+(default\s+)?async\s+function\s+(GET|POST|PUT|PATCH|DELETE|OPTIONS)\s*\(/,
   ],
-  fastify: [
-    /from\s+['"]fastify['"]/,
-    /require\(['"]fastify['"]\)/,
-    /fastify\s*\(/,
-  ],
+  fastify: [/from\s+['"]fastify['"]/, /require\(['"]fastify['"]\)/, /fastify\s*\(/],
 }
 
 /**
@@ -76,7 +64,7 @@ export function detectFramework(projectDir: string, sourceFiles: string[]): Fram
 
       for (const [framework, patterns] of Object.entries(FRAMEWORK_DEPS)) {
         for (const dep of Object.keys(allDeps)) {
-          if (patterns.some(p => p.test(dep))) {
+          if (patterns.some((p) => p.test(dep))) {
             scores[framework] += 3
             evidence.push(`Found "${dep}" in ${relativeShort(projectDir, pkgPath)}`)
           }
@@ -97,12 +85,23 @@ export function detectFramework(projectDir: string, sourceFiles: string[]): Fram
       for (const pattern of patterns) {
         if (pattern.test(content)) {
           scores[framework] += 1
-          if (!evidence.includes(`Found ${framework} import in ${relativeShort(projectDir, sourceFiles[i])}`)) {
-            evidence.push(`Found ${framework} import in ${relativeShort(projectDir, sourceFiles[i])}`)
+          if (
+            !evidence.includes(
+              `Found ${framework} import in ${relativeShort(projectDir, sourceFiles[i])}`,
+            )
+          ) {
+            evidence.push(
+              `Found ${framework} import in ${relativeShort(projectDir, sourceFiles[i])}`,
+            )
           }
           // Track potential entry points
           const base = sourceFiles[i].replace(/\\/g, '/')
-          if (base.includes('app.') || base.includes('server.') || base.includes('index.') || base.includes('main.')) {
+          if (
+            base.includes('app.') ||
+            base.includes('server.') ||
+            base.includes('index.') ||
+            base.includes('main.')
+          ) {
             if (!entryPoints.includes(sourceFiles[i])) {
               entryPoints.push(sourceFiles[i])
             }
@@ -114,8 +113,8 @@ export function detectFramework(projectDir: string, sourceFiles: string[]): Fram
   }
 
   // ── Check for Next.js App Router ──
-  const nextRoutes = sourceFiles.filter(f =>
-    f.includes(`${sep(projectDir)}app${sep}`) && f.endsWith('.ts') || f.endsWith('.tsx')
+  const nextRoutes = sourceFiles.filter(
+    (f) => (f.includes(`${sep(projectDir)}app${sep}`) && f.endsWith('.ts')) || f.endsWith('.tsx'),
   )
   if (nextRoutes.length > 0 && scores['nextjs'] > 0) {
     evidence.push(`Found ${nextRoutes.length} files in app/ directory (Next.js App Router)`)

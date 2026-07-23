@@ -5,11 +5,7 @@
 // Converts TenantScaleError instances into standard Response
 // objects for use in Next.js Route Handlers.
 
-import {
-  TenantScaleError,
-  PlanLimitExceededError,
-  RateLimitExceededError,
-} from '@tenantscale/sdk'
+import { TenantScaleError, PlanLimitExceededError, RateLimitExceededError } from '@tenantscale/sdk'
 import type { ErrorResponse } from './types.js'
 
 /**

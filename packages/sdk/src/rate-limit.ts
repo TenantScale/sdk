@@ -13,7 +13,7 @@ import { RateLimitExceededError } from './types.js'
 const KEY_CACHE_TTL_MS = 5 * 60 * 1000
 const MAX_CREATIONS_PER_IP = 5
 const CREATION_WINDOW_MS = 3_600_000 // 1 hour
-const CLEANUP_INTERVAL_MS = 300_000  // 5 min
+const CLEANUP_INTERVAL_MS = 300_000 // 5 min
 
 // ── Internal Types ──
 
@@ -70,7 +70,7 @@ export class RateLimiter {
       // Clean IP creation store
       const cutoff = now - CREATION_WINDOW_MS
       for (const [ip, entry] of Array.from(this.ipCreationStore.entries())) {
-        entry.timestamps = entry.timestamps.filter(t => t > cutoff)
+        entry.timestamps = entry.timestamps.filter((t) => t > cutoff)
         if (entry.timestamps.length === 0) {
           this.ipCreationStore.delete(ip)
         }
@@ -131,7 +131,10 @@ export class RateLimiter {
         .single()
 
       if (error) {
-        this.logger.warn({ tenantId, reason: 'db_increment_failed' }, '[RateLimiter] Failed to increment — allowing request')
+        this.logger.warn(
+          { tenantId, reason: 'db_increment_failed' },
+          '[RateLimiter] Failed to increment — allowing request',
+        )
         return { allowed: true, remaining: dailyLimit, limit: dailyLimit, current: 0 }
       }
 
@@ -149,7 +152,10 @@ export class RateLimiter {
       }
     } catch (err) {
       if (err instanceof RateLimitExceededError) throw err
-      this.logger.error({ tenantId, reason: 'rate_limit_check_exception' }, '[RateLimiter] Rate limit check threw — allowing request')
+      this.logger.error(
+        { tenantId, reason: 'rate_limit_check_exception' },
+        '[RateLimiter] Rate limit check threw — allowing request',
+      )
       return { allowed: true, remaining: dailyLimit, limit: dailyLimit, current: 0 }
     }
   }
@@ -216,7 +222,7 @@ export class RateLimiter {
     }
 
     // Prune expired timestamps
-    entry.timestamps = entry.timestamps.filter(t => t > cutoff)
+    entry.timestamps = entry.timestamps.filter((t) => t > cutoff)
 
     const blocked = entry.timestamps.length >= MAX_CREATIONS_PER_IP
 

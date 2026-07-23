@@ -69,15 +69,19 @@ export function authenticateApiKey(options: ExpressAdapterOptions): AsyncMiddlew
 
       // Automatic audit logging on successful auth
       if (audit) {
-        options.ts.logAuditEvent({
-          tenant_id: apiKey.tenant_id,
-          actor_id: apiKey.key_record_id,
-          actor_type: 'admin_api',
-          action: 'api_key.authenticated',
-          resource: req.originalUrl ?? req.url,
-          ip: resolveClientIp(req, options),
-          user_agent: req.headers['user-agent'] ?? undefined,
-        }).catch(() => { /* fire-and-forget */ })
+        options.ts
+          .logAuditEvent({
+            tenant_id: apiKey.tenant_id,
+            actor_id: apiKey.key_record_id,
+            actor_type: 'admin_api',
+            action: 'api_key.authenticated',
+            resource: req.originalUrl ?? req.url,
+            ip: resolveClientIp(req, options),
+            user_agent: req.headers['user-agent'] ?? undefined,
+          })
+          .catch(() => {
+            /* fire-and-forget */
+          })
       }
 
       next()
@@ -98,10 +102,7 @@ export function authenticateApiKey(options: ExpressAdapterOptions): AsyncMiddlew
  * app.delete('/api/keys/:id', authenticateApiKey({ ts }), requireScope({ ts }, 'admin'))
  * ```
  */
-export function requireScope(
-  options: ExpressAdapterOptions,
-  ...scopes: string[]
-): AsyncMiddleware {
+export function requireScope(options: ExpressAdapterOptions, ...scopes: string[]): AsyncMiddleware {
   return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     try {
       if (!req.tenantKey) {
@@ -146,7 +147,9 @@ export function requirePortalSession(options: ExpressAdapterOptions): AsyncMiddl
 
       const parts = authHeader.split(' ')
       if (parts.length !== 2 || parts[0] !== 'Bearer') {
-        throw new AuthenticationError('Invalid authorization header format. Expected: Bearer <token>')
+        throw new AuthenticationError(
+          'Invalid authorization header format. Expected: Bearer <token>',
+        )
       }
 
       const session = await options.ts.validateSession(parts[1])
@@ -248,7 +251,9 @@ export function requirePlanLimit(
     try {
       const tenantId = req.tenantId
       if (!tenantId) {
-        throw new AuthenticationError('Tenant ID not resolved. Ensure authenticateApiKey or requirePortalSession runs first.')
+        throw new AuthenticationError(
+          'Tenant ID not resolved. Ensure authenticateApiKey or requirePortalSession runs first.',
+        )
       }
 
       const limit = await options.ts.plans.getPlanLimit(tenantId, feature)

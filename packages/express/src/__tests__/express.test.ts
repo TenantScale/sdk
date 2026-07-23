@@ -32,10 +32,7 @@ import {
   rateLimitByIp,
   auditLog,
 } from '../middleware.js'
-import {
-  errorHandler,
-  genericErrorHandler,
-} from '../error-handler.js'
+import { errorHandler, genericErrorHandler } from '../error-handler.js'
 import type { ExpressAdapterOptions } from '../types.js'
 
 // ── Helpers ──
@@ -718,9 +715,7 @@ describe('errorHandler', () => {
     errorHandler(err, req, res, next)
 
     expect(res._testState.statusCode).toBe(404)
-    expect(res._testState.body).toEqual(
-      expect.objectContaining({ code: 'NOT_FOUND' }),
-    )
+    expect(res._testState.body).toEqual(expect.objectContaining({ code: 'NOT_FOUND' }))
   })
 
   it('should return 409 for ConflictError', () => {
@@ -732,9 +727,7 @@ describe('errorHandler', () => {
     errorHandler(err, req, res, next)
 
     expect(res._testState.statusCode).toBe(409)
-    expect(res._testState.body).toEqual(
-      expect.objectContaining({ code: 'CONFLICT' }),
-    )
+    expect(res._testState.body).toEqual(expect.objectContaining({ code: 'CONFLICT' }))
   })
 
   it('should call next(err) for non-TenantScale errors', () => {

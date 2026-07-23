@@ -323,7 +323,9 @@ describe('requirePlanLimit', () => {
   it('should pass when under the limit', async () => {
     const app = new Hono()
     app.use('/api/*', authenticateApiKey({ ts }))
-    app.post('/api/tenants', requirePlanLimit({ ts }, 'max_tenants', 5), (c) => c.json({ ok: true }))
+    app.post('/api/tenants', requirePlanLimit({ ts }, 'max_tenants', 5), (c) =>
+      c.json({ ok: true }),
+    )
 
     const res = await app.request('/api/tenants', {
       method: 'POST',
@@ -335,7 +337,9 @@ describe('requirePlanLimit', () => {
   it('should return 403 when at the limit', async () => {
     const app = new Hono()
     app.use('/api/*', authenticateApiKey({ ts }))
-    app.post('/api/tenants', requirePlanLimit({ ts }, 'max_tenants', 10), (c) => c.json({ ok: true }))
+    app.post('/api/tenants', requirePlanLimit({ ts }, 'max_tenants', 10), (c) =>
+      c.json({ ok: true }),
+    )
 
     const res = await app.request('/api/tenants', {
       method: 'POST',
@@ -348,7 +352,9 @@ describe('requirePlanLimit', () => {
     ts.plans.getPlanLimit.mockResolvedValue(null)
     const app = new Hono()
     app.use('/api/*', authenticateApiKey({ ts }))
-    app.post('/api/tenants', requirePlanLimit({ ts }, 'max_tenants', 999), (c) => c.json({ ok: true }))
+    app.post('/api/tenants', requirePlanLimit({ ts }, 'max_tenants', 999), (c) =>
+      c.json({ ok: true }),
+    )
 
     const res = await app.request('/api/tenants', {
       method: 'POST',
@@ -369,7 +375,10 @@ describe('rateLimitByApiKey', () => {
     ts = createMockTenantScale()
     ts.validateApiKey.mockResolvedValue(mockApiKey)
     ts.rateLimiter.checkDailyLimit.mockResolvedValue({
-      allowed: true, remaining: 99, limit: 100, current: 1,
+      allowed: true,
+      remaining: 99,
+      limit: 100,
+      current: 1,
     })
   })
 
@@ -386,7 +395,10 @@ describe('rateLimitByApiKey', () => {
 
   it('should return 429 when over limit', async () => {
     ts.rateLimiter.checkDailyLimit.mockResolvedValue({
-      allowed: false, remaining: 0, limit: 100, current: 101,
+      allowed: false,
+      remaining: 0,
+      limit: 100,
+      current: 101,
     })
     const app = new Hono()
     app.use('/api/*', authenticateApiKey({ ts }), rateLimitByApiKey({ ts }))
@@ -421,7 +433,9 @@ describe('rateLimitByIp', () => {
   beforeEach(() => {
     ts = createMockTenantScale()
     ts.rateLimiter.checkIpCreationLimit.mockResolvedValue({
-      blocked: false, remaining: 5, resetAtMs: Date.now() + 3600000,
+      blocked: false,
+      remaining: 5,
+      resetAtMs: Date.now() + 3600000,
     })
   })
 
@@ -435,7 +449,9 @@ describe('rateLimitByIp', () => {
 
   it('should return 429 when IP is blocked', async () => {
     ts.rateLimiter.checkIpCreationLimit.mockResolvedValue({
-      blocked: true, remaining: 0, resetAtMs: Date.now() + 60000,
+      blocked: true,
+      remaining: 0,
+      resetAtMs: Date.now() + 60000,
     })
     const app = new Hono()
     app.post('/signup', rateLimitByIp({ ts }), (c) => c.json({ ok: true }))
@@ -461,7 +477,8 @@ describe('auditLog', () => {
   it('should log audit event with tenant context', async () => {
     const app = new Hono()
     app.use('/api/*', authenticateApiKey({ ts }))
-    app.post('/api/tenants',
+    app.post(
+      '/api/tenants',
       auditLog({ ts }, { action: 'tenant.create', resource: 'tenant' }),
       (c) => c.json({ ok: true }),
     )
@@ -487,9 +504,8 @@ describe('auditLog', () => {
     ts.logAuditEvent.mockRejectedValue(new Error('DB timeout'))
     const app = new Hono()
     app.use('/api/*', authenticateApiKey({ ts }))
-    app.post('/api/tenants',
-      auditLog({ ts }, { action: 'test', resource: 'test' }),
-      (c) => c.json({ ok: true }),
+    app.post('/api/tenants', auditLog({ ts }, { action: 'test', resource: 'test' }), (c) =>
+      c.json({ ok: true }),
     )
 
     const res = await app.request('/api/tenants', {
@@ -508,7 +524,9 @@ describe('errorHandler', () => {
   it('should return 401 for AuthenticationError', async () => {
     const app = new Hono()
     app.onError(errorHandler({ ts: createMockTenantScale() }))
-    app.get('/test', () => { throw new AuthenticationError('Invalid key') })
+    app.get('/test', () => {
+      throw new AuthenticationError('Invalid key')
+    })
 
     const res = await app.request('/test')
     expect(res.status).toBe(401)
@@ -519,7 +537,9 @@ describe('errorHandler', () => {
   it('should return 403 for AuthorizationError', async () => {
     const app = new Hono()
     app.onError(errorHandler({ ts: createMockTenantScale() }))
-    app.get('/test', () => { throw new AuthorizationError('Forbidden') })
+    app.get('/test', () => {
+      throw new AuthorizationError('Forbidden')
+    })
 
     const res = await app.request('/test')
     expect(res.status).toBe(403)
@@ -528,7 +548,9 @@ describe('errorHandler', () => {
   it('should return 403 with details for PlanLimitExceededError', async () => {
     const app = new Hono()
     app.onError(errorHandler({ ts: createMockTenantScale() }))
-    app.get('/test', () => { throw new PlanLimitExceededError(10, 10, 'max_tenants') })
+    app.get('/test', () => {
+      throw new PlanLimitExceededError(10, 10, 'max_tenants')
+    })
 
     const res = await app.request('/test')
     expect(res.status).toBe(403)
@@ -541,7 +563,9 @@ describe('errorHandler', () => {
     app.onError(errorHandler({ ts: createMockTenantScale() }))
     const err = new RateLimitExceededError(100)
     ;(err as any).retryAfter = 30
-    app.get('/test', () => { throw err })
+    app.get('/test', () => {
+      throw err
+    })
 
     const res = await app.request('/test')
     expect(res.status).toBe(429)
@@ -553,7 +577,9 @@ describe('errorHandler', () => {
   it('should return 404 for NotFoundError', async () => {
     const app = new Hono()
     app.onError(errorHandler({ ts: createMockTenantScale() }))
-    app.get('/test', () => { throw new NotFoundError('tenant', 't_999') })
+    app.get('/test', () => {
+      throw new NotFoundError('tenant', 't_999')
+    })
 
     const res = await app.request('/test')
     expect(res.status).toBe(404)
@@ -562,7 +588,9 @@ describe('errorHandler', () => {
   it('should return 409 for ConflictError', async () => {
     const app = new Hono()
     app.onError(errorHandler({ ts: createMockTenantScale() }))
-    app.get('/test', () => { throw new ConflictError('Duplicate') })
+    app.get('/test', () => {
+      throw new ConflictError('Duplicate')
+    })
 
     const res = await app.request('/test')
     expect(res.status).toBe(409)
@@ -571,7 +599,9 @@ describe('errorHandler', () => {
   it('should let Hono handle unknown errors with 500 response', async () => {
     const app = new Hono()
     app.onError(errorHandler({ ts: createMockTenantScale() }))
-    app.get('/test', () => { throw new Error('Unknown') })
+    app.get('/test', () => {
+      throw new Error('Unknown')
+    })
 
     const res = await app.request('/test')
     expect(res.status).toBe(500)

@@ -137,7 +137,9 @@ describe('validateWebhookUrl', () => {
   // What it proves: Non-HTTP(S) protocols are rejected
   // Risk if missing: Attackers could use file://, ftp:// for SSRF
   it('rejects FTP protocol', async () => {
-    await expect(validateWebhookUrl('ftp://example.com/file')).rejects.toThrow('Unsupported protocol')
+    await expect(validateWebhookUrl('ftp://example.com/file')).rejects.toThrow(
+      'Unsupported protocol',
+    )
   })
 
   // Test: Unsupported protocol (file)
@@ -182,9 +184,9 @@ describe('validateWebhookUrl', () => {
   // What it proves: The hostname 'localhost' is in BLOCKED_HOSTNAMES
   // Risk if missing: localhost bypass would allow SSRF to local services
   it('blocks hostname localhost', async () => {
-    await expect(
-      validateWebhookUrl('http://localhost/hook')
-    ).rejects.toThrow('Blocked internal hostname: localhost')
+    await expect(validateWebhookUrl('http://localhost/hook')).rejects.toThrow(
+      'Blocked internal hostname: localhost',
+    )
   })
 
   // Test: '127.0.0.1' is blocked
@@ -192,9 +194,9 @@ describe('validateWebhookUrl', () => {
   // What it proves: Loopback IP is in BLOCKED_HOSTNAMES
   // Risk if missing: Direct loopback IP would allow SSRF
   it('blocks hostname 127.0.0.1', async () => {
-    await expect(
-      validateWebhookUrl('http://127.0.0.1/hook')
-    ).rejects.toThrow('Blocked internal hostname: 127.0.0.1')
+    await expect(validateWebhookUrl('http://127.0.0.1/hook')).rejects.toThrow(
+      'Blocked internal hostname: 127.0.0.1',
+    )
   })
 
   // Test: '0.0.0.0' is blocked
@@ -202,9 +204,9 @@ describe('validateWebhookUrl', () => {
   // What it proves: Current network address is in BLOCKED_HOSTNAMES
   // Risk if missing: 0.0.0.0 binding on some systems resolves differently
   it('blocks hostname 0.0.0.0', async () => {
-    await expect(
-      validateWebhookUrl('http://0.0.0.0/hook')
-    ).rejects.toThrow('Blocked internal hostname: 0.0.0.0')
+    await expect(validateWebhookUrl('http://0.0.0.0/hook')).rejects.toThrow(
+      'Blocked internal hostname: 0.0.0.0',
+    )
   })
 
   // Test: 'host.docker.internal' is blocked
@@ -212,9 +214,9 @@ describe('validateWebhookUrl', () => {
   // What it proves: Docker internal hostname is blocked
   // Risk if missing: Docker host access could expose container infrastructure
   it('blocks host.docker.internal', async () => {
-    await expect(
-      validateWebhookUrl('http://host.docker.internal:8080/hook')
-    ).rejects.toThrow('Blocked internal hostname')
+    await expect(validateWebhookUrl('http://host.docker.internal:8080/hook')).rejects.toThrow(
+      'Blocked internal hostname',
+    )
   })
 
   // Test: '169.254.169.254' is blocked (metadata service)
@@ -222,9 +224,9 @@ describe('validateWebhookUrl', () => {
   // What it proves: Cloud metadata IP is in BLOCKED_HOSTNAMES
   // Risk if missing: Cloud metadata service exposes IAM credentials, instance metadata
   it('blocks cloud metadata IP 169.254.169.254', async () => {
-    await expect(
-      validateWebhookUrl('http://169.254.169.254/hook')
-    ).rejects.toThrow('Blocked internal hostname')
+    await expect(validateWebhookUrl('http://169.254.169.254/hook')).rejects.toThrow(
+      'Blocked internal hostname',
+    )
   })
 
   // ══════════════════════════════════════════════════════
@@ -236,9 +238,9 @@ describe('validateWebhookUrl', () => {
   // What it proves: Private Class A range is blocked
   // Risk if missing: Internal network hosts would be accessible
   it('blocks 10.x.x.x private IP', async () => {
-    await expect(
-      validateWebhookUrl(`http://${PRIVATE_IP_A}/hook`)
-    ).rejects.toThrow('Blocked private IP')
+    await expect(validateWebhookUrl(`http://${PRIVATE_IP_A}/hook`)).rejects.toThrow(
+      'Blocked private IP',
+    )
   })
 
   // Test: 172.16.0.0/12 is blocked
@@ -246,9 +248,9 @@ describe('validateWebhookUrl', () => {
   // What it proves: Private Class B range is blocked
   // Risk if missing: Internal hosts in 172.16.x.x range would be accessible
   it('blocks 172.16.x.x private IP', async () => {
-    await expect(
-      validateWebhookUrl(`http://${PRIVATE_IP_B}/hook`)
-    ).rejects.toThrow('Blocked private IP')
+    await expect(validateWebhookUrl(`http://${PRIVATE_IP_B}/hook`)).rejects.toThrow(
+      'Blocked private IP',
+    )
   })
 
   // Test: 192.168.x.x is blocked
@@ -256,9 +258,9 @@ describe('validateWebhookUrl', () => {
   // What it proves: Private Class C range is blocked
   // Risk if missing: Local network hosts would be accessible
   it('blocks 192.168.x.x private IP', async () => {
-    await expect(
-      validateWebhookUrl(`http://${PRIVATE_IP_C}/hook`)
-    ).rejects.toThrow('Blocked private IP')
+    await expect(validateWebhookUrl(`http://${PRIVATE_IP_C}/hook`)).rejects.toThrow(
+      'Blocked private IP',
+    )
   })
 
   // Test: Loopback range is blocked via private IP check
@@ -268,9 +270,7 @@ describe('validateWebhookUrl', () => {
   it('blocks 127.0.0.2 (loopback variant via PRIVATE_RANGES)', async () => {
     // 127.0.0.1 is blocked via BLOCKED_HOSTNAMES. 127.0.0.2 tests the
     // PRIVATE_RANGES path since it's NOT in BLOCKED_HOSTNAMES.
-    await expect(
-      validateWebhookUrl('http://127.0.0.2/hook')
-    ).rejects.toThrow('Blocked private IP')
+    await expect(validateWebhookUrl('http://127.0.0.2/hook')).rejects.toThrow('Blocked private IP')
   })
 
   // Test: Link-local range 169.254.x.x is blocked
@@ -279,9 +279,9 @@ describe('validateWebhookUrl', () => {
   // Risk if missing: APIPA addresses could be exploited
   it('blocks 169.254.x.x link-local IP', async () => {
     // 169.254.169.254 is in BLOCKED_HOSTNAMES. Test 169.254.0.1 for the range.
-    await expect(
-      validateWebhookUrl('http://169.254.0.1/hook')
-    ).rejects.toThrow('Blocked private IP')
+    await expect(validateWebhookUrl('http://169.254.0.1/hook')).rejects.toThrow(
+      'Blocked private IP',
+    )
   })
 
   // Test: Carrier-grade NAT 100.64.x.x is blocked
@@ -289,9 +289,9 @@ describe('validateWebhookUrl', () => {
   // What it proves: CGNAT range is blocked via PRIVATE_RANGES
   // Risk if missing: CGNAT addresses are commonly used by ISPs and could expose internal infra
   it('blocks 100.64.x.x carrier-grade NAT IP', async () => {
-    await expect(
-      validateWebhookUrl(`http://${CARRIER_NAT}/hook`)
-    ).rejects.toThrow('Blocked private IP')
+    await expect(validateWebhookUrl(`http://${CARRIER_NAT}/hook`)).rejects.toThrow(
+      'Blocked private IP',
+    )
   })
 
   // Test: Benchmarking 198.18.x.x is blocked
@@ -299,9 +299,9 @@ describe('validateWebhookUrl', () => {
   // What it proves: Benchmarking range is blocked
   // Risk if missing: Benchmark traffic could be redirected
   it('blocks 198.18.x.x benchmarking IP', async () => {
-    await expect(
-      validateWebhookUrl(`http://${BENCHMARKING}/hook`)
-    ).rejects.toThrow('Blocked private IP')
+    await expect(validateWebhookUrl(`http://${BENCHMARKING}/hook`)).rejects.toThrow(
+      'Blocked private IP',
+    )
   })
 
   // Test: Reserved 240.x.x.x is blocked
@@ -309,9 +309,9 @@ describe('validateWebhookUrl', () => {
   // What it proves: Future/reserved range is blocked
   // Risk if missing: Reserved addresses could be used for SSRF as they become routable
   it('blocks 240.x.x.x reserved IP', async () => {
-    await expect(
-      validateWebhookUrl(`http://${RESERVED}/hook`)
-    ).rejects.toThrow('Blocked private IP')
+    await expect(validateWebhookUrl(`http://${RESERVED}/hook`)).rejects.toThrow(
+      'Blocked private IP',
+    )
   })
 
   // Test: ::1 IPv6 loopback
@@ -319,9 +319,9 @@ describe('validateWebhookUrl', () => {
   // What it proves: IPv6 loopback is blocked via BLOCKED_HOSTNAMES
   // Risk if missing: IPv6 SSRF attacks would bypass IPv4-only checks
   it('blocks ::1 IPv6 loopback', async () => {
-    await expect(
-      validateWebhookUrl('http://[::1]/hook')
-    ).rejects.toThrow('Blocked internal hostname')
+    await expect(validateWebhookUrl('http://[::1]/hook')).rejects.toThrow(
+      'Blocked internal hostname',
+    )
   })
 
   // Test: IPv6 addresses are documented limitation
@@ -372,7 +372,7 @@ describe('validateWebhookUrl', () => {
   // What it proves: Special characters in URL paths don't bypass validation
   // Risk if missing: SQL-like payloads in webhook URLs could be rejected or cause errors
   it('accepts URLs with special characters in path (public IP)', async () => {
-    const url = await validateWebhookUrl("http://8.8.8.8/hook/test?query=value&page=1")
+    const url = await validateWebhookUrl('http://8.8.8.8/hook/test?query=value&page=1')
     expect(url.pathname).toBe('/hook/test')
     expect(url.searchParams.get('query')).toBe('value')
   })
@@ -383,7 +383,7 @@ describe('validateWebhookUrl', () => {
   // Risk if missing: XSS payloads in webhook URLs could be reflected
   it('accepts URLs with angle brackets in path (public IP)', async () => {
     // URL constructor will encode these
-    const url = await validateWebhookUrl("http://8.8.8.8/hook/script")
+    const url = await validateWebhookUrl('http://8.8.8.8/hook/script')
     expect(url.pathname).toBe('/hook/script')
   })
 
@@ -420,8 +420,8 @@ describe('validateWebhookUrl', () => {
   // What it proves: IPs with leading zeros are handled correctly
   // Risk if missing: 127.0.0.01 might parse differently in different environments
   it('handles IP with leading zeros', async () => {
-    await expect(
-      validateWebhookUrl('http://192.168.001.001/hook')
-    ).rejects.toThrow('Blocked private IP')
+    await expect(validateWebhookUrl('http://192.168.001.001/hook')).rejects.toThrow(
+      'Blocked private IP',
+    )
   })
 })

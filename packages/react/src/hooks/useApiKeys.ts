@@ -29,7 +29,9 @@ export function useApiKeys(): UseQueryResult<ApiKey[]> & {
     }
   }, [client])
 
-  useEffect(() => { fetchKeys() }, [fetchKeys])
+  useEffect(() => {
+    fetchKeys()
+  }, [fetchKeys])
 
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState<Error | null>(null)
@@ -37,40 +39,46 @@ export function useApiKeys(): UseQueryResult<ApiKey[]> & {
   const [revokeError, setRevokeError] = useState<Error | null>(null)
 
   const createKey: UseMutationResult<{ label: string; scopes?: string[] }, CreatedApiKey> = {
-    execute: useCallback(async (input) => {
-      setCreating(true)
-      setCreateError(null)
-      try {
-        const result = await client.createApiKey(input.label, input.scopes)
-        await fetchKeys()
-        return result
-      } catch (err) {
-        const e = err instanceof Error ? err : new Error(String(err))
-        setCreateError(e)
-        throw e
-      } finally {
-        setCreating(false)
-      }
-    }, [client, fetchKeys]),
+    execute: useCallback(
+      async (input) => {
+        setCreating(true)
+        setCreateError(null)
+        try {
+          const result = await client.createApiKey(input.label, input.scopes)
+          await fetchKeys()
+          return result
+        } catch (err) {
+          const e = err instanceof Error ? err : new Error(String(err))
+          setCreateError(e)
+          throw e
+        } finally {
+          setCreating(false)
+        }
+      },
+      [client, fetchKeys],
+    ),
     isLoading: creating,
     error: createError,
   }
 
   const revokeKey: UseMutationResult<string, void> = {
-    execute: useCallback(async (id) => {
-      setRevoking(true)
-      setRevokeError(null)
-      try {
-        await client.revokeApiKey(id)
-        await fetchKeys()
-      } catch (err) {
-        const e = err instanceof Error ? err : new Error(String(err))
-        setRevokeError(e)
-        throw e
-      } finally {
-        setRevoking(false)
-      }
-    }, [client, fetchKeys]),
+    execute: useCallback(
+      async (id) => {
+        setRevoking(true)
+        setRevokeError(null)
+        try {
+          await client.revokeApiKey(id)
+          await fetchKeys()
+        } catch (err) {
+          const e = err instanceof Error ? err : new Error(String(err))
+          setRevokeError(e)
+          throw e
+        } finally {
+          setRevoking(false)
+        }
+      },
+      [client, fetchKeys],
+    ),
     isLoading: revoking,
     error: revokeError,
   }

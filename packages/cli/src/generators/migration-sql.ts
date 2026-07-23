@@ -17,7 +17,7 @@ export function generateMigrationSql(
   outputDir: string,
 ): MigrationSqlResult {
   const files: MigrationSqlResult['files'] = []
-  const tables = database.tenantTables.filter(t => !t.hasTenantId)
+  const tables = database.tenantTables.filter((t) => !t.hasTenantId)
 
   if (tables.length === 0) {
     // Generate a placeholder migration showing how to add more tables

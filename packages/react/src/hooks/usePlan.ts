@@ -16,18 +16,20 @@ export function usePlan(): UseQueryResult<PlanInfo> & {
   const plan = me?.plan ?? null
 
   const hasFeature = useMemo(
-    () => (feature: string): boolean => {
-      if (!plan) return false
-      return plan.features[feature] === true
-    },
+    () =>
+      (feature: string): boolean => {
+        if (!plan) return false
+        return plan.features[feature] === true
+      },
     [plan],
   )
 
   const getLimit = useMemo(
-    () => (key: string): number | null => {
-      if (!plan) return null
-      return plan.limits?.[key] ?? null
-    },
+    () =>
+      (key: string): number | null => {
+        if (!plan) return null
+        return plan.limits?.[key] ?? null
+      },
     [plan],
   )
 

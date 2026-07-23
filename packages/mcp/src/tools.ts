@@ -5,20 +5,23 @@
 export const TOOLS = [
   {
     name: 'get_tenant_schema',
-    description: 'Look up existing tenant structures (tables, columns, RLS policies) from a connected Supabase project',
+    description:
+      'Look up existing tenant structures (tables, columns, RLS policies) from a connected Supabase project',
     inputSchema: {
       type: 'object',
       properties: {
         table: {
           type: 'string',
-          description: 'Optional table name to scope the lookup (e.g. "audit_events"). Omitting returns all tenant-related tables.',
+          description:
+            'Optional table name to scope the lookup (e.g. "audit_events"). Omitting returns all tenant-related tables.',
         },
       },
     },
   },
   {
     name: 'validate_tenant_query',
-    description: 'Check a SQL query for tenant isolation — ensures every SELECT/INSERT/UPDATE/DELETE includes a tenant_id filter',
+    description:
+      'Check a SQL query for tenant isolation — ensures every SELECT/INSERT/UPDATE/DELETE includes a tenant_id filter',
     inputSchema: {
       type: 'object',
       properties: {
@@ -35,18 +38,26 @@ export const TOOLS = [
       type: 'object',
       properties: {
         table: { type: 'string', description: 'The new table name' },
-        schema: { type: 'string', description: 'Database schema (default: public)', default: 'public' },
+        schema: {
+          type: 'string',
+          description: 'Database schema (default: public)',
+          default: 'public',
+        },
       },
       required: ['table'],
     },
   },
   {
     name: 'suggest_endpoint_structure',
-    description: 'Get the recommended route patterns for a new feature — consistent with TenantScale conventions',
+    description:
+      'Get the recommended route patterns for a new feature — consistent with TenantScale conventions',
     inputSchema: {
       type: 'object',
       properties: {
-        feature: { type: 'string', description: 'Feature name, e.g. "billing", "webhooks", "invitations"' },
+        feature: {
+          type: 'string',
+          description: 'Feature name, e.g. "billing", "webhooks", "invitations"',
+        },
         methods: {
           type: 'array',
           items: { type: 'string' },
@@ -110,20 +121,31 @@ function handleValidateQuery(query: string, table: string) {
   const knownSqlStatement = /^(SELECT|INSERT|UPDATE|DELETE)\b/i.test(trimmedQuery)
 
   if (!knownSqlStatement) {
-    issues.push(`⚠️  Unable to identify a SELECT/INSERT/UPDATE/DELETE statement for "${trimmedTable}". Verify the query includes tenant_id scoping.`)
+    issues.push(
+      `⚠️  Unable to identify a SELECT/INSERT/UPDATE/DELETE statement for "${trimmedTable}". Verify the query includes tenant_id scoping.`,
+    )
   }
 
   if (upper.includes('WHERE')) {
     const whereClause = trimmedQuery.split(/WHERE/i)[1]
     if (whereClause && !whereClause.toLowerCase().includes('tenant_id')) {
-      issues.push(`⚠️  WHERE clause found but does not reference "tenant_id". Add: AND tenant_id = current_setting('app.tenant_id')::UUID`)
+      issues.push(
+        `⚠️  WHERE clause found but does not reference "tenant_id". Add: AND tenant_id = current_setting('app.tenant_id')::UUID`,
+      )
     }
   } else if (upper.startsWith('SELECT') && !upper.includes('COUNT')) {
-    issues.push(`⚠️  No WHERE clause on SELECT from "${trimmedTable}". All tenant queries must filter by tenant_id.`)
+    issues.push(
+      `⚠️  No WHERE clause on SELECT from "${trimmedTable}". All tenant queries must filter by tenant_id.`,
+    )
   }
 
-  if (!upper.includes('tenant_id') && (upper.startsWith('INSERT') || upper.startsWith('UPDATE') || upper.startsWith('DELETE'))) {
-    issues.push(`⚠️  Mutation on "${trimmedTable}" missing tenant_id reference. Did you forget to scope to the current tenant?`)
+  if (
+    !upper.includes('tenant_id') &&
+    (upper.startsWith('INSERT') || upper.startsWith('UPDATE') || upper.startsWith('DELETE'))
+  ) {
+    issues.push(
+      `⚠️  Mutation on "${trimmedTable}" missing tenant_id reference. Did you forget to scope to the current tenant?`,
+    )
   }
 
   if (issues.length === 0) {
@@ -167,24 +189,26 @@ function handleSuggestEndpoint(feature: string, methods: string[] = []) {
     return 'Error: feature is required to suggest endpoint structure.'
   }
 
-  const routes = methods.map(m => {
-    const method = m.toUpperCase()
-    switch (method) {
-      case 'GET':
-        return [
-          `GET    /v1/${trimmedFeature}          — List ${trimmedFeature} for current tenant`,
-          `GET    /v1/${trimmedFeature}/:id      — Get single ${trimmedFeature} entry`,
-        ]
-      case 'POST':
-        return [`POST   /v1/${trimmedFeature}          — Create new ${trimmedFeature} entry`]
-      case 'PATCH':
-        return [`PATCH  /v1/${trimmedFeature}/:id      — Update ${trimmedFeature} entry`]
-      case 'DELETE':
-        return [`DELETE /v1/${trimmedFeature}/:id      — Delete ${trimmedFeature} entry`]
-      default:
-        return []
-    }
-  }).flat()
+  const routes = methods
+    .map((m) => {
+      const method = m.toUpperCase()
+      switch (method) {
+        case 'GET':
+          return [
+            `GET    /v1/${trimmedFeature}          — List ${trimmedFeature} for current tenant`,
+            `GET    /v1/${trimmedFeature}/:id      — Get single ${trimmedFeature} entry`,
+          ]
+        case 'POST':
+          return [`POST   /v1/${trimmedFeature}          — Create new ${trimmedFeature} entry`]
+        case 'PATCH':
+          return [`PATCH  /v1/${trimmedFeature}/:id      — Update ${trimmedFeature} entry`]
+        case 'DELETE':
+          return [`DELETE /v1/${trimmedFeature}/:id      — Delete ${trimmedFeature} entry`]
+        default:
+          return []
+      }
+    })
+    .flat()
 
   const notes = [
     '',

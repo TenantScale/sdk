@@ -107,11 +107,19 @@ export class TenantScaleClient {
   // ── API Keys ──
 
   async getApiKeys(): Promise<PaginatedResponse<ApiKey>> {
-    return this.request<PaginatedResponse<ApiKey>>('GET', '/v1/portal/api-keys', undefined, 'GET:/v1/portal/api-keys')
+    return this.request<PaginatedResponse<ApiKey>>(
+      'GET',
+      '/v1/portal/api-keys',
+      undefined,
+      'GET:/v1/portal/api-keys',
+    )
   }
 
   async createApiKey(label: string, scopes?: string[]): Promise<CreatedApiKey> {
-    const result = await this.request<CreatedApiKey>('POST', '/v1/portal/api-keys', { label, scopes })
+    const result = await this.request<CreatedApiKey>('POST', '/v1/portal/api-keys', {
+      label,
+      scopes,
+    })
     this.invalidate('/v1/portal/api-keys')
     return result
   }
@@ -124,7 +132,12 @@ export class TenantScaleClient {
   // ── Team ──
 
   async getTeam(): Promise<PaginatedResponse<TeamMember>> {
-    return this.request<PaginatedResponse<TeamMember>>('GET', '/v1/portal/team', undefined, 'GET:/v1/portal/team')
+    return this.request<PaginatedResponse<TeamMember>>(
+      'GET',
+      '/v1/portal/team',
+      undefined,
+      'GET:/v1/portal/team',
+    )
   }
 
   async inviteMember(email: string, role: string): Promise<void> {
@@ -156,16 +169,28 @@ export class TenantScaleClient {
   // ── Webhooks ──
 
   async getWebhooks(): Promise<PaginatedResponse<Webhook>> {
-    return this.request<PaginatedResponse<Webhook>>('GET', '/v1/portal/webhooks', undefined, 'GET:/v1/portal/webhooks')
+    return this.request<PaginatedResponse<Webhook>>(
+      'GET',
+      '/v1/portal/webhooks',
+      undefined,
+      'GET:/v1/portal/webhooks',
+    )
   }
 
   async createWebhook(url: string, events: string[], description?: string): Promise<Webhook> {
-    const result = await this.request<Webhook>('POST', '/v1/portal/webhooks', { url, events, description })
+    const result = await this.request<Webhook>('POST', '/v1/portal/webhooks', {
+      url,
+      events,
+      description,
+    })
     this.invalidate('/v1/portal/webhooks')
     return result
   }
 
-  async updateWebhook(id: string, updates: Partial<{ url: string; events: string[]; description: string; is_active: boolean }>): Promise<Webhook> {
+  async updateWebhook(
+    id: string,
+    updates: Partial<{ url: string; events: string[]; description: string; is_active: boolean }>,
+  ): Promise<Webhook> {
     const result = await this.request<Webhook>('PATCH', `/v1/portal/webhooks/${id}`, updates)
     this.invalidate('/v1/portal/webhooks')
     return result
@@ -176,7 +201,11 @@ export class TenantScaleClient {
     this.invalidate('/v1/portal/webhooks')
   }
 
-  async getWebhookDeliveries(webhookId: string, page = 1, limit = 50): Promise<PaginatedResponse<WebhookDelivery>> {
+  async getWebhookDeliveries(
+    webhookId: string,
+    page = 1,
+    limit = 50,
+  ): Promise<PaginatedResponse<WebhookDelivery>> {
     return this.request<PaginatedResponse<WebhookDelivery>>(
       'GET',
       `/v1/portal/webhooks/${webhookId}/deliveries?page=${page}&limit=${limit}`,

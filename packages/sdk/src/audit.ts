@@ -6,7 +6,11 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { AuditEventInput, Logger } from './types.js'
 
 /** Default logger — just console */
-const defaultLogger: Logger = { info: console.info.bind(console), warn: console.warn.bind(console), error: console.error.bind(console) }
+const defaultLogger: Logger = {
+  info: console.info.bind(console),
+  warn: console.warn.bind(console),
+  error: console.error.bind(console),
+}
 
 let auditLogger: Logger = defaultLogger
 
@@ -23,7 +27,9 @@ export function setAuditLogger(logger: Logger): void {
  * Pass `req.headers` from Express, `c.req.raw.headers` from Hono,
  * or `Headers` from any framework.
  */
-export function getClientIp(headers: Headers | Record<string, string | string[] | undefined>): string {
+export function getClientIp(
+  headers: Headers | Record<string, string | string[] | undefined>,
+): string {
   // If it's a Headers object (Web API style)
   if (typeof (headers as Headers).get === 'function') {
     const h = headers as Headers
@@ -37,12 +43,22 @@ export function getClientIp(headers: Headers | Record<string, string | string[] 
 
   // Plain record (e.g. Express req.headers)
   const rec = headers as Record<string, string | string[] | undefined>
-  const forwarded = typeof rec['x-forwarded-for'] === 'string' ? rec['x-forwarded-for'] : Array.isArray(rec['x-forwarded-for']) ? rec['x-forwarded-for'][0] : undefined
+  const forwarded =
+    typeof rec['x-forwarded-for'] === 'string'
+      ? rec['x-forwarded-for']
+      : Array.isArray(rec['x-forwarded-for'])
+        ? rec['x-forwarded-for'][0]
+        : undefined
   if (forwarded) {
     const firstIp = forwarded.split(',')[0]?.trim()
     if (firstIp) return firstIp
   }
-  const realIp = typeof rec['x-real-ip'] === 'string' ? rec['x-real-ip'] : Array.isArray(rec['x-real-ip']) ? rec['x-real-ip'][0] : undefined
+  const realIp =
+    typeof rec['x-real-ip'] === 'string'
+      ? rec['x-real-ip']
+      : Array.isArray(rec['x-real-ip'])
+        ? rec['x-real-ip'][0]
+        : undefined
   return realIp ?? 'unknown'
 }
 

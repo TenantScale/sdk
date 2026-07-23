@@ -8,7 +8,13 @@ import { errorResponse } from './error-handler.js'
 import type { NextAdapterOptions, SessionContext, RouteParams } from './types.js'
 
 export interface AppRouterHandlerFactory {
-  withSession: (handler: (request: Request, context: SessionContext, routeParams: RouteParams) => Response | Promise<Response>) => (request: Request, routeParams: RouteParams) => Promise<Response>
+  withSession: (
+    handler: (
+      request: Request,
+      context: SessionContext,
+      routeParams: RouteParams,
+    ) => Response | Promise<Response>,
+  ) => (request: Request, routeParams: RouteParams) => Promise<Response>
 }
 
 async function getSessionFromCookies(request: Request, options: NextAdapterOptions) {

@@ -12,11 +12,7 @@
 // ```
 
 import type { Request, Response, NextFunction } from 'express'
-import {
-  TenantScaleError,
-  PlanLimitExceededError,
-  RateLimitExceededError,
-} from '@tenantscale/sdk'
+import { TenantScaleError, PlanLimitExceededError, RateLimitExceededError } from '@tenantscale/sdk'
 import type { ExpressAdapterOptions, ErrorResponse } from './types.js'
 
 /**
@@ -34,12 +30,7 @@ import type { ExpressAdapterOptions, ErrorResponse } from './types.js'
  * app.use(errorHandler)
  * ```
  */
-export function errorHandler(
-  err: Error,
-  _req: Request,
-  res: Response,
-  next: NextFunction,
-): void {
+export function errorHandler(err: Error, _req: Request, res: Response, next: NextFunction): void {
   // Not a TenantScale error — pass through
   if (!(err instanceof TenantScaleError)) {
     next(err)

@@ -22,16 +22,8 @@ const DEFAULT_IGNORE = ['node_modules', '.git', '.turbo', 'dist', '.next', 'cove
  * Recursively find files matching given extensions or filenames.
  * Respects .gitignore patterns via DEFAULT_IGNORE.
  */
-export function findFiles(
-  dir: string,
-  options: GlobOptions = {},
-): string[] {
-  const {
-    extensions = [],
-    filenames = [],
-    maxDepth = 10,
-    ignore = DEFAULT_IGNORE,
-  } = options
+export function findFiles(dir: string, options: GlobOptions = {}): string[] {
+  const { extensions = [], filenames = [], maxDepth = 10, ignore = DEFAULT_IGNORE } = options
 
   const results: string[] = []
 
@@ -50,7 +42,7 @@ export function findFiles(
       const basename = entry
 
       // Skip ignored directories/files
-      if (ignore.some(p => basename === p || basename.startsWith(p))) continue
+      if (ignore.some((p) => basename === p || basename.startsWith(p))) continue
 
       let stats: ReturnType<typeof statSync>
       try {

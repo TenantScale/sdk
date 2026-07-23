@@ -21,9 +21,17 @@ function run(args: string, cwd: string): RunResult {
     return { stdout, exitCode: 0 }
   } catch (e: unknown) {
     return {
-      stdout: (e && typeof e === 'object' && 'stdout' in e ? String((e as Record<string, unknown>).stdout ?? '') : '') +
-              (e && typeof e === 'object' && 'stderr' in e ? String((e as Record<string, unknown>).stderr ?? '') : ''),
-      exitCode: (e && typeof e === 'object' && 'status' in e ? (e as Record<string, unknown>).status as number : 1) ?? 1,
+      stdout:
+        (e && typeof e === 'object' && 'stdout' in e
+          ? String((e as Record<string, unknown>).stdout ?? '')
+          : '') +
+        (e && typeof e === 'object' && 'stderr' in e
+          ? String((e as Record<string, unknown>).stderr ?? '')
+          : ''),
+      exitCode:
+        (e && typeof e === 'object' && 'status' in e
+          ? ((e as Record<string, unknown>).status as number)
+          : 1) ?? 1,
     }
   }
 }

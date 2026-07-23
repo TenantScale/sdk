@@ -8,7 +8,10 @@ import type { PortalSessionInfo } from '../types.js'
 
 // ── Helpers ──
 
-function makeMockUserResponse(user: Record<string, unknown> | null, authError: Error | null = null) {
+function makeMockUserResponse(
+  user: Record<string, unknown> | null,
+  authError: Error | null = null,
+) {
   return {
     data: { user },
     error: authError,
@@ -72,7 +75,7 @@ describe('validateSession', () => {
     const { supabase, mockGetUser, mockMaybeSingle1, mockMaybeSingle2 } = makeMockSupabase()
 
     mockGetUser.mockResolvedValue(
-      makeMockUserResponse({ id: 'user_001', email: 'test@example.com' })
+      makeMockUserResponse({ id: 'user_001', email: 'test@example.com' }),
     )
     mockMaybeSingle1.mockResolvedValue({ data: null, error: null }) // Not super admin
     mockMaybeSingle2.mockResolvedValue({
@@ -106,7 +109,7 @@ describe('validateSession', () => {
     const { supabase, mockGetUser, mockMaybeSingle1, mockMaybeSingle2 } = makeMockSupabase()
 
     mockGetUser.mockResolvedValue(
-      makeMockUserResponse({ id: 'user_002', email: 'super@example.com' })
+      makeMockUserResponse({ id: 'user_002', email: 'super@example.com' }),
     )
     mockMaybeSingle1.mockResolvedValue({ data: { id: 'admin_001' }, error: null }) // Is super admin
     mockMaybeSingle2.mockResolvedValue({ data: null, error: null }) // No tenant membership
@@ -133,7 +136,7 @@ describe('validateSession', () => {
     const { supabase, mockGetUser, mockMaybeSingle1, mockMaybeSingle2 } = makeMockSupabase()
 
     mockGetUser.mockResolvedValue(
-      makeMockUserResponse({ id: 'user_003', email: 'superadmin@corp.com' })
+      makeMockUserResponse({ id: 'user_003', email: 'superadmin@corp.com' }),
     )
     mockMaybeSingle1.mockResolvedValue({ data: { id: 'admin_001' }, error: null })
     mockMaybeSingle2.mockResolvedValue({
@@ -159,7 +162,7 @@ describe('validateSession', () => {
     const { supabase, mockGetUser, mockMaybeSingle1, mockMaybeSingle2 } = makeMockSupabase()
 
     mockGetUser.mockResolvedValue(
-      makeMockUserResponse({ id: 'user_004', email: 'admin@example.com' })
+      makeMockUserResponse({ id: 'user_004', email: 'admin@example.com' }),
     )
     mockMaybeSingle1.mockResolvedValue({ data: { id: 'admin_001' }, error: null })
     mockMaybeSingle2.mockResolvedValue({ data: null, error: null })
@@ -178,9 +181,7 @@ describe('validateSession', () => {
   it('handles user with no email gracefully', async () => {
     const { supabase, mockGetUser, mockMaybeSingle1, mockMaybeSingle2 } = makeMockSupabase()
 
-    mockGetUser.mockResolvedValue(
-      makeMockUserResponse({ id: 'user_no_email' })
-    )
+    mockGetUser.mockResolvedValue(makeMockUserResponse({ id: 'user_no_email' }))
     mockMaybeSingle1.mockResolvedValue({ data: null, error: null })
     mockMaybeSingle2.mockResolvedValue({
       data: {
@@ -213,12 +214,14 @@ describe('validateSession', () => {
   // Risk if missing: Auth errors might leak internal details or be improperly handled
   it('throws AuthenticationError when auth.getUser fails', async () => {
     const { supabase, mockGetUser } = makeMockSupabase()
-    mockGetUser.mockResolvedValue(
-      makeMockUserResponse(null, new Error('JWT expired'))
-    )
+    mockGetUser.mockResolvedValue(makeMockUserResponse(null, new Error('JWT expired')))
 
-    await expect(validateSession(supabase as any, 'expired.jwt')).rejects.toThrow(AuthenticationError)
-    await expect(validateSession(supabase as any, 'expired.jwt')).rejects.toThrow('Invalid or expired session')
+    await expect(validateSession(supabase as any, 'expired.jwt')).rejects.toThrow(
+      AuthenticationError,
+    )
+    await expect(validateSession(supabase as any, 'expired.jwt')).rejects.toThrow(
+      'Invalid or expired session',
+    )
   })
 
   // Test: No user returned from getUser
@@ -227,12 +230,14 @@ describe('validateSession', () => {
   // Risk if missing: A null user response could slip through and cause downstream crashes
   it('throws AuthenticationError when getUser returns null user', async () => {
     const { supabase, mockGetUser } = makeMockSupabase()
-    mockGetUser.mockResolvedValue(
-      makeMockUserResponse(null)
-    )
+    mockGetUser.mockResolvedValue(makeMockUserResponse(null))
 
-    await expect(validateSession(supabase as any, 'nulluser.jwt')).rejects.toThrow(AuthenticationError)
-    await expect(validateSession(supabase as any, 'nulluser.jwt')).rejects.toThrow('Invalid or expired session')
+    await expect(validateSession(supabase as any, 'nulluser.jwt')).rejects.toThrow(
+      AuthenticationError,
+    )
+    await expect(validateSession(supabase as any, 'nulluser.jwt')).rejects.toThrow(
+      'Invalid or expired session',
+    )
   })
 
   // Test: No tenant membership and not super_admin throws AuthorizationError
@@ -243,13 +248,15 @@ describe('validateSession', () => {
     const { supabase, mockGetUser, mockMaybeSingle1, mockMaybeSingle2 } = makeMockSupabase()
 
     mockGetUser.mockResolvedValue(
-      makeMockUserResponse({ id: 'user_005', email: 'orphan@example.com' })
+      makeMockUserResponse({ id: 'user_005', email: 'orphan@example.com' }),
     )
     mockMaybeSingle1.mockResolvedValue({ data: null, error: null }) // Not super admin
     mockMaybeSingle2.mockResolvedValue({ data: null, error: null }) // No tenant membership
 
     await expect(validateSession(supabase as any, 'orphan.jwt')).rejects.toThrow(AuthorizationError)
-    await expect(validateSession(supabase as any, 'orphan.jwt')).rejects.toThrow('No tenant membership found')
+    await expect(validateSession(supabase as any, 'orphan.jwt')).rejects.toThrow(
+      'No tenant membership found',
+    )
     try {
       await validateSession(supabase as any, 'orphan.jwt')
     } catch (e: any) {
@@ -265,7 +272,7 @@ describe('validateSession', () => {
     const { supabase, mockGetUser, mockMaybeSingle1, mockMaybeSingle2 } = makeMockSupabase()
 
     mockGetUser.mockResolvedValue(
-      makeMockUserResponse({ id: 'user_unicode', email: 'user+test@münchen.de' })
+      makeMockUserResponse({ id: 'user_unicode', email: 'user+test@münchen.de' }),
     )
     mockMaybeSingle1.mockResolvedValue({ data: null, error: null })
     mockMaybeSingle2.mockResolvedValue({
@@ -289,7 +296,7 @@ describe('validateSession', () => {
     const { supabase, mockGetUser, mockMaybeSingle1, mockMaybeSingle2 } = makeMockSupabase()
 
     mockGetUser.mockResolvedValue(
-      makeMockUserResponse({ id: 'user_006', email: 'test@example.com' })
+      makeMockUserResponse({ id: 'user_006', email: 'test@example.com' }),
     )
     mockMaybeSingle1.mockRejectedValue(new Error('DB error')) // platform_admins query fails
     mockMaybeSingle2.mockResolvedValue({
@@ -316,7 +323,7 @@ describe('validateSession', () => {
     const { supabase, mockGetUser, mockMaybeSingle1, mockMaybeSingle2 } = makeMockSupabase()
 
     mockGetUser.mockResolvedValue(
-      makeMockUserResponse({ id: 'user_007', email: 'test@example.com' })
+      makeMockUserResponse({ id: 'user_007', email: 'test@example.com' }),
     )
     mockMaybeSingle1.mockResolvedValue({ data: null, error: null })
     mockMaybeSingle2.mockRejectedValue(new Error('DB error'))
@@ -381,7 +388,7 @@ describe('requirePortalRole', () => {
     }
     expect(() => requirePortalRole(session, 'admin')).toThrow(AuthorizationError)
     expect(() => requirePortalRole(session, 'admin')).toThrow(
-      'This endpoint requires one of these roles: admin'
+      'This endpoint requires one of these roles: admin',
     )
     try {
       requirePortalRole(session, 'admin')

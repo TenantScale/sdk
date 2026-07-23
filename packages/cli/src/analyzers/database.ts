@@ -44,11 +44,24 @@ export interface DatabaseInfo {
 
 // Tables that should never be tenant-scoped
 const SYSTEM_TABLES = new Set([
-  'migrations', '_migrations', 'knex_migrations',
-  '_prisma_migrations', 'schema_migrations',
-  'plans', 'subscriptions', 'audit_events', 'api_keys',
-  'impersonation_sessions', 'tenants', 'organizations', 'teams',
-  'users', 'auth.users', 'accounts', 'sessions', 'verification_tokens',
+  'migrations',
+  '_migrations',
+  'knex_migrations',
+  '_prisma_migrations',
+  'schema_migrations',
+  'plans',
+  'subscriptions',
+  'audit_events',
+  'api_keys',
+  'impersonation_sessions',
+  'tenants',
+  'organizations',
+  'teams',
+  'users',
+  'auth.users',
+  'accounts',
+  'sessions',
+  'verification_tokens',
 ])
 
 // Tables that are very likely tenant-scoped by name
@@ -70,10 +83,10 @@ export function analyzeDatabase(projectDir: string, sourceFiles: string[]): Data
   const orm = detectOrm(projectDir, sourceFiles, evidence)
   const tables = discoverTables(projectDir, sourceFiles, orm, evidence)
   const tenantTables = tables
-    .filter(t => t.tenantScopeScore > 0.3)
+    .filter((t) => t.tenantScopeScore > 0.3)
     .sort((a, b) => b.tenantScopeScore - a.tenantScopeScore)
 
-  const hasExistingRls = sourceFiles.some(f => {
+  const hasExistingRls = sourceFiles.some((f) => {
     const content = readFileSafe(f)
     return content && /enable\s+row\s+level\s+security/i.test(content)
   })
@@ -90,7 +103,11 @@ export function analyzeDatabase(projectDir: string, sourceFiles: string[]): Data
   }
 }
 
-function detectOrm(projectDir: string, sourceFiles: string[], evidence: string[]): DatabaseInfo['orm'] {
+function detectOrm(
+  projectDir: string,
+  sourceFiles: string[],
+  evidence: string[],
+): DatabaseInfo['orm'] {
   // Check package.json for ORM dependencies
   const pkgFiles = findFiles(projectDir, { filenames: ['package.json'] })
   for (const p of pkgFiles) {
@@ -115,7 +132,9 @@ function detectOrm(projectDir: string, sourceFiles: string[], evidence: string[]
         evidence.push('Found Knex dependency')
         return 'knex'
       }
-    } catch { /* skip */ }
+    } catch {
+      /* skip */
+    }
   }
 
   // Check source files for imports
@@ -167,8 +186,9 @@ function discoverTables(
 
   if (orm === 'supabase' || orm === 'raw-sql') {
     // Parse SQL migration files
-    const sqlFiles = findFiles(projectDir, { extensions: ['.sql'] })
-      .filter(f => !f.includes('node_modules'))
+    const sqlFiles = findFiles(projectDir, { extensions: ['.sql'] }).filter(
+      (f) => !f.includes('node_modules'),
+    )
 
     for (const file of sqlFiles) {
       const content = readFileSafe(file)
@@ -196,10 +216,12 @@ function discoverTables(
         }
 
         existing.columnCount = columns.length
-        existing.hasTenantId = columns.some(c => /tenant_id/i.test(c))
+        existing.hasTenantId = columns.some((c) => /tenant_id/i.test(c))
         existing.referencesTenants = /references\s+tenants\s*\(/i.test(block)
-        existing.hasUserId = columns.some(c => /^user_id$/i.test(c))
-        existing.hasOrgId = columns.some(c => /^(organization_id|org_id|team_id|workspace_id)$/i.test(c))
+        existing.hasUserId = columns.some((c) => /^user_id$/i.test(c))
+        existing.hasOrgId = columns.some((c) =>
+          /^(organization_id|org_id|team_id|workspace_id)$/i.test(c),
+        )
 
         // Calculate tenant scope score
         existing.tenantScopeScore = calculateTenantScore(existing, tableName)
@@ -238,10 +260,14 @@ function discoverTables(
         }
 
         existing.columnCount = columns.length
-        existing.hasTenantId = columns.some(c => /tenant/i.test(c))
+        existing.hasTenantId = columns.some((c) => /tenant/i.test(c))
         existing.referencesTenants = /tenants\s*\(/.test(block)
-        existing.hasUserId = columns.some(c => /^userId$/i.test(c) || /^user_id$/i.test(c) || c === 'userId')
-        existing.hasOrgId = columns.some(c => /^(organizationId|orgId|teamId|workspaceId)$/i.test(c))
+        existing.hasUserId = columns.some(
+          (c) => /^userId$/i.test(c) || /^user_id$/i.test(c) || c === 'userId',
+        )
+        existing.hasOrgId = columns.some((c) =>
+          /^(organizationId|orgId|teamId|workspaceId)$/i.test(c),
+        )
 
         existing.tenantScopeScore = calculateTenantScore(existing, tableName)
         tableMap.set(tableName, existing)
@@ -250,15 +276,16 @@ function discoverTables(
   }
 
   // Convert to sorted array
-  const tables = Array.from(tableMap.values())
-    .sort((a, b) => b.tenantScopeScore - a.tenantScopeScore)
+  const tables = Array.from(tableMap.values()).sort(
+    (a, b) => b.tenantScopeScore - a.tenantScopeScore,
+  )
 
   evidence.push(`Found ${tables.length} application tables`)
-  const readyCount = tables.filter(t => t.hasTenantId).length
+  const readyCount = tables.filter((t) => t.hasTenantId).length
   if (readyCount > 0) {
     evidence.push(`${readyCount} tables already have tenant_id`)
   }
-  const needsMigration = tables.filter(t => !t.hasTenantId && t.tenantScopeScore > 0.5).length
+  const needsMigration = tables.filter((t) => !t.hasTenantId && t.tenantScopeScore > 0.5).length
   if (needsMigration > 0) {
     evidence.push(`${needsMigration} tables need tenant_id migration`)
   }
@@ -296,9 +323,13 @@ function parseColumns(block: string): string[] {
   for (const line of lines) {
     const trimmed = line.trim()
     // Skip table constraints, comments, empty lines
-    if (!trimmed || trimmed.startsWith('--') || trimmed.startsWith('/*') ||
-        /^(create|alter|grant|--|\)|;)/i.test(trimmed) ||
-        /^(primary|foreign|unique|check|constraint|index)/i.test(trimmed)) {
+    if (
+      !trimmed ||
+      trimmed.startsWith('--') ||
+      trimmed.startsWith('/*') ||
+      /^(create|alter|grant|--|\)|;)/i.test(trimmed) ||
+      /^(primary|foreign|unique|check|constraint|index)/i.test(trimmed)
+    ) {
       continue
     }
     const colMatch = trimmed.match(/^"?(\w+)"?\s/)
@@ -314,8 +345,14 @@ function parsePrismaColumns(block: string): string[] {
   const lines = block.split('\n')
   for (const line of lines) {
     const trimmed = line.trim()
-    if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('@@') ||
-        trimmed.startsWith('enum') || trimmed.startsWith('}') || trimmed.startsWith('{')) {
+    if (
+      !trimmed ||
+      trimmed.startsWith('//') ||
+      trimmed.startsWith('@@') ||
+      trimmed.startsWith('enum') ||
+      trimmed.startsWith('}') ||
+      trimmed.startsWith('{')
+    ) {
       continue
     }
     const colMatch = trimmed.match(/^(\w+)\s+/)

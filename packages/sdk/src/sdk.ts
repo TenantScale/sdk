@@ -24,7 +24,13 @@
 //   ts.webhooks.dispatch('tenant.created', tenantId, data)
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
-import type { TenantScaleOptions, ApiKeyInfo, PortalSessionInfo, AuditEventInput, Logger } from './types.js'
+import type {
+  TenantScaleOptions,
+  ApiKeyInfo,
+  PortalSessionInfo,
+  AuditEventInput,
+  Logger,
+} from './types.js'
 import { PlanStore } from './plan.js'
 import { RateLimiter } from './rate-limit.js'
 import { WebhookDispatcher } from './webhook.js'

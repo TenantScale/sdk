@@ -168,7 +168,10 @@ describe('koa adapter', () => {
 
   it('returns 429 for IP-based rate limits', async () => {
     const ts = createMockTenantScale()
-    ts.rateLimiter.checkIpCreationLimit.mockResolvedValue({ blocked: true, resetAtMs: Date.now() + 30000 })
+    ts.rateLimiter.checkIpCreationLimit.mockResolvedValue({
+      blocked: true,
+      resetAtMs: Date.now() + 30000,
+    })
     const app = new Koa()
     app.use(rateLimitByIp({ ts }))
     app.use(async (ctx) => {

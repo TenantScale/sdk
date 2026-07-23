@@ -50,7 +50,9 @@ export async function select(
     console.log(`    ${pc.dim(`${i + 1}.`)}${marker} ${options[i].name}`)
   }
 
-  const answer = await ask(`Enter number${defaultValue ? ` [${options.findIndex(o => o.value === defaultValue) + 1 || 1}]` : ''}`)
+  const answer = await ask(
+    `Enter number${defaultValue ? ` [${options.findIndex((o) => o.value === defaultValue) + 1 || 1}]` : ''}`,
+  )
   const idx = parseInt(answer, 10) - 1
   if (idx >= 0 && idx < options.length) return options[idx].value
   if (defaultValue) return defaultValue
@@ -73,11 +75,14 @@ export async function multiSelect(
   }
 
   const answer = await ask('Select items')
-  if (answer.toLowerCase() === 'all') return options.map(o => o.value)
+  if (answer.toLowerCase() === 'all') return options.map((o) => o.value)
 
-  const indices = answer.split(',').map(s => parseInt(s.trim(), 10) - 1).filter(n => n >= 0 && n < options.length)
+  const indices = answer
+    .split(',')
+    .map((s) => parseInt(s.trim(), 10) - 1)
+    .filter((n) => n >= 0 && n < options.length)
   if (indices.length === 0) {
-    return options.filter(o => o.checked).map(o => o.value)
+    return options.filter((o) => o.checked).map((o) => o.value)
   }
-  return indices.map(i => options[i].value)
+  return indices.map((i) => options[i].value)
 }

@@ -39,15 +39,17 @@ export function authenticateApiKey(options: KoaAdapterOptions) {
       ;(ctx as Context & { tenantId?: string }).tenantId = apiKey.tenant_id
 
       if (audit) {
-        options.ts.logAuditEvent({
-          tenant_id: apiKey.tenant_id,
-          actor_id: apiKey.key_record_id,
-          actor_type: 'admin_api',
-          action: 'api_key.authenticated',
-          resource: ctx.path,
-          ip: resolveClientIp(ctx),
-          user_agent: ctx.get('user-agent') ?? undefined,
-        }).catch(() => {})
+        options.ts
+          .logAuditEvent({
+            tenant_id: apiKey.tenant_id,
+            actor_id: apiKey.key_record_id,
+            actor_type: 'admin_api',
+            action: 'api_key.authenticated',
+            resource: ctx.path,
+            ip: resolveClientIp(ctx),
+            user_agent: ctx.get('user-agent') ?? undefined,
+          })
+          .catch(() => {})
       }
 
       await next()
@@ -96,7 +98,9 @@ export function requirePortalSession(options: KoaAdapterOptions) {
 
       const parts = authHeader.split(' ')
       if (parts.length !== 2 || parts[0] !== 'Bearer') {
-        throw new AuthenticationError('Invalid authorization header format. Expected: Bearer <token>')
+        throw new AuthenticationError(
+          'Invalid authorization header format. Expected: Bearer <token>',
+        )
       }
 
       const session = await options.ts.validateSession(parts[1])
@@ -168,7 +172,9 @@ export function requirePlanLimit(
     try {
       const tenantId = (ctx as Context & { tenantId?: string }).tenantId
       if (!tenantId) {
-        throw new AuthenticationError('Tenant ID not resolved. Ensure authenticateApiKey or requirePortalSession runs first.')
+        throw new AuthenticationError(
+          'Tenant ID not resolved. Ensure authenticateApiKey or requirePortalSession runs first.',
+        )
       }
 
       const limit = await options.ts.plans.getPlanLimit(tenantId, feature)
@@ -270,18 +276,20 @@ export function auditLog(
     const tenantKey = (ctx as Context & { tenantKey?: any }).tenantKey
     const actorId = portalSession?.user_id ?? tenantKey?.created_by ?? null
 
-    options.ts.logAuditEvent({
-      tenant_id: tenantId,
-      actor_id: actorId,
-      actor_type: config.actorType ?? (portalSession ? 'user' : 'admin_api'),
-      action: config.action,
-      resource: config.resource,
-      details: config.getDetails?.(ctx),
-      ip: resolveClientIp(ctx),
-      user_agent: ctx.get('user-agent') ?? undefined,
-    }).catch(err => {
-      options.ts.logger?.error?.('Audit log write failed:', err)
-    })
+    options.ts
+      .logAuditEvent({
+        tenant_id: tenantId,
+        actor_id: actorId,
+        actor_type: config.actorType ?? (portalSession ? 'user' : 'admin_api'),
+        action: config.action,
+        resource: config.resource,
+        details: config.getDetails?.(ctx),
+        ip: resolveClientIp(ctx),
+        user_agent: ctx.get('user-agent') ?? undefined,
+      })
+      .catch((err) => {
+        options.ts.logger?.error?.('Audit log write failed:', err)
+      })
 
     await next()
   }

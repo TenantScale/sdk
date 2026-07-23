@@ -221,11 +221,7 @@ export class RateLimitExceededError extends TenantScaleError {
 
 export class NotFoundError extends TenantScaleError {
   constructor(resource: string, id?: string) {
-    super(
-      id ? `${resource} not found: ${id}` : `${resource} not found`,
-      'NOT_FOUND',
-      404,
-    )
+    super(id ? `${resource} not found: ${id}` : `${resource} not found`, 'NOT_FOUND', 404)
     this.name = 'NotFoundError'
   }
 }

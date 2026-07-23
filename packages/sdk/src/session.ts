@@ -32,7 +32,10 @@ export async function validateSession(
   }
 
   // Validate the JWT with Supabase Auth
-  const { data: { user }, error: authError } = await supabase.auth.getUser(jwt)
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser(jwt)
 
   if (authError || !user) {
     throw new AuthenticationError('Invalid or expired session')
