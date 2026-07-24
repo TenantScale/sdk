@@ -3,6 +3,7 @@
   "version": "0.1.1",
   "description": "Scaffold multi-tenant SaaS projects with TenantScale",
   "type": "module",
+  "sideEffects": false,
   "bin": {
     "tenantscale": "./dist/index.js"
   },

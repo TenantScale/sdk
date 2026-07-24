@@ -7,7 +7,7 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "prepare": "husky",
-    "commitlint": "commitlint --edit",
+    "commitlint": "commitlint",
     "format": "prettier --write \"packages/*/src/**/*.ts\"",
     "format:check": "prettier --check \"packages/*/src/**/*.ts\""
   },

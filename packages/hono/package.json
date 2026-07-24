@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Hono.js middleware adapter for TenantScale — API key auth, plan enforcement, rate limiting, audit logging",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.js",
   "exports": {
     ".": {
@@ -28,7 +29,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
-    "hono": "^4.12.31",
+    "hono": "^4.12.32",
     "tsup": "^8.5.1",
     "typescript": "^7.0.2"
   },

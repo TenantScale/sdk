@@ -3,6 +3,7 @@
   "version": "0.1.1",
   "description": "MCP server for TenantScale — gives AI coding tools real-time tenant context during development",
   "type": "module",
+  "sideEffects": false,
   "bin": {
     "tenantscale-mcp": "./dist/index.js"
   },
