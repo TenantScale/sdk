@@ -19,7 +19,7 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "pnpm build",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
