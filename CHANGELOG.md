@@ -26,7 +26,6 @@
 - **@tenantscale/fastify** — Fastify adapter with auth, scope checks, and error handling (contributed by [@peakcoder](https://github.com/GHisDW))
 - **@tenantscale/koa** — Koa adapter scaffolding (contributed by [@ashudhanda](https://github.com/ashudhanda))
 - **@tenantscale/drizzle** — Drizzle ORM tenant-safe query guard (contributed by [@peakcoder](https://github.com/GHisDW))
-- **MCP server** — AI coding tool integration (@tenantscale/mcp)
 - **npm publish workflow** — Automated publishing to npm via GitHub Actions
 
 ### Fixed

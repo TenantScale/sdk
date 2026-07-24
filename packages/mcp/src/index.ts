@@ -37,7 +37,7 @@ import { TOOLS, callTenantScaleTool } from './tools.js'
 // ── Server Setup ──
 
 const server = new Server(
-  { name: '@tenantscale/mcp', version: '0.1.0' },
+  { name: '@tenantscale/mcp', version: '0.1.1' },
   { capabilities: { tools: {} } },
 )
 

@@ -188,6 +188,9 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.0.0
         version: 1.29.0(zod@4.4.3)
+      '@supabase/supabase-js':
+        specifier: ^2.0.0
+        version: 2.110.8
     devDependencies:
       '@types/node':
         specifier: 26.1.1

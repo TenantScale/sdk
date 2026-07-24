@@ -26,11 +26,15 @@
 // @tenantscale/mcp — Tool definitions and handlers
 // ──────────────────────────────────────────────────────
 
+import { fetchTenantTables, fetchTableSchema } from './supabase.js'
+
+// ── Tool Definitions ──
+
 export const TOOLS = [
   {
     name: 'get_tenant_schema',
     description:
-      'Look up existing tenant structures (tables, columns, RLS policies) from a connected Supabase project',
+      'Look up existing tenant structures (tables, columns, RLS policies) from a connected Supabase project. Requires SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to be set. Returns live schema when connected, or a reference list of standard TenantScale tables as fallback.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -93,6 +97,8 @@ export const TOOLS = [
   },
 ]
 
+// ── Types ──
+
 type ToolResult = {
   content: Array<{ type: 'text'; text: string }>
 }
@@ -101,9 +107,61 @@ function textResult(text: string): ToolResult {
   return { content: [{ type: 'text', text }] }
 }
 
-async function handleGetTenantSchema(table?: string) {
-  if (table) {
-    return `-- Schema for "${table}" follows TenantScale conventions:
+// ── Tool Handlers ──
+
+/**
+ * Format a single table's schema into a readable block.
+ */
+function formatTableInfo(t: {
+  table_name: string
+  table_schema: string
+  columns: Array<{ name: string; type: string; nullable: boolean; default: string | null }>
+  rls_enabled: boolean
+  rls_policies: Array<{ policy_name: string; definition: string }>
+  row_count: number | null
+}): string {
+  const lines: string[] = []
+  lines.push(`Table: "${t.table_schema}"."${t.table_name}"`)
+  if (t.row_count !== null) {
+    lines.push(`  Rows: ~${t.row_count.toLocaleString()}`)
+  }
+  lines.push(`  Columns:`)
+  for (const col of t.columns) {
+    const nullStr = col.nullable ? 'NULL' : 'NOT NULL'
+    const defaultStr = col.default ? ` DEFAULT ${col.default}` : ''
+    lines.push(`    • ${col.name}  ${col.type}  ${nullStr}${defaultStr}`)
+  }
+  if (t.rls_enabled) {
+    lines.push(`  RLS: ENABLED`)
+    for (const p of t.rls_policies) {
+      lines.push(`    • ${p.policy_name}: ${p.definition}`)
+    }
+  } else {
+    lines.push(`  RLS: DISABLED`)
+  }
+  return lines.join('\n')
+}
+
+/**
+ * Static fallback schema — used when no Supabase connection is configured.
+ */
+const STATIC_SCHEMA = `Standard TenantScale tables (static reference — set SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY for live schema):
+
+  • tenants            — Core tenant records, plan, feature flags
+  • tenant_users       — User-tenant membership
+  • api_keys           — Scoped API keys per tenant
+  • audit_events       — Immutable audit trail (tenant-scoped)
+  • impersonation_sessions  — Admin impersonation tokens
+  • plans              — Plan tiers and feature entitlements
+
+Every new tenant-scoped table should:
+  1. Include a "tenant_id UUID NOT NULL" column
+  2. Enable RLS with a tenant-scoped policy
+  3. Add an index on tenant_id`
+
+const STATIC_TABLE_SCHEMA = (
+  table: string,
+) => `-- Schema for "${table}" follows TenantScale conventions:
 --   id          UUID PRIMARY KEY DEFAULT gen_random_uuid()
 --   tenant_id   UUID NOT NULL
 --   ...feature columns...
@@ -112,23 +170,37 @@ async function handleGetTenantSchema(table?: string) {
 -- RLS: ENABLE ROW LEVEL SECURITY;
 -- POLICY tenant_isolation_${table}: FOR ALL USING (tenant_id = current_setting('app.tenant_id')::UUID)
 `
+
+async function handleGetTenantSchema(table?: string): Promise<string> {
+  if (table) {
+    // Try live schema first
+    try {
+      const info = await fetchTableSchema(table)
+      if (info) {
+        return formatTableInfo(info) + '\n\n(Data from live Supabase project)'
+      }
+      return `Table "${table}" not found, or it doesn't have a tenant_id column.\n\n${STATIC_TABLE_SCHEMA(table)}`
+    } catch {
+      // Fall back to static
+      return STATIC_TABLE_SCHEMA(table)
+    }
   }
 
-  return `TenantScale standard tables:
-  • tenants          — Core tenant records, plan, feature flags
-  • tenant_users     — User-tenant membership
-  • api_keys         — Scoped API keys per tenant
-  • audit_events     — Immutable audit trail (tenant-scoped)
-  • impersonation_sessions  — Admin impersonation tokens
-  • plans            — Plan tiers and feature entitlements
+  // List all tenant tables
+  try {
+    const tables = await fetchTenantTables()
+    if (tables.length > 0) {
+      const formatted = tables.map(formatTableInfo).join('\n\n')
+      return formatted + '\n\n(Data from live Supabase project)'
+    }
+  } catch {
+    // Fall through to static
+  }
 
-Every new tenant-scoped table should:
-  1. Include a "tenant_id UUID NOT NULL"
-  2. Enable RLS with a tenant-scoped policy
-  3. Add a GIN index on tenant_id`
+  return STATIC_SCHEMA
 }
 
-function handleValidateQuery(query: string, table: string) {
+function handleValidateQuery(query: string, table: string): string {
   const trimmedQuery = query.trim()
   const trimmedTable = table.trim()
 
@@ -179,7 +251,7 @@ function handleValidateQuery(query: string, table: string) {
   return issues.join('\n')
 }
 
-function handleGenerateRLSPolicy(table: string, schema: string) {
+function handleGenerateRLSPolicy(table: string, schema: string): string {
   const trimmedTable = table.trim()
   const trimmedSchema = schema.trim() || 'public'
 
@@ -206,7 +278,7 @@ CREATE INDEX idx_${trimmedTable}_tenant_id ON "${trimmedSchema}"."${trimmedTable
 `
 }
 
-function handleSuggestEndpoint(feature: string, methods: string[] = []) {
+function handleSuggestEndpoint(feature: string, methods: string[] = []): string {
   const trimmedFeature = feature.trim()
 
   if (!trimmedFeature) {
@@ -245,13 +317,18 @@ function handleSuggestEndpoint(feature: string, methods: string[] = []) {
     '',
     `Schema reference:`,
     `  • tenant_id FK is required on every new table`,
-    `  • See TENANTSCALE.md for the standard column pattern`,
+    `  • See packages/sdk/README.md for conventions and setup guides`,
   ]
 
   return [...routes, ...notes].join('\n')
 }
 
-export async function callTenantScaleTool(name: string, args: Record<string, unknown> = {}) {
+// ── Dispatch ──
+
+export async function callTenantScaleTool(
+  name: string,
+  args: Record<string, unknown> = {},
+): Promise<ToolResult> {
   switch (name) {
     case 'get_tenant_schema': {
       const text = await handleGetTenantSchema(args.table as string | undefined)
