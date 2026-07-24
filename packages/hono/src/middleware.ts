@@ -69,30 +69,15 @@ const TENANT_ID_CTX = 'tenantId'
 // ──────────────────────────────────────────────────────
 
 export function authenticateApiKey(options: HonoAdapterOptions) {
-  const headerName = options.apiKeyHeader ?? 'Authorization'
+  const headerName = options.apiKeyHeader ?? 'x-api-key'
   const ctxKey = options.apiKeyContextKey ?? API_KEY_CTX
   const audit = options.audit ?? true
 
   return async (c: Context, next: Next) => {
-    const rawHeader = getHeader(c, headerName)
+    const token = getHeader(c, headerName)
 
-    if (!rawHeader) {
-      return c.json({ error: `Missing API key in ${headerName} header`, code: 'AUTH_FAILED' }, 401)
-    }
-
-    // Hono convention: API keys use Bearer token format
-    if (!rawHeader.startsWith('Bearer ')) {
-      return c.json(
-        {
-          error: `Missing or invalid ${headerName} header. Expected: Bearer <token>`,
-          code: 'AUTH_FAILED',
-        },
-        401,
-      )
-    }
-    const token = rawHeader.slice(7).trim()
     if (!token) {
-      return c.json({ error: 'Empty token', code: 'AUTH_FAILED' }, 401)
+      return c.json({ error: `Missing API key in ${headerName} header`, code: 'AUTH_FAILED' }, 401)
     }
 
     try {

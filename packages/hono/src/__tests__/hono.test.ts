@@ -112,7 +112,7 @@ describe('authenticateApiKey', () => {
     ts.validateApiKey.mockResolvedValue(mockApiKey)
   })
 
-  it('should authenticate with Bearer token and set apiKey context', async () => {
+  it('should authenticate with x-api-key header and set apiKey context', async () => {
     const app = new Hono()
     app.use('/api/*', authenticateApiKey({ ts }))
     app.get('/api/test', (c) => {
@@ -121,30 +121,19 @@ describe('authenticateApiKey', () => {
     })
 
     const res = await app.request('/api/test', {
-      headers: { Authorization: 'Bearer tk_test_abc' },
+      headers: { 'x-api-key': 'tk_test_abc' },
     })
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body).toEqual({ tenantId: 'tenant_1', scopes: ['admin', 'read'] })
   })
 
-  it('should return 401 when Authorization header is missing', async () => {
+  it('should return 401 when x-api-key header is missing', async () => {
     const app = new Hono()
     app.use('/api/*', authenticateApiKey({ ts }))
     app.get('/api/test', (c) => c.json({ ok: true }))
 
     const res = await app.request('/api/test')
-    expect(res.status).toBe(401)
-  })
-
-  it('should return 401 for non-Bearer Authorization header', async () => {
-    const app = new Hono()
-    app.use('/api/*', authenticateApiKey({ ts }))
-    app.get('/api/test', (c) => c.json({ ok: true }))
-
-    const res = await app.request('/api/test', {
-      headers: { Authorization: 'Basic dXNlcjpwYXNz' },
-    })
     expect(res.status).toBe(401)
   })
 
@@ -155,7 +144,7 @@ describe('authenticateApiKey', () => {
     app.get('/api/test', (c) => c.json({ ok: true }))
 
     const res = await app.request('/api/test', {
-      headers: { Authorization: 'Bearer tk_bad' },
+      headers: { 'x-api-key': 'tk_bad' },
     })
     expect(res.status).toBe(401)
   })
@@ -180,7 +169,7 @@ describe('requireScope', () => {
     ts.validateApiKey.mockResolvedValue(mockApiKey)
 
     const res = await app.request('/api/test', {
-      headers: { Authorization: 'Bearer tk_valid' },
+      headers: { 'x-api-key': 'tk_valid' },
     })
     expect(res.status).toBe(200)
   })
@@ -196,7 +185,7 @@ describe('requireScope', () => {
     app.get('/api/test', (c) => c.json({ ok: true }))
 
     const res = await app.request('/api/test', {
-      headers: { Authorization: 'Bearer tk_valid' },
+      headers: { 'x-api-key': 'tk_valid' },
     })
     expect(res.status).toBe(403)
   })
@@ -353,7 +342,7 @@ describe('requirePlanLimit', () => {
 
     const res = await app.request('/api/tenants', {
       method: 'POST',
-      headers: { Authorization: 'Bearer tk_valid' },
+      headers: { 'x-api-key': 'tk_valid' },
     })
     expect(res.status).toBe(200)
   })
@@ -367,7 +356,7 @@ describe('requirePlanLimit', () => {
 
     const res = await app.request('/api/tenants', {
       method: 'POST',
-      headers: { Authorization: 'Bearer tk_valid' },
+      headers: { 'x-api-key': 'tk_valid' },
     })
     expect(res.status).toBe(403)
   })
@@ -382,7 +371,7 @@ describe('requirePlanLimit', () => {
 
     const res = await app.request('/api/tenants', {
       method: 'POST',
-      headers: { Authorization: 'Bearer tk_valid' },
+      headers: { 'x-api-key': 'tk_valid' },
     })
     expect(res.status).toBe(200)
   })
@@ -412,7 +401,7 @@ describe('rateLimitByApiKey', () => {
     app.get('/api/test', (c) => c.json({ ok: true }))
 
     const res = await app.request('/api/test', {
-      headers: { Authorization: 'Bearer tk_valid' },
+      headers: { 'x-api-key': 'tk_valid' },
     })
     expect(res.status).toBe(200)
   })
@@ -429,7 +418,7 @@ describe('rateLimitByApiKey', () => {
     app.get('/api/test', (c) => c.json({ ok: true }))
 
     const res = await app.request('/api/test', {
-      headers: { Authorization: 'Bearer tk_valid' },
+      headers: { 'x-api-key': 'tk_valid' },
     })
     expect(res.status).toBe(429)
   })
@@ -440,7 +429,7 @@ describe('rateLimitByApiKey', () => {
     app.get('/api/test', (c) => c.json({ ok: true }))
 
     const res = await app.request('/api/test', {
-      headers: { Authorization: 'Bearer tk_valid' },
+      headers: { 'x-api-key': 'tk_valid' },
     })
     expect(res.headers.get('X-RateLimit-Limit-Daily')).toBe('100')
     expect(res.headers.get('X-RateLimit-Remaining-Daily')).toBe('99')
@@ -509,7 +498,7 @@ describe('auditLog', () => {
 
     const res = await app.request('/api/tenants', {
       method: 'POST',
-      headers: { Authorization: 'Bearer tk_valid', 'User-Agent': 'curl/8.0' },
+      headers: { 'x-api-key': 'tk_valid', 'User-Agent': 'curl/8.0' },
     })
     expect(res.status).toBe(200)
 
@@ -534,7 +523,7 @@ describe('auditLog', () => {
 
     const res = await app.request('/api/tenants', {
       method: 'POST',
-      headers: { Authorization: 'Bearer tk_valid' },
+      headers: { 'x-api-key': 'tk_valid' },
     })
     expect(res.status).toBe(200)
   })
@@ -624,7 +613,7 @@ describe('errorHandler', () => {
     const app = new Hono()
     app.onError(errorHandler({ ts: createMockTenantScale() }))
     app.get('/test', () => {
-      throw new Error('Unknown')
+      throw new Error('Something went wrong')
     })
 
     const res = await app.request('/test')
