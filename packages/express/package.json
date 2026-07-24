@@ -6,15 +6,16 @@
   "main": "./dist/index.js",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.cjs"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsup src/index.ts --format cjs --out-dir dist --clean false",
     "dev": "tsc --watch",
     "test": "vitest run",
     "clean": "rm -rf dist"
@@ -26,9 +27,10 @@
     "express": "^4.18.0 || ^5.0.0"
   },
   "devDependencies": {
-    "@types/node": "^26.1.1",
     "@types/express": "^5.0.0",
+    "@types/node": "^26.1.1",
     "express": "^5.2.1",
+    "tsup": "^8.5.1",
     "typescript": "^7.0.2"
   },
   "license": "MIT",
