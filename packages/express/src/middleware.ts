@@ -62,7 +62,10 @@ function resolveClientIp(req: Request, options: ExpressAdapterOptions): string {
 // ── Helper: resolve header (case-insensitive) ──
 
 function getHeader(req: Request, name: string): string | undefined {
-  return req.headers[name.toLowerCase()] as string | undefined
+  const value = req.headers[name.toLowerCase()]
+  if (value === undefined) return undefined
+  if (Array.isArray(value)) return value[0]
+  return value
 }
 
 type AsyncMw = (req: Request, res: Response, next: NextFunction) => Promise<void>
@@ -80,7 +83,7 @@ export function authenticateApiKey(options: ExpressAdapterOptions): AsyncMw {
       const result = await authenticateApiKeyCore(options.ts, getHeader(req, headerName), headerName, audit, {
         url: req.originalUrl ?? req.url,
         ip: resolveClientIp(req, options),
-        userAgent: req.headers['user-agent'],
+        userAgent: getHeader(req, 'user-agent'),
       })
       req.tenantKey = result.apiKey
       req.tenantId = result.tenantId
@@ -219,9 +222,9 @@ export function auditLog(
   },
 ): AsyncMw {
   return async (req, _res, next) => {
-    auditLogCore(options.ts, req.tenantId, config, {
+    auditLogCore(options.ts, req.tenantId, { ...config, details: config.getDetails?.(req) }, {
       ip: resolveClientIp(req, options),
-      userAgent: req.headers['user-agent'],
+      userAgent: getHeader(req, 'user-agent'),
       session: req.portalSession,
       apiKey: req.tenantKey,
     })

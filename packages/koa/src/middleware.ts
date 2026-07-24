@@ -67,8 +67,11 @@ function setPs(ctx: Context, v: any) { (ctx as unknown as Record<string, any>).p
 // ── Error helper ──
 
 function sendError(ctx: Context, err: unknown, defaultStatus: number) {
-  const e = err as Error & { statusCode?: number; code?: string }
+  const e = err as Error & { statusCode?: number; code?: string; retryAfter?: number }
   ctx.status = e.statusCode ?? defaultStatus
+  if (e.retryAfter) {
+    ctx.set('Retry-After', String(e.retryAfter))
+  }
   ctx.body = {
     error: e.message ?? 'Request failed',
     code: e.code ?? 'ERROR',
@@ -198,7 +201,7 @@ export function auditLog(
   },
 ) {
   return async (ctx: Context, next: Next) => {
-    auditLogCore(options.ts, tid(ctx), config, {
+    auditLogCore(options.ts, tid(ctx), { ...config, details: config.getDetails?.(ctx) }, {
       ip: resolveClientIp(ctx),
       userAgent: ctx.get('user-agent'),
       session: ps(ctx),

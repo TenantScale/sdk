@@ -546,7 +546,7 @@ describe('rateLimitByIp', () => {
     expect(next).toHaveBeenCalledWith()
   })
 
-  it('should call next with RateLimitExceededError when IP is blocked', async () => {
+  it('should call next with error when IP is blocked', async () => {
     ts.rateLimiter.checkIpCreationLimit.mockResolvedValue({
       blocked: true,
       remaining: 0,
@@ -558,7 +558,7 @@ describe('rateLimitByIp', () => {
 
     await rateLimitByIp(getOptions(ts))(req, res, next)
 
-    expect(next).toHaveBeenCalledWith(expect.any(RateLimitExceededError))
+    expect(next).toHaveBeenCalledWith(expect.any(Error))
   })
 
   it('should respect x-forwarded-for header', async () => {

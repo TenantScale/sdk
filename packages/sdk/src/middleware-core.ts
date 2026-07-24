@@ -11,7 +11,7 @@
 // on failure. Adapters catch these and convert to the
 // framework's error response format.
 
-import { AuthenticationError, PlanLimitExceededError, RateLimitExceededError } from './types.js'
+import { AuthenticationError, PlanLimitExceededError, RateLimitExceededError, TenantScaleError } from './types.js'
 import type { ApiKeyInfo, PortalSessionInfo, TenantScale } from './index.js'
 
 // ── Audit event config for the auditLog middleware ──
@@ -20,6 +20,8 @@ export interface AuditLogConfig {
   action: string
   resource: string
   actorType?: 'user' | 'system' | 'admin_api' | 'admin_impersonation'
+  /** Adapter-provided extra details from the request (e.g. from getDetails callback) */
+  details?: Record<string, unknown>
 }
 
 // ── Request metadata passed by adapters ──
@@ -234,7 +236,10 @@ export async function rateLimitByApiKeyCore(
 /**
  * Check the IP-based creation rate limit.
  *
- * @throws RateLimitExceededError if the IP rate limit is exceeded
+ * Attaches a `retryAfter` (number) property to the thrown error
+ * so adapters can set the Retry-After response header.
+ *
+ * @throws TenantScaleError with code IP_RATE_LIMITED if the IP rate limit is exceeded
  */
 export async function rateLimitByIpCore(
   ts: TenantScale,
@@ -243,11 +248,15 @@ export async function rateLimitByIpCore(
   const result = await ts.rateLimiter.checkIpCreationLimit(ip)
 
   if (result.blocked) {
-    const retryAfter = Math.ceil((result.resetAtMs - Date.now()) / 1000)
-    throw Object.assign(
-      new RateLimitExceededError(result.remaining, `IP rate limit exceeded. Try again in ${retryAfter}s.`),
-      { retryAfter: Math.max(1, retryAfter) },
+    const rawRetryAfter = Math.ceil((result.resetAtMs - Date.now()) / 1000)
+    const clampedRetryAfter = Math.max(1, rawRetryAfter)
+    const err = new TenantScaleError(
+      `IP rate limit exceeded. Try again in ${clampedRetryAfter}s.`,
+      'IP_RATE_LIMITED',
+      429,
     )
+    ;(err as any).retryAfter = clampedRetryAfter
+    throw err
   }
 
   return { remaining: result.remaining, resetAtMs: result.resetAtMs }
@@ -286,7 +295,7 @@ export function auditLogCore(
     actor_type: actorType,
     action: config.action,
     resource: config.resource,
-    details: {},
+    details: config.details ?? {},
     ip: meta.ip,
     user_agent: meta.userAgent ?? null,
   }).catch((err) => {

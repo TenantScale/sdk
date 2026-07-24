@@ -234,11 +234,13 @@ export function rateLimitByApiKey(options: HonoAdapterOptions) {
 export function rateLimitByIp(options: HonoAdapterOptions) {
   return async (c: Context, next: Next) => {
     try {
-      const result = await rateLimitByIpCore(options.ts, resolveClientIp(c))
-      c.header('Retry-After', String(Math.max(1, Math.ceil((result.resetAtMs - Date.now()) / 1000))))
+      await rateLimitByIpCore(options.ts, resolveClientIp(c))
       await next()
     } catch (err) {
-      const e = err as { statusCode?: number; message?: string; code?: string }
+      const e = err as { statusCode?: number; message?: string; code?: string; retryAfter?: number }
+      if (e.retryAfter) {
+        c.header('Retry-After', String(e.retryAfter))
+      }
       return c.json({ error: e.message ?? 'Rate limit check failed', code: e.code ?? 'RATE_LIMIT_ERROR' }, e.statusCode ?? 429)
     }
   }
@@ -261,7 +263,7 @@ export function auditLog(
   const sessionCtxKey = options.sessionContextKey ?? SESSION_CTX
 
   return async (c: Context, next: Next) => {
-    auditLogCore(options.ts, c.get(TENANT_ID_CTX) as string | undefined, config, {
+    auditLogCore(options.ts, c.get(TENANT_ID_CTX) as string | undefined, { ...config, details: config.getDetails?.(c) }, {
       ip: resolveClientIp(c),
       userAgent: c.req.header('user-agent'),
       session: c.get(sessionCtxKey) as PortalSessionInfo | undefined,

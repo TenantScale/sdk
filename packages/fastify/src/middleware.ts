@@ -77,8 +77,12 @@ function setPs(req: Req, v: any) { (req as unknown as Record<string, any>).porta
 // ── Error helper ──
 
 function sendError(reply: FastifyReply, err: unknown, defaultStatus: number) {
-  const e = err as Error & { statusCode?: number; code?: string }
-  reply.code(e.statusCode ?? defaultStatus).send({
+  const e = err as Error & { statusCode?: number; code?: string; retryAfter?: number }
+  const statusCode = e.statusCode ?? defaultStatus
+  if (e.retryAfter) {
+    reply.header('Retry-After', String(e.retryAfter))
+  }
+  reply.code(statusCode).send({
     error: e.message ?? 'Request failed',
     code: e.code ?? 'ERROR',
     statusCode: e.statusCode ?? defaultStatus,
@@ -199,7 +203,7 @@ export function auditLog(
   },
 ) {
   return async (req: Req, _reply: FastifyReply) => {
-    auditLogCore(options.ts, tid(req), config, {
+    auditLogCore(options.ts, tid(req), { ...config, details: config.getDetails?.(req) }, {
       ip: resolveClientIp(req),
       userAgent: req.headers['user-agent']?.toString(),
       session: ps(req),
