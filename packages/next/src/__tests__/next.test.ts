@@ -5,7 +5,7 @@
 // Tests authenticate functions, handler wrappers, and error helper.
 // Uses standard Request objects (NextRequest extends Request).
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { Mock } from 'vitest'
 import { cookies } from 'next/headers'
 import {
@@ -29,6 +29,15 @@ vi.mock('next/headers', () => ({
   cookies: vi.fn(),
 }))
 
+// Suppress console.error output from error handler during tests
+const originalConsoleError = console.error
+beforeEach(() => {
+  console.error = vi.fn()
+})
+afterEach(() => {
+  console.error = originalConsoleError
+})
+
 // ── Mocks ──
 
 function createMockTenantScale(overrides: Record<string, Mock> = {}) {
@@ -50,7 +59,11 @@ function createMockTenantScale(overrides: Record<string, Mock> = {}) {
     isValidApiKeyFormat: vi.fn(),
     parsePaginationParams: vi.fn(),
     paginationResponse: vi.fn(),
-    logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+    logger: {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(() => {}), // Suppress error output to stderr
+    },
     destroy: vi.fn(),
     ...overrides,
   } as any

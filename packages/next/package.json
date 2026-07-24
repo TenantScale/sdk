@@ -1,42 +1,47 @@
 {
   "name": "@tenantscale/next",
-  "version": "0.1.0",
-  "description": "Next.js App Router adapter for TenantScale — API key auth, plan enforcement, rate limiting, audit logging for Route Handlers",
+  "version": "0.0.1",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
-    "dist"
+    "dist/"
   ],
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "clean": "rm -rf dist"
+    "lint": "eslint src/"
+  },
+  "peerDependencies": {
+    "@tenantscale/sdk": "workspace:*",
+    "next": "^14.0.0 || ^15.0.0"
   },
   "dependencies": {
     "@tenantscale/sdk": "workspace:*"
   },
-  "peerDependencies": {
-    "next": "^14.0.0 || ^15.0.0"
-  },
   "devDependencies": {
     "@types/node": "^26.1.1",
     "next": "^16.2.11",
+    "next-test-api-route-handler": "^4.0.1",
     "typescript": "^7.0.2"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TenantScale/sdk.git",
-    "directory": "packages/next"
-  },
-  "publishConfig": {
-    "access": "public"
+    "url": "https://github.com/TenantScale/sdk.git"
   }
 }
