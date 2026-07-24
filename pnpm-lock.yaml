@@ -106,7 +106,7 @@ importers:
         version: 26.1.1
       drizzle-orm:
         specifier: ^0.45.2
-        version: 0.45.2
+        version: 0.45.2(@prisma/client@5.22.0)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -212,6 +212,18 @@ importers:
       next-test-api-route-handler:
         specifier: ^4.0.1
         version: 4.0.16(next@16.2.11(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+
+  packages/prisma:
+    devDependencies:
+      '@prisma/client':
+        specifier: ^5.22.0
+        version: 5.22.0
+      '@types/node':
+        specifier: ^26.1.1
+        version: 26.1.1
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -839,6 +851,15 @@ packages:
 
   '@pinojs/redact@0.4.0':
     resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
+
+  '@prisma/client@5.22.0':
+    resolution: {integrity: sha512-M0SVXfyHnQREBKxCgyo7sffrKttwE6R8PMq330MIUF0pTwjUhLbW84pFDlf06B27XyCR++VtjugEnIHdr07SVA==}
+    engines: {node: '>=16.13'}
+    peerDependencies:
+      prisma: '*'
+    peerDependenciesMeta:
+      prisma:
+        optional: true
 
   '@rolldown/binding-android-arm64@1.1.5':
     resolution: {integrity: sha512-lZg8fqIv2v7FF237bwMgzGZEJvGL79/s5knJ/i6FmsGF4XXlzccZ4jb+TrFIxtSSxFtIpdsgrPZeMk1I9AFcyQ==}
@@ -3107,6 +3128,8 @@ snapshots:
 
   '@pinojs/redact@0.4.0': {}
 
+  '@prisma/client@5.22.0': {}
+
   '@rolldown/binding-android-arm64@1.1.5':
     optional: true
 
@@ -3666,7 +3689,9 @@ snapshots:
 
   dom-accessibility-api@0.5.16: {}
 
-  drizzle-orm@0.45.2: {}
+  drizzle-orm@0.45.2(@prisma/client@5.22.0):
+    optionalDependencies:
+      '@prisma/client': 5.22.0
 
   dunder-proto@1.0.1:
     dependencies:
