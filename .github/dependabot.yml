@@ -4,6 +4,21 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      types:
+        patterns:
+          - "@types/*"
+        update-types:
+          - "minor"
+          - "patch"
+      dependencies:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "@types/*"
+        update-types:
+          - "minor"
+          - "patch"
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
