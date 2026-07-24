@@ -235,7 +235,14 @@ export function rateLimitByApiKey(options: HonoAdapterOptions) {
       c.header('X-RateLimit-Remaining-Daily', String(result.remaining))
       await next()
     } catch (err) {
-      const e = err as { statusCode?: number; message?: string; code?: string }
+      const e = err as {
+        statusCode?: number
+        message?: string
+        code?: string
+        planLimit?: number
+      }
+      c.header('X-RateLimit-Limit-Daily', String(e.planLimit ?? ''))
+      c.header('X-RateLimit-Remaining-Daily', '0')
       return c.json(
         { error: e.message ?? 'Rate limit check failed', code: e.code ?? 'RATE_LIMIT_ERROR' },
         (e.statusCode ?? 500) as 400 | 429 | 500,

@@ -421,6 +421,8 @@ describe('rateLimitByApiKey', () => {
       headers: { 'x-api-key': 'tk_valid' },
     })
     expect(res.status).toBe(429)
+    expect(res.headers.get('X-RateLimit-Limit-Daily')).toBe('100')
+    expect(res.headers.get('X-RateLimit-Remaining-Daily')).toBe('0')
   })
 
   it('should set rate limit headers on response', async () => {
