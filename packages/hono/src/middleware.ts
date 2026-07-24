@@ -108,7 +108,7 @@ export function authenticateApiKey(options: HonoAdapterOptions) {
       const e = err as { statusCode?: number; message?: string; code?: string }
       return c.json(
         { error: e.message ?? 'Invalid API key', code: e.code ?? 'AUTH_FAILED' },
-        e.statusCode ?? 401,
+        (e.statusCode ?? 401) as 401,
       )
     }
   }
@@ -159,7 +159,7 @@ export function requirePortalSession(options: HonoAdapterOptions) {
       const e = err as { statusCode?: number; message?: string; code?: string }
       return c.json(
         { error: e.message ?? 'Invalid session', code: e.code ?? 'SESSION_INVALID' },
-        e.statusCode ?? 401,
+        (e.statusCode ?? 401) as 401,
       )
     }
   }
@@ -271,7 +271,7 @@ export function rateLimitByIp(options: HonoAdapterOptions) {
       }
       return c.json(
         { error: e.message ?? 'Rate limit check failed', code: e.code ?? 'RATE_LIMIT_ERROR' },
-        e.statusCode ?? 429,
+        (e.statusCode ?? 429) as 429,
       )
     }
   }
