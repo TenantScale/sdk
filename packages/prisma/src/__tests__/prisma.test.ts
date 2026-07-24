@@ -21,7 +21,7 @@ type MockPrismaClient = {
 describe('withTenantScope', () => {
   it('creates a Prisma client extension', () => {
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     expect(extension).toBeDefined()
     expect(extension.name).toBe('tenantScope')
     expect(extension.query).toBeDefined()
@@ -38,7 +38,7 @@ describe('withTenantScope', () => {
 
   it('uses custom tenant column name when provided', () => {
     const extension = withTenantScope({ tenantId: 'tenant-123', tenantColumn: 'org_id' })
-    
+
     expect(extension).toBeDefined()
     expect(extension.name).toBe('tenantScope')
   })
@@ -46,7 +46,7 @@ describe('withTenantScope', () => {
   it('injects tenant filter into findMany operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue([])
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'findMany',
       args: {},
@@ -67,7 +67,7 @@ describe('withTenantScope', () => {
   it('injects tenant filter into findFirst operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue(null)
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'findFirst',
       args: {},
@@ -87,7 +87,7 @@ describe('withTenantScope', () => {
   it('injects tenant filter into findUnique operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue(null)
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'findUnique',
       args: { where: { id: 'user-1' } },
@@ -108,7 +108,7 @@ describe('withTenantScope', () => {
   it('injects tenant filter into findFirstOrThrow operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue(null)
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'findFirstOrThrow',
       args: {},
@@ -128,7 +128,7 @@ describe('withTenantScope', () => {
   it('injects tenant filter into findUniqueOrThrow operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue(null)
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'findUniqueOrThrow',
       args: { where: { id: 'user-1' } },
@@ -149,7 +149,7 @@ describe('withTenantScope', () => {
   it('injects tenant filter into count operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue(5)
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'count',
       args: {},
@@ -169,7 +169,7 @@ describe('withTenantScope', () => {
   it('injects tenant filter into aggregate operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue({})
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'aggregate',
       args: {},
@@ -189,7 +189,7 @@ describe('withTenantScope', () => {
   it('injects tenant filter into groupBy operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue([])
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'groupBy',
       args: {},
@@ -209,7 +209,7 @@ describe('withTenantScope', () => {
   it('merges tenant filter with existing where clause in findMany', async () => {
     const mockQuery = vi.fn().mockResolvedValue([])
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'findMany',
       args: { where: { status: 'active' } },
@@ -230,7 +230,7 @@ describe('withTenantScope', () => {
   it('injects tenant filter into update operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue({})
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'update',
       args: { where: { id: 'user-1' }, data: { name: 'Updated' } },
@@ -251,7 +251,7 @@ describe('withTenantScope', () => {
   it('injects tenant filter into updateMany operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue({ count: 1 })
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'updateMany',
       args: { data: { status: 'inactive' } },
@@ -271,7 +271,7 @@ describe('withTenantScope', () => {
   it('injects tenant filter into updateOrThrow operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue({})
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'updateOrThrow',
       args: { where: { id: 'user-1' }, data: { name: 'Updated' } },
@@ -291,7 +291,7 @@ describe('withTenantScope', () => {
   it('injects tenant filter into delete operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue({})
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'delete',
       args: { where: { id: 'user-1' } },
@@ -311,7 +311,7 @@ describe('withTenantScope', () => {
   it('injects tenant filter into deleteMany operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue({ count: 1 })
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'deleteMany',
       args: {},
@@ -331,7 +331,7 @@ describe('withTenantScope', () => {
   it('injects tenant filter into deleteOrThrow operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue({})
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'deleteOrThrow',
       args: { where: { id: 'user-1' } },
@@ -351,7 +351,7 @@ describe('withTenantScope', () => {
   it('skips raw query operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue([])
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: '$queryRaw',
       args: { query: 'SELECT * FROM users' },
@@ -371,7 +371,7 @@ describe('withTenantScope', () => {
   it('skips executeRaw operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue([])
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: '$executeRaw',
       args: { query: 'DELETE FROM users' },
@@ -391,7 +391,7 @@ describe('withTenantScope', () => {
   it('injects tenant_id into create operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue({})
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'create',
       args: { data: { name: 'John', email: 'john@example.com' } },
@@ -412,7 +412,7 @@ describe('withTenantScope', () => {
   it('does not overwrite existing tenant_id in create operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue({})
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'create',
       args: { data: { name: 'John', tenant_id: 'custom-tenant' } },
@@ -431,7 +431,7 @@ describe('withTenantScope', () => {
   it('handles null data in create operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue({})
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'create',
       args: { data: null },
@@ -451,7 +451,7 @@ describe('withTenantScope', () => {
   it('injects tenant_id into createMany operations with single object', async () => {
     const mockQuery = vi.fn().mockResolvedValue({ count: 1 })
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'createMany',
       args: { data: { name: 'John', email: 'john@example.com' } },
@@ -471,14 +471,14 @@ describe('withTenantScope', () => {
   it('injects tenant_id into createMany operations with array', async () => {
     const mockQuery = vi.fn().mockResolvedValue({ count: 2 })
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'createMany',
-      args: { 
+      args: {
         data: [
           { name: 'John', email: 'john@example.com' },
-          { name: 'Jane', email: 'jane@example.com' }
-        ]
+          { name: 'Jane', email: 'jane@example.com' },
+        ],
       },
       model: 'user',
     }
@@ -498,14 +498,14 @@ describe('withTenantScope', () => {
   it('does not overwrite existing tenant_id in createMany array', async () => {
     const mockQuery = vi.fn().mockResolvedValue({ count: 2 })
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'createMany',
-      args: { 
+      args: {
         data: [
           { name: 'John', tenant_id: 'custom-1' },
-          { name: 'Jane', tenant_id: 'custom-2' }
-        ]
+          { name: 'Jane', tenant_id: 'custom-2' },
+        ],
       },
       model: 'user',
     }
@@ -523,15 +523,11 @@ describe('withTenantScope', () => {
   it('handles null items in createMany array', async () => {
     const mockQuery = vi.fn().mockResolvedValue({ count: 2 })
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'createMany',
-      args: { 
-        data: [
-          { name: 'John' },
-          null,
-          { name: 'Jane' }
-        ]
+      args: {
+        data: [{ name: 'John' }, null, { name: 'Jane' }],
       },
       model: 'user',
     }
@@ -550,13 +546,13 @@ describe('withTenantScope', () => {
   it('injects tenant_id into upsert operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue({})
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'upsert',
       args: {
         where: { id: 'user-1' },
         create: { name: 'John', email: 'john@example.com' },
-        update: { name: 'John Updated' }
+        update: { name: 'John Updated' },
       },
       model: 'user',
     }
@@ -575,13 +571,13 @@ describe('withTenantScope', () => {
   it('does not overwrite existing tenant_id in upsert create', async () => {
     const mockQuery = vi.fn().mockResolvedValue({})
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'upsert',
       args: {
         where: { id: 'user-1' },
         create: { name: 'John', tenant_id: 'custom-tenant' },
-        update: { name: 'John Updated' }
+        update: { name: 'John Updated' },
       },
       model: 'user',
     }
@@ -598,13 +594,13 @@ describe('withTenantScope', () => {
   it('does not overwrite existing tenant_id in upsert update', async () => {
     const mockQuery = vi.fn().mockResolvedValue({})
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     const mockArgs = {
       operation: 'upsert',
       args: {
         where: { id: 'user-1' },
         create: { name: 'John' },
-        update: { name: 'John Updated', tenant_id: 'custom-tenant' }
+        update: { name: 'John Updated', tenant_id: 'custom-tenant' },
       },
       model: 'user',
     }
@@ -621,7 +617,7 @@ describe('withTenantScope', () => {
   it('uses custom tenant column name in operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue([])
     const extension = withTenantScope({ tenantId: 'tenant-123', tenantColumn: 'org_id' })
-    
+
     const mockArgs = {
       operation: 'findMany',
       args: {},
@@ -642,11 +638,15 @@ describe('withTenantScope', () => {
   it('handles transaction operations correctly', async () => {
     const mockQuery = vi.fn().mockResolvedValue({})
     const extension = withTenantScope({ tenantId: 'tenant-123' })
-    
+
     // Simulate operations that might occur within a transaction
     const operations = [
       { operation: 'create', args: { data: { name: 'John' } }, model: 'user' },
-      { operation: 'update', args: { where: { id: 'user-1' }, data: { name: 'Updated' } }, model: 'user' },
+      {
+        operation: 'update',
+        args: { where: { id: 'user-1' }, data: { name: 'Updated' } },
+        model: 'user',
+      },
       { operation: 'findMany', args: {}, model: 'user' },
     ]
 
@@ -666,7 +666,7 @@ describe('withTenantScope', () => {
 describe('tenantFilter', () => {
   it('creates a tenant filter object', () => {
     const filter = tenantFilter('tenant-123')
-    
+
     expect(filter).toBeDefined()
     expect(filter.tenant_id).toBe('tenant-123')
   })
@@ -681,7 +681,7 @@ describe('tenantFilter', () => {
 
   it('uses custom column name when provided', () => {
     const filter = tenantFilter('tenant-123', 'org_id')
-    
+
     expect(filter).toBeDefined()
     expect(filter.org_id).toBe('tenant-123')
     expect(filter.tenant_id).toBeUndefined()
@@ -689,13 +689,13 @@ describe('tenantFilter', () => {
 
   it('works with string tenant IDs', () => {
     const filter = tenantFilter('tenant-abc-123')
-    
+
     expect(filter.tenant_id).toBe('tenant-abc-123')
   })
 
   it('works with numeric tenant IDs as strings', () => {
     const filter = tenantFilter('12345')
-    
+
     expect(filter.tenant_id).toBe('12345')
   })
 })
