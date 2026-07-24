@@ -71,11 +71,7 @@ export function withTenantScope(options: TenantScopeOptions) {
   return {
     name: 'tenantScope',
     query: {
-      $allOperations: async ({
-        args,
-        query,
-        model,
-      }: PrismaExtensionCallbackArgs) => {
+      $allOperations: async ({ args, query, model }: PrismaExtensionCallbackArgs) => {
         // Skip raw queries - they bypass tenant isolation
         if (args.operation === '$queryRaw' || args.operation === '$executeRaw') {
           return query(args)
@@ -92,11 +88,11 @@ export function withTenantScope(options: TenantScopeOptions) {
           'aggregate',
           'groupBy',
         ]
-        
+
         if (readOperations.includes(args.operation)) {
           args.args = args.args || {}
           args.args.where = args.args.where || {}
-          
+
           // For findUnique and findUniqueOrThrow, we need to handle carefully
           // since they expect unique constraints. We add tenant_id to ensure
           // uniqueness is scoped to the tenant.
@@ -115,12 +111,8 @@ export function withTenantScope(options: TenantScopeOptions) {
         }
 
         // For update operations, inject tenant filter
-        const updateOperations = [
-          'update',
-          'updateMany',
-          'updateOrThrow',
-        ]
-        
+        const updateOperations = ['update', 'updateMany', 'updateOrThrow']
+
         if (updateOperations.includes(args.operation)) {
           args.args = args.args || {}
           args.args.where = args.args.where || {}
@@ -128,12 +120,8 @@ export function withTenantScope(options: TenantScopeOptions) {
         }
 
         // For delete operations, inject tenant filter
-        const deleteOperations = [
-          'delete',
-          'deleteMany',
-          'deleteOrThrow',
-        ]
-        
+        const deleteOperations = ['delete', 'deleteMany', 'deleteOrThrow']
+
         if (deleteOperations.includes(args.operation)) {
           args.args = args.args || {}
           args.args.where = args.args.where || {}
@@ -143,12 +131,12 @@ export function withTenantScope(options: TenantScopeOptions) {
         // For create operations, inject tenant_id into data
         if (['create', 'createMany'].includes(args.operation)) {
           args.args = args.args || {}
-          
+
           // Handle null/undefined data gracefully
           if (args.args.data == null) {
             args.args.data = {}
           }
-          
+
           if (args.operation === 'create') {
             // Merge tenant_id with existing data, don't overwrite if already present
             if (!(tenantColumn in args.args.data)) {
@@ -183,7 +171,7 @@ export function withTenantScope(options: TenantScopeOptions) {
           args.args = args.args || {}
           args.args.where = args.args.where || {}
           args.args.where[tenantColumn] = tenantId
-          
+
           args.args.create = args.args.create || {}
           if (!(tenantColumn in args.args.create)) {
             args.args.create = {
@@ -191,7 +179,7 @@ export function withTenantScope(options: TenantScopeOptions) {
               [tenantColumn]: tenantId,
             }
           }
-          
+
           args.args.update = args.args.update || {}
           if (!(tenantColumn in args.args.update)) {
             args.args.update = {
