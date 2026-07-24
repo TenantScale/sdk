@@ -54,6 +54,20 @@ export { parsePaginationParams, paginationResponse } from './pagination.js'
 // SSRF
 export { validateWebhookUrl } from './ssrf.js'
 
+// Middleware core (framework-agnostic)
+export {
+  authenticateApiKeyCore,
+  requireScopeCore,
+  requirePortalSessionCore,
+  requirePortalRoleCore,
+  requireSuperAdminCore,
+  requirePlanLimitCore,
+  rateLimitByApiKeyCore,
+  rateLimitByIpCore,
+  auditLogCore,
+} from './middleware-core.js'
+export type { AuditLogConfig, RequestMeta } from './middleware-core.js'
+
 // Types
 export type {
   TenantScaleOptions,
