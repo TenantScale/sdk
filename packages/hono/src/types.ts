@@ -54,7 +54,7 @@ export interface HonoAdapterOptions {
 
   /**
    * Header name for API key authentication.
-   * @default 'Authorization'
+   * @default 'x-api-key'
    */
   apiKeyHeader?: string
 

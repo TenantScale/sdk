@@ -112,7 +112,7 @@ export class PlanStore {
       .single()
 
     if (planError || !plan) {
-      // codeql[js/clear-text-logging] - tenantId is a non-sensitive UUID identifier
+      // codeql[js/clear-text-logging] - tenantId and planId are non-sensitive UUID identifiers
       this.logger.warn(
         { tenantId, planId: tenant.plan_id, error: planError },
         'Failed to fetch plan',
