@@ -18,6 +18,11 @@ import type { ExpressAdapterOptions } from './types.js'
 // ── Helper: resolve client IP ──
 
 function resolveClientIp(req: Request, options: ExpressAdapterOptions): string {
+  // Check custom ipHeader first (if configured)
+  if (options.ipHeader) {
+    const customIp = req.headers[options.ipHeader.toLowerCase()]?.toString().trim()
+    if (customIp) return customIp
+  }
   return (
     req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() ??
     req.headers['x-real-ip']?.toString().trim() ??

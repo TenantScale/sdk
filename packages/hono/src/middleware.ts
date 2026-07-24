@@ -59,24 +59,24 @@ function getHeader(c: Context, name: string): string | undefined {
  * ```
  */
 export function authenticateApiKey(options: HonoAdapterOptions) {
-  const headerName = options.apiKeyHeader ?? 'Authorization'
+  const headerName = options.apiKeyHeader ?? 'x-api-key'
   const ctxKey = options.apiKeyContextKey ?? 'apiKey'
   const audit = options.audit ?? true
 
   return async (c: Context, next: Next) => {
     const header = getHeader(c, headerName)
 
-    if (!header?.startsWith('Bearer ')) {
+    if (!header) {
       return c.json(
         {
-          error: 'Missing or invalid Authorization header',
+          error: `Missing API key in ${headerName} header`,
           code: 'AUTH_FAILED',
         },
         401,
       )
     }
 
-    const token = header.slice(7).trim()
+    const token = header.trim()
     if (!token) {
       return c.json({ error: 'Empty API key', code: 'AUTH_FAILED' }, 401)
     }
