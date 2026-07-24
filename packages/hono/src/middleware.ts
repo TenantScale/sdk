@@ -82,10 +82,13 @@ export function authenticateApiKey(options: HonoAdapterOptions) {
 
     // Hono convention: API keys use Bearer token format
     if (!rawHeader.startsWith('Bearer ')) {
-      return c.json({
-        error: `Missing or invalid ${headerName} header. Expected: Bearer <token>`,
-        code: 'AUTH_FAILED',
-      }, 401)
+      return c.json(
+        {
+          error: `Missing or invalid ${headerName} header. Expected: Bearer <token>`,
+          code: 'AUTH_FAILED',
+        },
+        401,
+      )
     }
     const token = rawHeader.slice(7).trim()
     if (!token) {
@@ -103,7 +106,10 @@ export function authenticateApiKey(options: HonoAdapterOptions) {
       await next()
     } catch (err) {
       const e = err as { statusCode?: number; message?: string; code?: string }
-      return c.json({ error: e.message ?? 'Invalid API key', code: e.code ?? 'AUTH_FAILED' }, e.statusCode ?? 401)
+      return c.json(
+        { error: e.message ?? 'Invalid API key', code: e.code ?? 'AUTH_FAILED' },
+        e.statusCode ?? 401,
+      )
     }
   }
 }
@@ -120,7 +126,13 @@ export function requireScope(options: HonoAdapterOptions, ...scopes: string[]) {
       requireScopeCore(options.ts, c.get(ctxKey) as ApiKeyInfo | undefined, scopes)
       await next()
     } catch {
-      return c.json({ error: `This endpoint requires one of these scopes: ${scopes.join(', ')}`, code: 'MISSING_SCOPE' }, 403)
+      return c.json(
+        {
+          error: `This endpoint requires one of these scopes: ${scopes.join(', ')}`,
+          code: 'MISSING_SCOPE',
+        },
+        403,
+      )
     }
   }
 }
@@ -135,13 +147,20 @@ export function requirePortalSession(options: HonoAdapterOptions) {
 
   return async (c: Context, next: Next) => {
     try {
-      const result = await requirePortalSessionCore(options.ts, getHeader(c, headerName), headerName)
+      const result = await requirePortalSessionCore(
+        options.ts,
+        getHeader(c, headerName),
+        headerName,
+      )
       c.set(ctxKey, result.session)
       if (result.tenantId) c.set(TENANT_ID_CTX, result.tenantId)
       await next()
     } catch (err) {
       const e = err as { statusCode?: number; message?: string; code?: string }
-      return c.json({ error: e.message ?? 'Invalid session', code: e.code ?? 'SESSION_INVALID' }, e.statusCode ?? 401)
+      return c.json(
+        { error: e.message ?? 'Invalid session', code: e.code ?? 'SESSION_INVALID' },
+        e.statusCode ?? 401,
+      )
     }
   }
 }
@@ -158,7 +177,13 @@ export function requirePortalRole(options: HonoAdapterOptions, ...roles: string[
       requirePortalRoleCore(options.ts, c.get(ctxKey) as PortalSessionInfo | undefined, roles)
       await next()
     } catch {
-      return c.json({ error: `This endpoint requires one of these roles: ${roles.join(', ')}`, code: 'MISSING_ROLE' }, 403)
+      return c.json(
+        {
+          error: `This endpoint requires one of these roles: ${roles.join(', ')}`,
+          code: 'MISSING_ROLE',
+        },
+        403,
+      )
     }
   }
 }
@@ -217,7 +242,10 @@ export function rateLimitByApiKey(options: HonoAdapterOptions) {
 
   return async (c: Context, next: Next) => {
     try {
-      const result = await rateLimitByApiKeyCore(options.ts, c.get(ctxKey) as ApiKeyInfo | undefined)
+      const result = await rateLimitByApiKeyCore(
+        options.ts,
+        c.get(ctxKey) as ApiKeyInfo | undefined,
+      )
       c.header('X-RateLimit-Limit-Daily', result.limit.toString())
       c.header('X-RateLimit-Remaining-Daily', String(result.remaining))
       await next()
@@ -241,7 +269,10 @@ export function rateLimitByIp(options: HonoAdapterOptions) {
       if (e.retryAfter) {
         c.header('Retry-After', String(e.retryAfter))
       }
-      return c.json({ error: e.message ?? 'Rate limit check failed', code: e.code ?? 'RATE_LIMIT_ERROR' }, e.statusCode ?? 429)
+      return c.json(
+        { error: e.message ?? 'Rate limit check failed', code: e.code ?? 'RATE_LIMIT_ERROR' },
+        e.statusCode ?? 429,
+      )
     }
   }
 }
@@ -263,12 +294,17 @@ export function auditLog(
   const sessionCtxKey = options.sessionContextKey ?? SESSION_CTX
 
   return async (c: Context, next: Next) => {
-    auditLogCore(options.ts, c.get(TENANT_ID_CTX) as string | undefined, { ...config, details: config.getDetails?.(c) }, {
-      ip: resolveClientIp(c),
-      userAgent: c.req.header('user-agent'),
-      session: c.get(sessionCtxKey) as PortalSessionInfo | undefined,
-      apiKey: c.get(apiKeyCtxKey) as ApiKeyInfo | undefined,
-    })
+    auditLogCore(
+      options.ts,
+      c.get(TENANT_ID_CTX) as string | undefined,
+      { ...config, details: config.getDetails?.(c) },
+      {
+        ip: resolveClientIp(c),
+        userAgent: c.req.header('user-agent'),
+        session: c.get(sessionCtxKey) as PortalSessionInfo | undefined,
+        apiKey: c.get(apiKeyCtxKey) as ApiKeyInfo | undefined,
+      },
+    )
     await next()
   }
 }

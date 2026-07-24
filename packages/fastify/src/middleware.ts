@@ -70,9 +70,15 @@ function tid(req: Req) {
 function ps(req: Req) {
   return (req as unknown as { portalSession?: any }).portalSession
 }
-function setTk(req: Req, v: any) { (req as unknown as Record<string, any>).tenantKey = v }
-function setTid(req: Req, v: string | undefined) { (req as unknown as Record<string, any>).tenantId = v }
-function setPs(req: Req, v: any) { (req as unknown as Record<string, any>).portalSession = v }
+function setTk(req: Req, v: any) {
+  ;(req as unknown as Record<string, any>).tenantKey = v
+}
+function setTid(req: Req, v: string | undefined) {
+  ;(req as unknown as Record<string, any>).tenantId = v
+}
+function setPs(req: Req, v: any) {
+  ;(req as unknown as Record<string, any>).portalSession = v
+}
 
 // ── Error helper ──
 
@@ -97,11 +103,17 @@ export function authenticateApiKey(options: FastifyAdapterOptions) {
 
   return async (req: Req, reply: FastifyReply) => {
     try {
-      const result = await authenticateApiKeyCore(options.ts, getHeader(req, headerName), headerName, audit, {
-        url: req.url,
-        ip: resolveClientIp(req),
-        userAgent: req.headers['user-agent']?.toString(),
-      })
+      const result = await authenticateApiKeyCore(
+        options.ts,
+        getHeader(req, headerName),
+        headerName,
+        audit,
+        {
+          url: req.url,
+          ip: resolveClientIp(req),
+          userAgent: req.headers['user-agent']?.toString(),
+        },
+      )
       setTk(req, result.apiKey)
       setTid(req, result.tenantId)
     } catch (err) {
@@ -125,7 +137,11 @@ export function requirePortalSession(options: FastifyAdapterOptions) {
 
   return async (req: Req, reply: FastifyReply) => {
     try {
-      const result = await requirePortalSessionCore(options.ts, getHeader(req, headerName), headerName)
+      const result = await requirePortalSessionCore(
+        options.ts,
+        getHeader(req, headerName),
+        headerName,
+      )
       setPs(req, result.session)
       if (result.tenantId) setTid(req, result.tenantId)
     } catch (err) {
@@ -203,11 +219,16 @@ export function auditLog(
   },
 ) {
   return async (req: Req, _reply: FastifyReply) => {
-    auditLogCore(options.ts, tid(req), { ...config, details: config.getDetails?.(req) }, {
-      ip: resolveClientIp(req),
-      userAgent: req.headers['user-agent']?.toString(),
-      session: ps(req),
-      apiKey: tk(req),
-    })
+    auditLogCore(
+      options.ts,
+      tid(req),
+      { ...config, details: config.getDetails?.(req) },
+      {
+        ip: resolveClientIp(req),
+        userAgent: req.headers['user-agent']?.toString(),
+        session: ps(req),
+        apiKey: tk(req),
+      },
+    )
   }
 }

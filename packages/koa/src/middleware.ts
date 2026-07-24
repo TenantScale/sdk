@@ -57,12 +57,24 @@ function getHeader(ctx: Context, name: string): string | undefined {
 
 // ── Cast helpers (Koa doesn't augment context) ──
 
-function tk(ctx: Context) { return (ctx as unknown as { tenantKey?: any }).tenantKey }
-function tid(ctx: Context) { return (ctx as unknown as { tenantId?: string }).tenantId }
-function ps(ctx: Context) { return (ctx as unknown as { portalSession?: any }).portalSession }
-function setTk(ctx: Context, v: any) { (ctx as unknown as Record<string, any>).tenantKey = v }
-function setTid(ctx: Context, v: string | undefined) { (ctx as unknown as Record<string, any>).tenantId = v }
-function setPs(ctx: Context, v: any) { (ctx as unknown as Record<string, any>).portalSession = v }
+function tk(ctx: Context) {
+  return (ctx as unknown as { tenantKey?: any }).tenantKey
+}
+function tid(ctx: Context) {
+  return (ctx as unknown as { tenantId?: string }).tenantId
+}
+function ps(ctx: Context) {
+  return (ctx as unknown as { portalSession?: any }).portalSession
+}
+function setTk(ctx: Context, v: any) {
+  ;(ctx as unknown as Record<string, any>).tenantKey = v
+}
+function setTid(ctx: Context, v: string | undefined) {
+  ;(ctx as unknown as Record<string, any>).tenantId = v
+}
+function setPs(ctx: Context, v: any) {
+  ;(ctx as unknown as Record<string, any>).portalSession = v
+}
 
 // ── Error helper ──
 
@@ -87,11 +99,17 @@ export function authenticateApiKey(options: KoaAdapterOptions) {
 
   return async (ctx: Context, next: Next) => {
     try {
-      const result = await authenticateApiKeyCore(options.ts, getHeader(ctx, headerName), headerName, audit, {
-        url: ctx.path,
-        ip: resolveClientIp(ctx),
-        userAgent: ctx.get('user-agent'),
-      })
+      const result = await authenticateApiKeyCore(
+        options.ts,
+        getHeader(ctx, headerName),
+        headerName,
+        audit,
+        {
+          url: ctx.path,
+          ip: resolveClientIp(ctx),
+          userAgent: ctx.get('user-agent'),
+        },
+      )
       setTk(ctx, result.apiKey)
       setTid(ctx, result.tenantId)
       await next()
@@ -117,7 +135,11 @@ export function requirePortalSession(options: KoaAdapterOptions) {
 
   return async (ctx: Context, next: Next) => {
     try {
-      const result = await requirePortalSessionCore(options.ts, getHeader(ctx, headerName), headerName)
+      const result = await requirePortalSessionCore(
+        options.ts,
+        getHeader(ctx, headerName),
+        headerName,
+      )
       setPs(ctx, result.session)
       if (result.tenantId) setTid(ctx, result.tenantId)
       await next()
@@ -201,12 +223,17 @@ export function auditLog(
   },
 ) {
   return async (ctx: Context, next: Next) => {
-    auditLogCore(options.ts, tid(ctx), { ...config, details: config.getDetails?.(ctx) }, {
-      ip: resolveClientIp(ctx),
-      userAgent: ctx.get('user-agent'),
-      session: ps(ctx),
-      apiKey: tk(ctx),
-    })
+    auditLogCore(
+      options.ts,
+      tid(ctx),
+      { ...config, details: config.getDetails?.(ctx) },
+      {
+        ip: resolveClientIp(ctx),
+        userAgent: ctx.get('user-agent'),
+        session: ps(ctx),
+        apiKey: tk(ctx),
+      },
+    )
     await next()
   }
 }

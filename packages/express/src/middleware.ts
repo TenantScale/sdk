@@ -80,11 +80,17 @@ export function authenticateApiKey(options: ExpressAdapterOptions): AsyncMw {
 
   return async (req, _res, next) => {
     try {
-      const result = await authenticateApiKeyCore(options.ts, getHeader(req, headerName), headerName, audit, {
-        url: req.originalUrl ?? req.url,
-        ip: resolveClientIp(req, options),
-        userAgent: getHeader(req, 'user-agent'),
-      })
+      const result = await authenticateApiKeyCore(
+        options.ts,
+        getHeader(req, headerName),
+        headerName,
+        audit,
+        {
+          url: req.originalUrl ?? req.url,
+          ip: resolveClientIp(req, options),
+          userAgent: getHeader(req, 'user-agent'),
+        },
+      )
       req.tenantKey = result.apiKey
       req.tenantId = result.tenantId
       next()
@@ -118,7 +124,11 @@ export function requirePortalSession(options: ExpressAdapterOptions): AsyncMw {
 
   return async (req, _res, next) => {
     try {
-      const result = await requirePortalSessionCore(options.ts, getHeader(req, headerName), headerName)
+      const result = await requirePortalSessionCore(
+        options.ts,
+        getHeader(req, headerName),
+        headerName,
+      )
       req.portalSession = result.session
       if (result.tenantId) req.tenantId = result.tenantId
       next()
@@ -222,12 +232,17 @@ export function auditLog(
   },
 ): AsyncMw {
   return async (req, _res, next) => {
-    auditLogCore(options.ts, req.tenantId, { ...config, details: config.getDetails?.(req) }, {
-      ip: resolveClientIp(req, options),
-      userAgent: getHeader(req, 'user-agent'),
-      session: req.portalSession,
-      apiKey: req.tenantKey,
-    })
+    auditLogCore(
+      options.ts,
+      req.tenantId,
+      { ...config, details: config.getDetails?.(req) },
+      {
+        ip: resolveClientIp(req, options),
+        userAgent: getHeader(req, 'user-agent'),
+        session: req.portalSession,
+        apiKey: req.tenantKey,
+      },
+    )
     next()
   }
 }

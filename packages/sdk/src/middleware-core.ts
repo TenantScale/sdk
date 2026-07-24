@@ -11,7 +11,12 @@
 // on failure. Adapters catch these and convert to the
 // framework's error response format.
 
-import { AuthenticationError, PlanLimitExceededError, RateLimitExceededError, TenantScaleError } from './types.js'
+import {
+  AuthenticationError,
+  PlanLimitExceededError,
+  RateLimitExceededError,
+  TenantScaleError,
+} from './types.js'
 import type { ApiKeyInfo, PortalSessionInfo, TenantScale } from './index.js'
 
 // ── Audit event config for the auditLog middleware ──
