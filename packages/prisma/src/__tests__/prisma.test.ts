@@ -1,23 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { withTenantScope, tenantFilter } from '../index.js'
 
-// Mock Prisma client types for testing
-type MockPrismaClient = {
-  $extends: (extension: any) => MockPrismaClient
-  user: {
-    findMany: (args?: any) => Promise<any[]>
-    findFirst: (args?: any) => Promise<any>
-    findUnique: (args?: any) => Promise<any>
-    create: (args: any) => Promise<any>
-    createMany: (args: any) => Promise<any>
-    update: (args: any) => Promise<any>
-    updateMany: (args: any) => Promise<any>
-    delete: (args: any) => Promise<any>
-    deleteMany: (args: any) => Promise<any>
-    upsert: (args: any) => Promise<any>
-  }
-}
-
 describe('withTenantScope', () => {
   it('creates a Prisma client extension', () => {
     const extension = withTenantScope({ tenantId: 'tenant-123' })
@@ -54,9 +37,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeDefined()
@@ -75,9 +59,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeDefined()
@@ -95,9 +80,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeDefined()
@@ -116,9 +102,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeDefined()
@@ -136,9 +123,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeDefined()
@@ -157,9 +145,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeDefined()
@@ -177,9 +166,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeDefined()
@@ -197,9 +187,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeDefined()
@@ -217,9 +208,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeDefined()
@@ -238,9 +230,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeDefined()
@@ -259,9 +252,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeDefined()
@@ -279,9 +273,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeDefined()
@@ -299,9 +294,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeDefined()
@@ -319,9 +315,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeDefined()
@@ -339,9 +336,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeDefined()
@@ -359,13 +357,14 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeUndefined()
-    expect(mockQuery).toHaveBeenCalledWith(mockArgs)
+    expect(mockQuery).toHaveBeenCalledWith(mockArgs.args)
   })
 
   it('skips executeRaw operations', async () => {
@@ -379,13 +378,14 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeUndefined()
-    expect(mockQuery).toHaveBeenCalledWith(mockArgs)
+    expect(mockQuery).toHaveBeenCalledWith(mockArgs.args)
   })
 
   it('injects tenant_id into create operations', async () => {
@@ -399,9 +399,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.data).toBeDefined()
@@ -409,7 +410,7 @@ describe('withTenantScope', () => {
     expect(mockArgs.args.data.name).toBe('John')
   })
 
-  it('does not overwrite existing tenant_id in create operations', async () => {
+  it('throws if explicitly providing different tenant_id in create operations', async () => {
     const mockQuery = vi.fn().mockResolvedValue({})
     const extension = withTenantScope({ tenantId: 'tenant-123' })
 
@@ -419,13 +420,14 @@ describe('withTenantScope', () => {
       model: 'user',
     }
 
-    await extension.query.$allOperations({
-      args: mockArgs,
-      query: mockQuery,
-      model: 'user',
-    } as any)
-
-    expect(mockArgs.args.data.tenant_id).toBe('custom-tenant')
+    await expect(() => 
+      extension.query.$allOperations({
+        operation: mockArgs.operation,
+        args: mockArgs.args,
+        query: mockQuery,
+        model: mockArgs.model,
+      } as any)
+    ).rejects.toThrow('Cannot create record for a different tenant')
   })
 
   it('handles null data in create operations', async () => {
@@ -439,9 +441,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.data).toBeDefined()
@@ -459,9 +462,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.data).toBeDefined()
@@ -484,9 +488,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.data).toBeDefined()
@@ -495,7 +500,7 @@ describe('withTenantScope', () => {
     expect(mockArgs.args.data[1].tenant_id).toBe('tenant-123')
   })
 
-  it('does not overwrite existing tenant_id in createMany array', async () => {
+  it('throws if explicitly providing different tenant_id in createMany array', async () => {
     const mockQuery = vi.fn().mockResolvedValue({ count: 2 })
     const extension = withTenantScope({ tenantId: 'tenant-123' })
 
@@ -504,20 +509,20 @@ describe('withTenantScope', () => {
       args: {
         data: [
           { name: 'John', tenant_id: 'custom-1' },
-          { name: 'Jane', tenant_id: 'custom-2' },
+          { name: 'Jane', tenant_id: 'tenant-123' },
         ],
       },
       model: 'user',
     }
 
-    await extension.query.$allOperations({
-      args: mockArgs,
-      query: mockQuery,
-      model: 'user',
-    } as any)
-
-    expect(mockArgs.args.data[0].tenant_id).toBe('custom-1')
-    expect(mockArgs.args.data[1].tenant_id).toBe('custom-2')
+    await expect(() => 
+      extension.query.$allOperations({
+        operation: mockArgs.operation,
+        args: mockArgs.args,
+        query: mockQuery,
+        model: mockArgs.model,
+      } as any)
+    ).rejects.toThrow('Cannot createMany record for a different tenant')
   })
 
   it('handles null items in createMany array', async () => {
@@ -533,9 +538,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.data[0].tenant_id).toBe('tenant-123')
@@ -558,9 +564,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where.tenant_id).toBe('tenant-123')
@@ -568,7 +575,7 @@ describe('withTenantScope', () => {
     expect(mockArgs.args.update.tenant_id).toBe('tenant-123')
   })
 
-  it('does not overwrite existing tenant_id in upsert create', async () => {
+  it('throws if explicitly providing different tenant_id in upsert create', async () => {
     const mockQuery = vi.fn().mockResolvedValue({})
     const extension = withTenantScope({ tenantId: 'tenant-123' })
 
@@ -582,16 +589,17 @@ describe('withTenantScope', () => {
       model: 'user',
     }
 
-    await extension.query.$allOperations({
-      args: mockArgs,
-      query: mockQuery,
-      model: 'user',
-    } as any)
-
-    expect(mockArgs.args.create.tenant_id).toBe('custom-tenant')
+    await expect(() => 
+      extension.query.$allOperations({
+        operation: mockArgs.operation,
+        args: mockArgs.args,
+        query: mockQuery,
+        model: mockArgs.model,
+      } as any)
+    ).rejects.toThrow('Cannot upsert (create) record for a different tenant')
   })
 
-  it('does not overwrite existing tenant_id in upsert update', async () => {
+  it('throws if explicitly providing different tenant_id in upsert update', async () => {
     const mockQuery = vi.fn().mockResolvedValue({})
     const extension = withTenantScope({ tenantId: 'tenant-123' })
 
@@ -605,13 +613,14 @@ describe('withTenantScope', () => {
       model: 'user',
     }
 
-    await extension.query.$allOperations({
-      args: mockArgs,
-      query: mockQuery,
-      model: 'user',
-    } as any)
-
-    expect(mockArgs.args.update.tenant_id).toBe('custom-tenant')
+    await expect(() => 
+      extension.query.$allOperations({
+        operation: mockArgs.operation,
+        args: mockArgs.args,
+        query: mockQuery,
+        model: mockArgs.model,
+      } as any)
+    ).rejects.toThrow('Cannot upsert (update) record for a different tenant')
   })
 
   it('uses custom tenant column name in operations', async () => {
@@ -625,9 +634,10 @@ describe('withTenantScope', () => {
     }
 
     await extension.query.$allOperations({
-      args: mockArgs,
+      operation: mockArgs.operation,
+      args: mockArgs.args,
       query: mockQuery,
-      model: 'user',
+      model: mockArgs.model,
     } as any)
 
     expect(mockArgs.args.where).toBeDefined()
@@ -652,14 +662,149 @@ describe('withTenantScope', () => {
 
     for (const mockArgs of operations) {
       await extension.query.$allOperations({
-        args: mockArgs,
-        query: mockQuery,
-        model: 'user',
-      } as any)
+      operation: mockArgs.operation,
+      args: mockArgs.args,
+      query: mockQuery,
+      model: mockArgs.model,
+    } as any)
     }
 
     // Verify all operations were scoped correctly
     expect(mockQuery).toHaveBeenCalledTimes(3)
+  })
+
+  it('throws if explicitly providing different tenant_id in update data', async () => {
+    const mockQuery = vi.fn().mockResolvedValue({})
+    const extension = withTenantScope({ tenantId: 'tenant-123' })
+
+    const mockArgs = {
+      operation: 'update',
+      args: { where: { id: 'user-1' }, data: { name: 'Updated', tenant_id: 'custom-tenant' } },
+      model: 'user',
+    }
+
+    await expect(() => 
+      extension.query.$allOperations({
+        operation: mockArgs.operation,
+        args: mockArgs.args,
+        query: mockQuery,
+        model: mockArgs.model,
+      } as any)
+    ).rejects.toThrow('Cannot update record to a different tenant')
+  })
+
+  it('throws if explicitly providing different tenant_id in updateMany data', async () => {
+    const mockQuery = vi.fn().mockResolvedValue({ count: 1 })
+    const extension = withTenantScope({ tenantId: 'tenant-123' })
+
+    const mockArgs = {
+      operation: 'updateMany',
+      args: { data: { status: 'inactive', tenant_id: 'custom-tenant' } },
+      model: 'user',
+    }
+
+    await expect(() => 
+      extension.query.$allOperations({
+        operation: mockArgs.operation,
+        args: mockArgs.args,
+        query: mockQuery,
+        model: mockArgs.model,
+      } as any)
+    ).rejects.toThrow('Cannot update record to a different tenant')
+  })
+
+  it('injects tenant filter into updateManyAndReturn operations', async () => {
+    const mockQuery = vi.fn().mockResolvedValue([{ id: 1 }])
+    const extension = withTenantScope({ tenantId: 'tenant-123' })
+
+    const mockArgs = {
+      operation: 'updateManyAndReturn',
+      args: { data: { status: 'inactive' } },
+      model: 'user',
+    }
+
+    await extension.query.$allOperations({
+      operation: mockArgs.operation,
+      args: mockArgs.args,
+      query: mockQuery,
+      model: mockArgs.model,
+    } as any)
+
+    expect(mockArgs.args.where).toBeDefined()
+    expect(mockArgs.args.where.tenant_id).toBe('tenant-123')
+  })
+
+  it('throws if explicitly providing different tenant_id in updateManyAndReturn data', async () => {
+    const mockQuery = vi.fn().mockResolvedValue([{ id: 1 }])
+    const extension = withTenantScope({ tenantId: 'tenant-123' })
+
+    const mockArgs = {
+      operation: 'updateManyAndReturn',
+      args: { data: { status: 'inactive', tenant_id: 'custom-tenant' } },
+      model: 'user',
+    }
+
+    await expect(() => 
+      extension.query.$allOperations({
+        operation: mockArgs.operation,
+        args: mockArgs.args,
+        query: mockQuery,
+        model: mockArgs.model,
+      } as any)
+    ).rejects.toThrow('Cannot update record to a different tenant')
+  })
+
+  it('injects tenant_id into createManyAndReturn operations with array', async () => {
+    const mockQuery = vi.fn().mockResolvedValue([{ id: 1 }, { id: 2 }])
+    const extension = withTenantScope({ tenantId: 'tenant-123' })
+
+    const mockArgs = {
+      operation: 'createManyAndReturn',
+      args: {
+        data: [
+          { name: 'John' },
+          { name: 'Jane' },
+        ],
+      },
+      model: 'user',
+    }
+
+    await extension.query.$allOperations({
+      operation: mockArgs.operation,
+      args: mockArgs.args,
+      query: mockQuery,
+      model: mockArgs.model,
+    } as any)
+
+    expect(mockArgs.args.data).toBeDefined()
+    expect(Array.isArray(mockArgs.args.data)).toBe(true)
+    expect(mockArgs.args.data[0].tenant_id).toBe('tenant-123')
+    expect(mockArgs.args.data[1].tenant_id).toBe('tenant-123')
+  })
+
+  it('throws if explicitly providing different tenant_id in createManyAndReturn array', async () => {
+    const mockQuery = vi.fn().mockResolvedValue([{ id: 1 }, { id: 2 }])
+    const extension = withTenantScope({ tenantId: 'tenant-123' })
+
+    const mockArgs = {
+      operation: 'createManyAndReturn',
+      args: {
+        data: [
+          { name: 'John', tenant_id: 'custom-1' },
+          { name: 'Jane', tenant_id: 'tenant-123' },
+        ],
+      },
+      model: 'user',
+    }
+
+    await expect(() => 
+      extension.query.$allOperations({
+        operation: mockArgs.operation,
+        args: mockArgs.args,
+        query: mockQuery,
+        model: mockArgs.model,
+      } as any)
+    ).rejects.toThrow('Cannot createMany record for a different tenant')
   })
 })
 
