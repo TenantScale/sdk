@@ -1,6 +1,6 @@
 # @tenantscale/prisma
 
-Tenant-safe Prisma ORM helpers for TenantScale.
+Top-level tenant-scoping helpers for Prisma ORM with documented limitations.
 
 ## Install
 
@@ -145,9 +145,9 @@ app.post('/api/users', async (req, res) => {
 
 This package leverages Prisma 5+'s native `$extends()` API for clean, type-safe query modification:
 
-- **Automatic injection**: The `withTenantScope` extension automatically adds tenant filters to all operations, making cross-tenant leaks structurally impossible.
+- **Automatic injection**: The `withTenantScope` extension automatically adds tenant filters to all top-level operations.
 - **No schema modification**: Works with your existing Prisma schema - just ensure your tables have a `tenant_id` column (or custom column name).
-- **Type safety**: Uses Prisma's extension types for full TypeScript support.
+- **Type safety**: The Prisma client remains type-safe, but the extension callback args are intentionally typed as `any` (Prisma does not export all needed callback types).
 - **Explicit fallback**: The `tenantFilter` helper is available for cases where you need manual control over tenant filtering.
 
 ## Error Handling
@@ -161,9 +161,10 @@ tenantFilter('') // Throws: tenantId is required
 
 ## Limitations
 
-- The extension assumes your tables have a tenant column (default: `tenant_id`). You must add this column to your schema manually.
-- For `findUnique` operations, the tenant filter is added to the where clause. Ensure your unique constraints include the tenant column for proper isolation.
-- The extension does not modify raw SQL queries executed via `$queryRaw` or `$executeRaw`.
+- For `findUnique`, `update`, and `delete` operations, the tenant filter is added to the where clause. Ensure your unique constraints include the tenant column for proper isolation (e.g., `@@unique([id, tenant_id])`). If your schema does not have composite unique constraints, these operations will throw a Prisma runtime error.
+- **Nested Reads and Writes are not scoped**: The extension intercepts operations at the top level. Nested relations (e.g., nested `include`, `select`, or nested `create`/`update` payloads) are **not** automatically tenant-scoped.
+- **Raw Queries**: The extension does not modify raw SQL queries executed via `$queryRaw` or `$executeRaw`, nor does it support MongoDB raw operations (`findRaw`, `aggregateRaw`).
+- **Recommendation**: This package provides convenient top-level scoping. Applications requiring true structural, foolproof tenant isolation should use database-level security mechanisms such as PostgreSQL Row Level Security (RLS).
 
 ## Testing
 

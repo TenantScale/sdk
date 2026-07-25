@@ -71,9 +71,9 @@ export function withTenantScope(options: TenantScopeOptions) {
   return {
     name: 'tenantScope',
     query: {
-      $allOperations: async ({ args, query, model }: PrismaExtensionCallbackArgs) => {
+      $allOperations: async ({ operation, args, query }: PrismaExtensionCallbackArgs) => {
         // Skip raw queries - they bypass tenant isolation
-        if (args.operation === '$queryRaw' || args.operation === '$executeRaw') {
+        if (operation === '$queryRaw' || operation === '$executeRaw') {
           return query(args)
         }
 
@@ -89,90 +89,120 @@ export function withTenantScope(options: TenantScopeOptions) {
           'groupBy',
         ]
 
-        if (readOperations.includes(args.operation)) {
-          args.args = args.args || {}
-          args.args.where = {
-            ...(args.args.where || {}),
+        if (readOperations.includes(operation)) {
+          args = args || {}
+          args.where = {
+            ...(args.where || {}),
             [tenantColumn]: tenantId,
           }
         }
 
         // For update operations, inject tenant filter
-        const updateOperations = ['update', 'updateMany', 'updateOrThrow']
+        const updateOperations = ['update', 'updateMany', 'updateOrThrow', 'updateManyAndReturn']
 
-        if (updateOperations.includes(args.operation)) {
-          args.args = args.args || {}
-          args.args.where = args.args.where || {}
-          args.args.where[tenantColumn] = tenantId
+        if (updateOperations.includes(operation)) {
+          args = args || {}
+          args.where = args.where || {}
+          args.where[tenantColumn] = tenantId
+
+          // Prevent transferring records between tenants via update
+          if (args.data != null && typeof args.data === 'object' && !Array.isArray(args.data)) {
+            const existingTenant = args.data[tenantColumn]
+            if (existingTenant != null && existingTenant !== tenantId) {
+              throw new Error(
+                `Cannot update record to a different tenant (${tenantColumn}=${existingTenant}) when scoped to ${tenantId}`,
+              )
+            }
+          }
         }
 
         // For delete operations, inject tenant filter
         const deleteOperations = ['delete', 'deleteMany', 'deleteOrThrow']
 
-        if (deleteOperations.includes(args.operation)) {
-          args.args = args.args || {}
-          args.args.where = args.args.where || {}
-          args.args.where[tenantColumn] = tenantId
+        if (deleteOperations.includes(operation)) {
+          args = args || {}
+          args.where = args.where || {}
+          args.where[tenantColumn] = tenantId
         }
 
         // For create operations, inject tenant_id into data
-        if (['create', 'createMany'].includes(args.operation)) {
-          args.args = args.args || {}
+        if (['create', 'createMany', 'createManyAndReturn'].includes(operation)) {
+          args = args || {}
 
           // Handle null/undefined data gracefully
-          if (args.args.data == null) {
-            args.args.data = {}
+          if (args.data == null) {
+            args.data = {}
           }
 
-          if (args.operation === 'create') {
-            // Merge tenant_id with existing data, don't overwrite if already present
-            if (!(tenantColumn in args.args.data)) {
-              args.args.data = {
-                ...args.args.data,
-                [tenantColumn]: tenantId,
-              }
+          if (operation === 'create') {
+            const existingTenant = args.data[tenantColumn]
+            if (existingTenant != null && existingTenant !== tenantId) {
+              throw new Error(
+                `Cannot create record for a different tenant (${tenantColumn}=${existingTenant}) when scoped to ${tenantId}`,
+              )
+            }
+            args.data = {
+              ...args.data,
+              [tenantColumn]: tenantId,
             }
           } else {
             // createMany uses data array or single object
-            if (Array.isArray(args.args.data)) {
-              args.args.data = args.args.data.map((item: any) => {
+            if (Array.isArray(args.data)) {
+              args.data = args.data.map((item: any) => {
                 if (item == null) return { [tenantColumn]: tenantId }
-                if (!(tenantColumn in item)) {
-                  return { ...item, [tenantColumn]: tenantId }
+                
+                const existingTenant = item[tenantColumn]
+                if (existingTenant != null && existingTenant !== tenantId) {
+                  throw new Error(
+                    `Cannot createMany record for a different tenant (${tenantColumn}=${existingTenant}) when scoped to ${tenantId}`,
+                  )
                 }
-                return item
+                
+                return { ...item, [tenantColumn]: tenantId }
               })
             } else {
-              if (!(tenantColumn in args.args.data)) {
-                args.args.data = {
-                  ...args.args.data,
-                  [tenantColumn]: tenantId,
-                }
+              const existingTenant = args.data[tenantColumn]
+              if (existingTenant != null && existingTenant !== tenantId) {
+                throw new Error(
+                  `Cannot createMany record for a different tenant (${tenantColumn}=${existingTenant}) when scoped to ${tenantId}`,
+                )
+              }
+              args.data = {
+                ...args.data,
+                [tenantColumn]: tenantId,
               }
             }
           }
         }
 
         // For upsert, inject tenant_id into where, create, and update
-        if (args.operation === 'upsert') {
-          args.args = args.args || {}
-          args.args.where = args.args.where || {}
-          args.args.where[tenantColumn] = tenantId
+        if (operation === 'upsert') {
+          args = args || {}
+          args.where = args.where || {}
+          args.where[tenantColumn] = tenantId
 
-          args.args.create = args.args.create || {}
-          if (!(tenantColumn in args.args.create)) {
-            args.args.create = {
-              ...args.args.create,
-              [tenantColumn]: tenantId,
-            }
+          args.create = args.create || {}
+          const existingCreateTenant = args.create[tenantColumn]
+          if (existingCreateTenant != null && existingCreateTenant !== tenantId) {
+            throw new Error(
+              `Cannot upsert (create) record for a different tenant (${tenantColumn}=${existingCreateTenant}) when scoped to ${tenantId}`,
+            )
+          }
+          args.create = {
+            ...args.create,
+            [tenantColumn]: tenantId,
           }
 
-          args.args.update = args.args.update || {}
-          if (!(tenantColumn in args.args.update)) {
-            args.args.update = {
-              ...args.args.update,
-              [tenantColumn]: tenantId,
-            }
+          args.update = args.update || {}
+          const existingUpdateTenant = args.update[tenantColumn]
+          if (existingUpdateTenant != null && existingUpdateTenant !== tenantId) {
+            throw new Error(
+              `Cannot upsert (update) record for a different tenant (${tenantColumn}=${existingUpdateTenant}) when scoped to ${tenantId}`,
+            )
+          }
+          args.update = {
+            ...args.update,
+            [tenantColumn]: tenantId,
           }
         }
 
