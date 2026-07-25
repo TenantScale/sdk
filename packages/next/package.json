@@ -20,8 +20,8 @@
     "dist/"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --dts --format cjs,esm --sourcemap --clean",
-    "dev": "tsup src/index.ts --watch --dts --format cjs,esm",
+    "build": "pnpm exec tsup src/index.ts --dts --format cjs,esm --sourcemap --clean",
+    "dev": "pnpm exec tsup src/index.ts --watch --dts --format cjs,esm",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "eslint src/"

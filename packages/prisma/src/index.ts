@@ -91,22 +91,9 @@ export function withTenantScope(options: TenantScopeOptions) {
 
         if (readOperations.includes(args.operation)) {
           args.args = args.args || {}
-          args.args.where = args.args.where || {}
-
-          // For findUnique and findUniqueOrThrow, we need to handle carefully
-          // since they expect unique constraints. We add tenant_id to ensure
-          // uniqueness is scoped to the tenant.
-          if (['findUnique', 'findUniqueOrThrow'].includes(args.operation)) {
-            args.args.where = {
-              ...args.args.where,
-              [tenantColumn]: tenantId,
-            }
-          } else {
-            // For other read operations, merge tenant filter with existing where
-            args.args.where = {
-              ...args.args.where,
-              [tenantColumn]: tenantId,
-            }
+          args.args.where = {
+            ...(args.args.where || {}),
+            [tenantColumn]: tenantId,
           }
         }
 
