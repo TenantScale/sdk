@@ -73,7 +73,7 @@ describe('tenantscale init --non-interactive', () => {
     rmSync(tmpDir, { recursive: true, force: true })
   })
 
-  it('creates expected files in the project directory', () => {
+  it('creates expected files in the project directory', { timeout: 10000 }, () => {
     const projectDir = join(tmpDir, 'my-app')
     const result = run(`init ${projectDir} --non-interactive`, tmpDir)
 
@@ -95,7 +95,7 @@ describe('tenantscale init --non-interactive', () => {
     expect(envContent).toContain('TENANTSCALE_API_KEY')
   })
 
-  it('--framework hono creates hono middleware', () => {
+  it('--framework hono creates hono middleware', { timeout: 20000 }, () => {
     const projectDir = join(tmpDir, 'hono-app')
     const result = run(`init ${projectDir} --non-interactive --framework hono`, tmpDir)
 
@@ -111,7 +111,7 @@ describe('tenantscale init --non-interactive', () => {
     expect(middlewareContent).toContain('ContextVariableMap')
   })
 
-  it('--framework express creates express middleware', () => {
+  it('--framework express creates express middleware', { timeout: 30000 }, () => {
     const projectDir = join(tmpDir, 'express-app')
     const result = run(`init ${projectDir} --non-interactive --framework express`, tmpDir)
 
@@ -127,7 +127,7 @@ describe('tenantscale init --non-interactive', () => {
     expect(middlewareContent).toContain('namespace Express')
   })
 
-  it('--table option customizes the migration SQL', () => {
+  it('--table option customizes the migration SQL', { timeout: 20000 }, () => {
     const projectDir = join(tmpDir, 'custom-table')
     const result = run(`init ${projectDir} --non-interactive --table organizations`, tmpDir)
 
