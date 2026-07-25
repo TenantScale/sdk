@@ -6,6 +6,7 @@
     "access": "public"
   },
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -20,8 +21,8 @@
     "dist/"
   ],
   "scripts": {
-    "build": "pnpm exec tsup src/index.ts --dts --format cjs,esm --sourcemap --clean",
-    "dev": "pnpm exec tsup src/index.ts --watch --dts --format cjs,esm",
+    "build": "tsup src/index.ts --format esm,cjs && tsc --emitDeclarationOnly",
+    "dev": "tsup src/index.ts --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "eslint src/"
@@ -36,11 +37,9 @@
   "devDependencies": {
     "@types/node": "^26.1.1",
     "next": "^16.2.11",
-    "next-test-api-route-handler": "^4.0.1",
+    "next-test-api-route-handler": "^5.0.5",
     "tsup": "^8.5.1",
-    "typescript": "^5.7.3",
-    "vitest": "^4.1.10",
-    "eslint": "^9.0.0"
+    "typescript": "^7.0.2"
   },
   "license": "MIT",
   "repository": {

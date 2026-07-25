@@ -22,24 +22,37 @@
  * SOFTWARE.
  */
 
-// ──────────────────────────────────────────────────────
-// @tenantscale/koa — Types
-// ──────────────────────────────────────────────────────
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { describe, expect, it } from 'vitest'
 
-import type { TenantScale, ApiKeyInfo, PortalSessionInfo } from '@tenantscale/sdk'
-
-export interface KoaAdapterOptions {
-  ts: TenantScale
-  audit?: boolean
-  apiKeyHeader?: string
-  authHeader?: string
+type PackageJson = {
+  exports?: {
+    '.': {
+      require?: string
+    }
+  }
 }
 
-export interface ErrorResponse {
-  error: string
-  code: string
-  statusCode: number
-  details?: Record<string, unknown>
-}
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..')
 
-export type { ApiKeyInfo, PortalSessionInfo }
+const packageJsonPaths = [
+  'packages/sdk/package.json',
+  'packages/express/package.json',
+  'packages/hono/package.json',
+  'packages/next/package.json',
+  'packages/react/package.json',
+]
+
+describe('package export maps', () => {
+  it('defines require condition for each published adapter/sdk package', () => {
+    for (const packageJsonPath of packageJsonPaths) {
+      const packageJson = JSON.parse(
+        readFileSync(resolve(repoRoot, packageJsonPath), 'utf-8'),
+      ) as PackageJson
+
+      expect(packageJson.exports?.['.']?.require).toBe('./dist/index.cjs')
+    }
+  })
+})

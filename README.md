@@ -12,7 +12,7 @@
   <a href="https://www.npmjs.com/package/@tenantscale/sdk"><img src="https://img.shields.io/npm/v/@tenantscale/sdk?label=core&color=blue" alt="npm"></a>
   <a href="https://www.npmjs.com/package/@tenantscale/react"><img src="https://img.shields.io/npm/v/@tenantscale/react?label=react&color=blue" alt="npm react"></a>
   <a href="https://www.npmjs.com/package/create-tenantscale-app"><img src="https://img.shields.io/npm/v/create-tenantscale-app?label=create-app&color=blue" alt="npm create-app"></a>
-  <img src="https://img.shields.io/badge/coverage-97%25-brightgreen" alt="Coverage">
+  <a href="https://github.com/TenantScale/sdk/blob/main/coverage-summary.json"><img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/TenantScale/sdk/main/coverage-summary.json&query=%24.total.lines.pct&label=coverage&suffix=%25&color=brightgreen" alt="Coverage"></a>
   <a href="https://bundlephobia.com/package/@tenantscale/sdk"><img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/sdk?label=bundle" alt="Bundle size"></a>
   <a href="https://github.com/TenantScale/sdk/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
   <a href="https://github.com/TenantScale/sdk/blob/main/CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
@@ -30,17 +30,17 @@ Stop hand-rolling multi-tenancy per project. Add it as middleware once, then shi
 
 ## ✨ What It Does
 
-| Capability | What It Means For Your App |
-|------------|---------------------------|
-| **🔐 API Key Auth** | Validate `Bearer` tokens or `x-api-key` headers against your Supabase DB. Scoped, hashed, ready. |
-| **👤 Portal Sessions** | JWT-based session validation with role-based guards (`admin`, `super_admin`). |
-| **🏢 Tenant Isolation** | Every request is scoped to a tenant. Cross-tenant leaks are structurally impossible. |
-| **📊 Plan Enforcement** | Check limits (`max_users`, `max_api_keys`, `api_calls_per_day`) before allowing mutations. |
-| **⏱ Rate Limiting** | Plan-aware daily API limits + IP-based creation throttling. Returns proper `429` with `Retry-After`. |
-| **📝 Audit Logging** | Automatic audit trail on every API key auth. Explicit audit middleware for custom events. |
-| **🔔 Webhooks** | Fire-and-forget event dispatch to tenant-configured endpoints with retry logic. |
-| **💳 Stripe Billing** | Subscription management: checkouts, customer portal, plan sync via webhooks. |
-| **🛡️ SSRF Protection** | Built-in webhook URL validation blocks private IPs, loopback, and internal hostnames. |
+| Capability              | What It Means For Your App                                                                           |
+| ----------------------- | ---------------------------------------------------------------------------------------------------- |
+| **🔐 API Key Auth**     | Validate `Bearer` tokens or `x-api-key` headers against your Supabase DB. Scoped, hashed, ready.     |
+| **👤 Portal Sessions**  | JWT-based session validation with role-based guards (`admin`, `super_admin`).                        |
+| **🏢 Tenant Isolation** | Every request is scoped to a tenant. Cross-tenant leaks are structurally impossible.                 |
+| **📊 Plan Enforcement** | Check limits (`max_users`, `max_api_keys`, `api_calls_per_day`) before allowing mutations.           |
+| **⏱ Rate Limiting**     | Plan-aware daily API limits + IP-based creation throttling. Returns proper `429` with `Retry-After`. |
+| **📝 Audit Logging**    | Automatic audit trail on every API key auth. Explicit audit middleware for custom events.            |
+| **🔔 Webhooks**         | Fire-and-forget event dispatch to tenant-configured endpoints with retry logic.                      |
+| **💳 Stripe Billing**   | Subscription management: checkouts, customer portal, plan sync via webhooks.                         |
+| **🛡️ SSRF Protection**  | Built-in webhook URL validation blocks private IPs, loopback, and internal hostnames.                |
 
 ---
 
@@ -51,7 +51,12 @@ Stop hand-rolling multi-tenancy per project. Add it as middleware once, then shi
 ```typescript
 import express from 'express'
 import { TenantScale } from '@tenantscale/sdk'
-import { authenticateApiKey, rateLimitByApiKey, requirePlanLimit, auditLog } from '@tenantscale/express'
+import {
+  authenticateApiKey,
+  rateLimitByApiKey,
+  requirePlanLimit,
+  auditLog,
+} from '@tenantscale/express'
 
 const ts = new TenantScale({
   supabaseUrl: process.env.SUPABASE_URL!,
@@ -68,10 +73,17 @@ app.use('/api/*', rateLimitByApiKey({ ts }))
 app.post('/api/tenants', authenticateApiKey({ ts }), requirePlanLimit({ ts }, 'max_tenants', 5))
 
 // Automatic audit logging
-app.post('/api/teams', authenticateApiKey({ ts }), auditLog({ ts }, {
-  action: 'team.create',
-  resource: 'team',
-}))
+app.post(
+  '/api/teams',
+  authenticateApiKey({ ts }),
+  auditLog(
+    { ts },
+    {
+      action: 'team.create',
+      resource: 'team',
+    },
+  ),
+)
 
 app.listen(3001)
 ```
@@ -81,7 +93,12 @@ app.listen(3001)
 ```typescript
 import { Hono } from 'hono'
 import { TenantScale } from '@tenantscale/sdk'
-import { authenticateApiKey, requirePortalSession, requirePlanLimit, errorHandler } from '@tenantscale/hono'
+import {
+  authenticateApiKey,
+  requirePortalSession,
+  requirePlanLimit,
+  errorHandler,
+} from '@tenantscale/hono'
 
 const ts = new TenantScale({
   supabaseUrl: process.env.SUPABASE_URL!,
@@ -105,11 +122,18 @@ app.onError(errorHandler({ ts }))
 import { TenantScale } from '@tenantscale/sdk'
 import { authenticateApiKey, createHandler } from '@tenantscale/next'
 
-const ts = new TenantScale({ supabaseUrl: process.env.SUPABASE_URL!, supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY! })
+const ts = new TenantScale({
+  supabaseUrl: process.env.SUPABASE_URL!,
+  supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+})
 
-export const GET = createHandler(ts, async (req, { tenant }) => {
-  return Response.json({ tenantId: tenant.tenant_id, scopes: tenant.scopes })
-}, { auth: authenticateApiKey })
+export const GET = createHandler(
+  ts,
+  async (req, { tenant }) => {
+    return Response.json({ tenantId: tenant.tenant_id, scopes: tenant.scopes })
+  },
+  { auth: authenticateApiKey },
+)
 ```
 
 ### React (Client-side)
@@ -131,7 +155,11 @@ function Dashboard() {
   const { members } = useTeam()
 
   if (loading) return <p>Loading…</p>
-  return <div>Welcome, {tenant.name} — {keys.length} API keys, {members.length} team members</div>
+  return (
+    <div>
+      Welcome, {tenant.name} — {keys.length} API keys, {members.length} team members
+    </div>
+  )
 }
 ```
 
@@ -154,19 +182,19 @@ npx create-tenantscale-app my-saas
 
 All packages are **MIT-licensed** and published on npm.
 
-| Package | Size | Description |
-|---------|------|-------------|
-| [`@tenantscale/sdk`](packages/sdk) | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/sdk" alt="size"> | Framework-agnostic core — SDK class, auth, plans, rate limits, audit, webhooks, Stripe |
-| [`@tenantscale/express`](packages/express) | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/express" alt="size"> | Express middleware — `authenticateApiKey`, `requirePlanLimit`, `rateLimitByApiKey`, `auditLog` |
-| [`@tenantscale/hono`](packages/hono) | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/hono" alt="size"> | Hono middleware — same middleware API, built for Hono's context model |
-| [`@tenantscale/next`](packages/next) | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/next" alt="size"> | Next.js App Router — `authenticateApiKey`, `createHandler`, `withApiKey` |
-| [`@tenantscale/react`](packages/react) | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/react" alt="size"> | React hooks — `useTenant`, `usePlan`, `useApiKeys`, `useTeam`, `useAuditLog`, `useWebhooks` |
-| [`@tenantscale/fastify`](packages/fastify) | — | Fastify middleware — `authenticateApiKey`, `requireScope`, `errorHandler` |
-| [`@tenantscale/koa`](packages/koa) | — | Koa middleware — full adapter: auth, session validation, plan limits, rate limits, audit logging |
-| [`@tenantscale/drizzle`](packages/drizzle) | — | Drizzle ORM tenant query guard — auto-scopes queries to the current tenant |
-| [`@tenantscale/cli`](packages/cli) | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/cli" alt="size"> | CLI — `tenantscale init` to scaffold, `tenantscale migrate` to analyze existing apps |
-| [`create-tenantscale-app`](packages/create-app) | <img src="https://img.shields.io/bundlephobia/minzip/create-tenantscale-app" alt="size"> | Full-stack starter — scaffolds Next.js portal + Hono API + Supabase migrations |
-| [`@tenantscale/mcp`](packages/mcp) | — | MCP server for AI tools — validate tenant queries, generate RLS policies, suggest endpoints |
+| Package                                         | Size                                                                                     | Description                                                                                      |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| [`@tenantscale/sdk`](packages/sdk)              | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/sdk" alt="size">       | Framework-agnostic core — SDK class, auth, plans, rate limits, audit, webhooks, Stripe           |
+| [`@tenantscale/express`](packages/express)      | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/express" alt="size">   | Express middleware — `authenticateApiKey`, `requirePlanLimit`, `rateLimitByApiKey`, `auditLog`   |
+| [`@tenantscale/hono`](packages/hono)            | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/hono" alt="size">      | Hono middleware — same middleware API, built for Hono's context model                            |
+| [`@tenantscale/next`](packages/next)            | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/next" alt="size">      | Next.js App Router — `authenticateApiKey`, `createHandler`, `withApiKey`                         |
+| [`@tenantscale/react`](packages/react)          | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/react" alt="size">     | React hooks — `useTenant`, `usePlan`, `useApiKeys`, `useTeam`, `useAuditLog`, `useWebhooks`      |
+| [`@tenantscale/fastify`](packages/fastify)      | —                                                                                        | Fastify middleware — `authenticateApiKey`, `requireScope`, `errorHandler`                        |
+| [`@tenantscale/koa`](packages/koa)              | —                                                                                        | Koa middleware — full adapter: auth, session validation, plan limits, rate limits, audit logging |
+| [`@tenantscale/drizzle`](packages/drizzle)      | —                                                                                        | Drizzle ORM tenant query guard — auto-scopes queries to the current tenant                       |
+| [`@tenantscale/cli`](packages/cli)              | <img src="https://img.shields.io/bundlephobia/minzip/@tenantscale/cli" alt="size">       | CLI — `tenantscale init` to scaffold, `tenantscale migrate` to analyze existing apps             |
+| [`create-tenantscale-app`](packages/create-app) | <img src="https://img.shields.io/bundlephobia/minzip/create-tenantscale-app" alt="size"> | Full-stack starter — scaffolds Next.js portal + Hono API + Supabase migrations                   |
+| [`@tenantscale/mcp`](packages/mcp)              | —                                                                                        | MCP server for AI tools — validate tenant queries, generate RLS policies, suggest endpoints      |
 
 ---
 
@@ -225,20 +253,20 @@ pnpm install && pnpm dev
 
 ## 🗺️ Roadmap
 
-| Status | Feature |
-|--------|---------|
-| ✅ | Core SDK (auth, plans, rate limits, audit, webhooks, Stripe) |
-| ✅ | Express adapter |
-| ✅ | Hono adapter |
-| ✅ | Next.js adapter |
-| ✅ | React hooks |
-| ✅ | CLI + create-tenantscale-app |
-| ✅ | **Fastify adapter** — contributed by [@peakcoder](https://github.com/GHisDW) |
-| ✅ | **Koa adapter** — contributed by [@ashudhanda](https://github.com/ashudhanda) |
-| 🔜 | **Prisma adapter** — automatic tenant-scoped query guard |
-| ✅ | **Drizzle adapter** — automatic tenant-scoped query guard |
-| 🔜 | **SSO / SAML** — enterprise identity provider integration |
-| 🔜 | **RBAC** — custom roles per tenant |
+| Status | Feature                                                                       |
+| ------ | ----------------------------------------------------------------------------- |
+| ✅     | Core SDK (auth, plans, rate limits, audit, webhooks, Stripe)                  |
+| ✅     | Express adapter                                                               |
+| ✅     | Hono adapter                                                                  |
+| ✅     | Next.js adapter                                                               |
+| ✅     | React hooks                                                                   |
+| ✅     | CLI + create-tenantscale-app                                                  |
+| ✅     | **Fastify adapter** — contributed by [@peakcoder](https://github.com/GHisDW)  |
+| ✅     | **Koa adapter** — contributed by [@ashudhanda](https://github.com/ashudhanda) |
+| 🔜     | **Prisma adapter** — automatic tenant-scoped query guard                      |
+| ✅     | **Drizzle adapter** — automatic tenant-scoped query guard                     |
+| 🔜     | **SSO / SAML** — enterprise identity provider integration                     |
+| 🔜     | **RBAC** — custom roles per tenant                                            |
 
 ---
 
@@ -247,6 +275,7 @@ pnpm install && pnpm dev
 We'd love your help! TenantScale is built for the community and by the community.
 
 **Ways to contribute:**
+
 - 🐛 [Report a bug](https://github.com/TenantScale/sdk/issues/new?template=bug_report.md)
 - 💡 [Request a feature](https://github.com/TenantScale/sdk/issues/new?template=feature_request.md)
 - 🛠 [Pick a `good first issue`](https://github.com/TenantScale/sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)

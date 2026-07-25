@@ -1,87 +1,133 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2026 TenantScale
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 // ──────────────────────────────────────────────────────
 // @tenantscale/fastify — Middleware
 // ──────────────────────────────────────────────────────
+//
+// Thin Fastify wrappers around the shared middleware core.
+// All business logic lives in @tenantscale/sdk/middleware-core.ts.
 
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import {
-  AuthenticationError,
-  PlanLimitExceededError,
-  RateLimitExceededError,
+  authenticateApiKeyCore,
+  requireScopeCore,
+  requirePortalSessionCore,
+  requirePortalRoleCore,
+  requireSuperAdminCore,
+  requirePlanLimitCore,
+  rateLimitByApiKeyCore,
+  rateLimitByIpCore,
+  auditLogCore,
 } from '@tenantscale/sdk'
 import type { FastifyAdapterOptions } from './types.js'
 
-function resolveClientIp(req: FastifyRequest): string {
+// ── Helper: resolve client IP ──
+
+type Req = FastifyRequest
+
+function resolveClientIp(req: Req): string {
   const forwarded = req.headers['x-forwarded-for']
-  if (typeof forwarded === 'string') {
-    return forwarded.split(',')[0]?.trim() ?? '127.0.0.1'
-  }
-
-  if (Array.isArray(forwarded)) {
-    return forwarded[0]?.trim() ?? '127.0.0.1'
-  }
-
+  if (typeof forwarded === 'string') return forwarded.split(',')[0]?.trim() ?? '127.0.0.1'
+  if (Array.isArray(forwarded)) return forwarded[0]?.trim() ?? '127.0.0.1'
   return req.headers['x-real-ip']?.toString() ?? '127.0.0.1'
 }
 
-function getHeader(req: FastifyRequest, name: string): string | undefined {
+function getHeader(req: Req, name: string): string | undefined {
   const value = req.headers[name.toLowerCase()]
   return Array.isArray(value) ? value[0] : value?.toString()
 }
+
+// ── Cast helpers (Fastify doesn't augment request) ──
+
+function tk(req: Req) {
+  return (req as unknown as { tenantKey?: any }).tenantKey
+}
+function tid(req: Req) {
+  return (req as unknown as { tenantId?: string }).tenantId
+}
+function ps(req: Req) {
+  return (req as unknown as { portalSession?: any }).portalSession
+}
+function setTk(req: Req, v: any) {
+  ;(req as unknown as Record<string, any>).tenantKey = v
+}
+function setTid(req: Req, v: string | undefined) {
+  ;(req as unknown as Record<string, any>).tenantId = v
+}
+function setPs(req: Req, v: any) {
+  ;(req as unknown as Record<string, any>).portalSession = v
+}
+
+// ── Error helper ──
+
+function sendError(reply: FastifyReply, err: unknown, defaultStatus: number) {
+  const e = err as Error & { statusCode?: number; code?: string; retryAfter?: number }
+  const statusCode = e.statusCode ?? defaultStatus
+  if (e.retryAfter) {
+    reply.header('Retry-After', String(e.retryAfter))
+  }
+  reply.code(statusCode).send({
+    error: e.message ?? 'Request failed',
+    code: e.code ?? 'ERROR',
+    statusCode: e.statusCode ?? defaultStatus,
+  })
+}
+
+// ──────────────────────────────────────────────────────
 
 export function authenticateApiKey(options: FastifyAdapterOptions) {
   const headerName = options.apiKeyHeader ?? 'x-api-key'
   const audit = options.audit ?? true
 
-  return async (req: FastifyRequest, reply: FastifyReply) => {
+  return async (req: Req, reply: FastifyReply) => {
     try {
-      const token = getHeader(req, headerName)
-      if (!token) {
-        throw new AuthenticationError(`Missing ${headerName} header`)
-      }
-
-      const apiKey = await options.ts.validateApiKey(token)
-      ;(req as FastifyRequest & { tenantKey?: any }).tenantKey = apiKey
-      ;(req as FastifyRequest & { tenantId?: string }).tenantId = apiKey.tenant_id
-
-      if (audit) {
-        options.ts
-          .logAuditEvent({
-            tenant_id: apiKey.tenant_id,
-            actor_id: apiKey.key_record_id,
-            actor_type: 'admin_api',
-            action: 'api_key.authenticated',
-            resource: req.url,
-            ip: resolveClientIp(req),
-            user_agent: req.headers['user-agent']?.toString() ?? undefined,
-          })
-          .catch(() => {})
-      }
+      const result = await authenticateApiKeyCore(
+        options.ts,
+        getHeader(req, headerName),
+        headerName,
+        audit,
+        {
+          url: req.url,
+          ip: resolveClientIp(req),
+          userAgent: req.headers['user-agent']?.toString(),
+        },
+      )
+      setTk(req, result.apiKey)
+      setTid(req, result.tenantId)
     } catch (err) {
-      const error = err as Error & { statusCode?: number; code?: string }
-      reply.code(error.statusCode ?? 401).send({
-        error: error.message ?? 'Authentication failed',
-        code: error.code ?? 'AUTH_FAILED',
-        statusCode: error.statusCode ?? 401,
-      })
+      sendError(reply, err, 401)
     }
   }
 }
 
 export function requireScope(options: FastifyAdapterOptions, ...scopes: string[]) {
-  return async (req: FastifyRequest, reply: FastifyReply) => {
+  return async (req: Req, reply: FastifyReply) => {
     try {
-      const tenantKey = (req as FastifyRequest & { tenantKey?: any }).tenantKey
-      if (!tenantKey) {
-        throw new AuthenticationError('Authentication required')
-      }
-      options.ts.requireScope(tenantKey, ...scopes)
+      requireScopeCore(options.ts, tk(req), scopes)
     } catch (err) {
-      const error = err as Error & { statusCode?: number; code?: string }
-      reply.code(error.statusCode ?? 403).send({
-        error: error.message ?? 'Authorization failed',
-        code: error.code ?? 'MISSING_SCOPE',
-        statusCode: error.statusCode ?? 403,
-      })
+      sendError(reply, err, 403)
     }
   }
 }
@@ -89,70 +135,37 @@ export function requireScope(options: FastifyAdapterOptions, ...scopes: string[]
 export function requirePortalSession(options: FastifyAdapterOptions) {
   const headerName = options.authHeader ?? 'authorization'
 
-  return async (req: FastifyRequest, reply: FastifyReply) => {
+  return async (req: Req, reply: FastifyReply) => {
     try {
-      const authHeader = getHeader(req, headerName)
-      if (!authHeader) {
-        throw new AuthenticationError(`Missing ${headerName} header`)
-      }
-
-      const parts = authHeader.split(' ')
-      if (parts.length !== 2 || parts[0] !== 'Bearer') {
-        throw new AuthenticationError(
-          'Invalid authorization header format. Expected: Bearer <token>',
-        )
-      }
-
-      const session = await options.ts.validateSession(parts[1])
-      ;(req as FastifyRequest & { portalSession?: any }).portalSession = session
-      if (session.tenant_id) {
-        ;(req as FastifyRequest & { tenantId?: string }).tenantId = session.tenant_id
-      }
+      const result = await requirePortalSessionCore(
+        options.ts,
+        getHeader(req, headerName),
+        headerName,
+      )
+      setPs(req, result.session)
+      if (result.tenantId) setTid(req, result.tenantId)
     } catch (err) {
-      const error = err as Error & { statusCode?: number; code?: string }
-      reply.code(error.statusCode ?? 401).send({
-        error: error.message ?? 'Session validation failed',
-        code: error.code ?? 'SESSION_INVALID',
-        statusCode: error.statusCode ?? 401,
-      })
+      sendError(reply, err, 401)
     }
   }
 }
 
 export function requirePortalRole(options: FastifyAdapterOptions, ...roles: string[]) {
-  return async (req: FastifyRequest, reply: FastifyReply) => {
+  return async (req: Req, reply: FastifyReply) => {
     try {
-      const portalSession = (req as FastifyRequest & { portalSession?: any }).portalSession
-      if (!portalSession) {
-        throw new AuthenticationError('Portal session required')
-      }
-      options.ts.requirePortalRole(portalSession, ...roles)
+      requirePortalRoleCore(options.ts, ps(req), roles)
     } catch (err) {
-      const error = err as Error & { statusCode?: number; code?: string }
-      reply.code(error.statusCode ?? 403).send({
-        error: error.message ?? 'Authorization failed',
-        code: error.code ?? 'MISSING_ROLE',
-        statusCode: error.statusCode ?? 403,
-      })
+      sendError(reply, err, 403)
     }
   }
 }
 
 export function requireSuperAdmin(options: FastifyAdapterOptions) {
-  return async (req: FastifyRequest, reply: FastifyReply) => {
+  return async (req: Req, reply: FastifyReply) => {
     try {
-      const portalSession = (req as FastifyRequest & { portalSession?: any }).portalSession
-      if (!portalSession) {
-        throw new AuthenticationError('Portal session required')
-      }
-      options.ts.requireSuperAdmin(portalSession)
+      requireSuperAdminCore(options.ts, ps(req))
     } catch (err) {
-      const error = err as Error & { statusCode?: number; code?: string }
-      reply.code(error.statusCode ?? 403).send({
-        error: error.message ?? 'Super admin access required',
-        code: error.code ?? 'NOT_SUPER_ADMIN',
-        statusCode: error.statusCode ?? 403,
-      })
+      sendError(reply, err, 403)
     }
   }
 }
@@ -160,81 +173,38 @@ export function requireSuperAdmin(options: FastifyAdapterOptions) {
 export function requirePlanLimit(
   options: FastifyAdapterOptions,
   feature: string,
-  currentCount: number | ((req: FastifyRequest) => number | Promise<number>),
+  currentCount: number | ((req: Req) => number | Promise<number>),
 ) {
-  return async (req: FastifyRequest, reply: FastifyReply) => {
+  return async (req: Req, reply: FastifyReply) => {
     try {
-      const tenantId = (req as FastifyRequest & { tenantId?: string }).tenantId
-      if (!tenantId) {
-        throw new AuthenticationError(
-          'Tenant ID not resolved. Ensure authenticateApiKey or requirePortalSession runs first.',
-        )
-      }
-
-      const limit = await options.ts.plans.getPlanLimit(tenantId, feature)
-      if (limit === null) {
-        return
-      }
-
-      const current = typeof currentCount === 'function' ? await currentCount(req) : currentCount
-      if (current >= limit) {
-        throw new PlanLimitExceededError(limit, current, feature)
-      }
+      await requirePlanLimitCore(
+        options.ts,
+        tid(req),
+        feature,
+        typeof currentCount === 'function' ? () => currentCount(req) : currentCount,
+      )
     } catch (err) {
-      const error = err as Error & { statusCode?: number; code?: string }
-      reply.code(error.statusCode ?? 403).send({
-        error: error.message ?? 'Plan limit check failed',
-        code: error.code ?? 'PLAN_LIMIT_REACHED',
-        statusCode: error.statusCode ?? 403,
-      })
+      sendError(reply, err, 403)
     }
   }
 }
 
 export function rateLimitByApiKey(options: FastifyAdapterOptions) {
-  return async (req: FastifyRequest, reply: FastifyReply) => {
+  return async (req: Req, reply: FastifyReply) => {
     try {
-      const tenantKey = (req as FastifyRequest & { tenantKey?: any }).tenantKey
-      if (!tenantKey) {
-        throw new AuthenticationError('Authentication required for rate limiting')
-      }
-
-      const result = await options.ts.rateLimiter.checkDailyLimit(tenantKey)
-      if (!result.allowed) {
-        throw new RateLimitExceededError(result.limit)
-      }
+      await rateLimitByApiKeyCore(options.ts, tk(req))
     } catch (err) {
-      const error = err as Error & { statusCode?: number; code?: string }
-      reply.code(error.statusCode ?? 429).send({
-        error: error.message ?? 'Rate limit exceeded',
-        code: error.code ?? 'DAILY_LIMIT_EXCEEDED',
-        statusCode: error.statusCode ?? 429,
-      })
+      sendError(reply, err, 429)
     }
   }
 }
 
 export function rateLimitByIp(options: FastifyAdapterOptions) {
-  return async (req: FastifyRequest, reply: FastifyReply) => {
+  return async (req: Req, reply: FastifyReply) => {
     try {
-      const result = await options.ts.rateLimiter.checkIpCreationLimit(resolveClientIp(req))
-      if (result.blocked) {
-        const retryAfter = Math.ceil((result.resetAtMs - Date.now()) / 1000)
-        reply.header('Retry-After', String(Math.max(1, retryAfter)))
-        reply.code(429).send({
-          error: `IP rate limit exceeded. Try again in ${Math.max(1, retryAfter)}s.`,
-          code: 'IP_RATE_LIMITED',
-          statusCode: 429,
-        })
-        return
-      }
+      await rateLimitByIpCore(options.ts, resolveClientIp(req))
     } catch (err) {
-      const error = err as Error & { statusCode?: number; code?: string }
-      reply.code(error.statusCode ?? 429).send({
-        error: error.message ?? 'Rate limit check failed',
-        code: error.code ?? 'RATE_LIMIT_ERROR',
-        statusCode: error.statusCode ?? 429,
-      })
+      sendError(reply, err, 429)
     }
   }
 }
@@ -245,32 +215,20 @@ export function auditLog(
     action: string
     resource: string
     actorType?: 'user' | 'system' | 'admin_api' | 'admin_impersonation'
-    getDetails?: (req: FastifyRequest) => Record<string, unknown>
+    getDetails?: (req: Req) => Record<string, unknown>
   },
 ) {
-  return async (req: FastifyRequest, _reply: FastifyReply) => {
-    const tenantId = (req as FastifyRequest & { tenantId?: string }).tenantId
-    if (!tenantId) {
-      return
-    }
-
-    const portalSession = (req as FastifyRequest & { portalSession?: any }).portalSession
-    const tenantKey = (req as FastifyRequest & { tenantKey?: any }).tenantKey
-    const actorId = portalSession?.user_id ?? tenantKey?.created_by ?? null
-
-    options.ts
-      .logAuditEvent({
-        tenant_id: tenantId,
-        actor_id: actorId,
-        actor_type: config.actorType ?? (portalSession ? 'user' : 'admin_api'),
-        action: config.action,
-        resource: config.resource,
-        details: config.getDetails?.(req) ?? {},
+  return async (req: Req, _reply: FastifyReply) => {
+    auditLogCore(
+      options.ts,
+      tid(req),
+      { ...config, details: config.getDetails?.(req) },
+      {
         ip: resolveClientIp(req),
-        user_agent: req.headers['user-agent']?.toString() ?? null,
-      })
-      .catch((err) => {
-        options.ts.logger?.error?.('Audit log write failed:', err)
-      })
+        userAgent: req.headers['user-agent']?.toString(),
+        session: ps(req),
+        apiKey: tk(req),
+      },
+    )
   }
 }

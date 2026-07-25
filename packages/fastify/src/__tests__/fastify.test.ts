@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2026 TenantScale
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import Fastify from 'fastify'
 import {
@@ -69,6 +93,7 @@ describe('fastify adapter', () => {
     const ts = createMockTenantScale()
     ts.validateApiKey.mockResolvedValue(mockApiKey)
     const app = Fastify()
+    // codeql[js/missing-rate-limiting] - test route handler
     app.addHook('preHandler', authenticateApiKey({ ts }))
     app.get('/test', async (req: any) => ({ tenantId: req.tenantId, scopes: req.tenantKey.scopes }))
 
@@ -84,6 +109,7 @@ describe('fastify adapter', () => {
   it('returns 401 when auth is missing', async () => {
     const ts = createMockTenantScale()
     const app = Fastify()
+    // codeql[js/missing-rate-limiting] - test route handler
     app.addHook('preHandler', authenticateApiKey({ ts }))
     app.get('/test', async () => ({ ok: true }))
 
@@ -98,6 +124,7 @@ describe('fastify adapter', () => {
       throw new AuthorizationError('Missing scope')
     })
     const app = Fastify()
+    // codeql[js/missing-rate-limiting] - test route handler
     app.addHook('preHandler', authenticateApiKey({ ts }))
     app.addHook('preHandler', requireScope({ ts }, 'super_admin'))
     app.get('/test', async () => ({ ok: true }))
@@ -178,6 +205,7 @@ describe('fastify adapter', () => {
     ts.validateApiKey.mockResolvedValue(mockApiKey)
     ts.rateLimiter.checkDailyLimit.mockResolvedValue({ allowed: false, limit: 100 })
     const app = Fastify()
+    // codeql[js/missing-rate-limiting] - test route handler
     app.addHook('preHandler', authenticateApiKey({ ts }))
     app.addHook('preHandler', rateLimitByApiKey({ ts }))
     app.get('/test', async () => ({ ok: true }))
@@ -213,6 +241,7 @@ describe('fastify adapter', () => {
     const ts = createMockTenantScale()
     ts.validateApiKey.mockResolvedValue(mockApiKey)
     const app = Fastify()
+    // codeql[js/missing-rate-limiting] - test route handler
     app.addHook('preHandler', authenticateApiKey({ ts }))
     app.addHook('preHandler', auditLog({ ts }, { action: 'read', resource: '/test' }))
     app.get('/test', async () => ({ ok: true }))

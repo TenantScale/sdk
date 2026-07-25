@@ -1,0 +1,17 @@
+# Force LF line endings for source files — Prettier and ESLint expect LF
+*.ts      text eol=lf
+*.tsx     text eol=lf
+*.js      text eol=lf
+*.mjs     text eol=lf
+*.cjs     text eol=lf
+*.json    text eol=lf
+*.yaml    text eol=lf
+*.yml     text eol=lf
+*.md      text eol=lf
+
+# Binary files — keep as-is
+*.png     binary
+*.jpg     binary
+*.webp    binary
+*.svg     text
+*.ico     binary
