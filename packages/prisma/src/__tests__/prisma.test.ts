@@ -420,13 +420,13 @@ describe('withTenantScope', () => {
       model: 'user',
     }
 
-    await expect(() => 
+    await expect(() =>
       extension.query.$allOperations({
         operation: mockArgs.operation,
         args: mockArgs.args,
         query: mockQuery,
         model: mockArgs.model,
-      } as any)
+      } as any),
     ).rejects.toThrow('Cannot create record for a different tenant')
   })
 
@@ -515,13 +515,13 @@ describe('withTenantScope', () => {
       model: 'user',
     }
 
-    await expect(() => 
+    await expect(() =>
       extension.query.$allOperations({
         operation: mockArgs.operation,
         args: mockArgs.args,
         query: mockQuery,
         model: mockArgs.model,
-      } as any)
+      } as any),
     ).rejects.toThrow('Cannot createMany record for a different tenant')
   })
 
@@ -589,13 +589,13 @@ describe('withTenantScope', () => {
       model: 'user',
     }
 
-    await expect(() => 
+    await expect(() =>
       extension.query.$allOperations({
         operation: mockArgs.operation,
         args: mockArgs.args,
         query: mockQuery,
         model: mockArgs.model,
-      } as any)
+      } as any),
     ).rejects.toThrow('Cannot upsert (create) record for a different tenant')
   })
 
@@ -613,13 +613,13 @@ describe('withTenantScope', () => {
       model: 'user',
     }
 
-    await expect(() => 
+    await expect(() =>
       extension.query.$allOperations({
         operation: mockArgs.operation,
         args: mockArgs.args,
         query: mockQuery,
         model: mockArgs.model,
-      } as any)
+      } as any),
     ).rejects.toThrow('Cannot upsert (update) record for a different tenant')
   })
 
@@ -662,11 +662,11 @@ describe('withTenantScope', () => {
 
     for (const mockArgs of operations) {
       await extension.query.$allOperations({
-      operation: mockArgs.operation,
-      args: mockArgs.args,
-      query: mockQuery,
-      model: mockArgs.model,
-    } as any)
+        operation: mockArgs.operation,
+        args: mockArgs.args,
+        query: mockQuery,
+        model: mockArgs.model,
+      } as any)
     }
 
     // Verify all operations were scoped correctly
@@ -683,13 +683,13 @@ describe('withTenantScope', () => {
       model: 'user',
     }
 
-    await expect(() => 
+    await expect(() =>
       extension.query.$allOperations({
         operation: mockArgs.operation,
         args: mockArgs.args,
         query: mockQuery,
         model: mockArgs.model,
-      } as any)
+      } as any),
     ).rejects.toThrow('Cannot update record to a different tenant')
   })
 
@@ -703,13 +703,13 @@ describe('withTenantScope', () => {
       model: 'user',
     }
 
-    await expect(() => 
+    await expect(() =>
       extension.query.$allOperations({
         operation: mockArgs.operation,
         args: mockArgs.args,
         query: mockQuery,
         model: mockArgs.model,
-      } as any)
+      } as any),
     ).rejects.toThrow('Cannot update record to a different tenant')
   })
 
@@ -744,13 +744,13 @@ describe('withTenantScope', () => {
       model: 'user',
     }
 
-    await expect(() => 
+    await expect(() =>
       extension.query.$allOperations({
         operation: mockArgs.operation,
         args: mockArgs.args,
         query: mockQuery,
         model: mockArgs.model,
-      } as any)
+      } as any),
     ).rejects.toThrow('Cannot update record to a different tenant')
   })
 
@@ -761,10 +761,7 @@ describe('withTenantScope', () => {
     const mockArgs = {
       operation: 'createManyAndReturn',
       args: {
-        data: [
-          { name: 'John' },
-          { name: 'Jane' },
-        ],
+        data: [{ name: 'John' }, { name: 'Jane' }],
       },
       model: 'user',
     }
@@ -797,13 +794,13 @@ describe('withTenantScope', () => {
       model: 'user',
     }
 
-    await expect(() => 
+    await expect(() =>
       extension.query.$allOperations({
         operation: mockArgs.operation,
         args: mockArgs.args,
         query: mockQuery,
         model: mockArgs.model,
-      } as any)
+      } as any),
     ).rejects.toThrow('Cannot createMany record for a different tenant')
   })
 })

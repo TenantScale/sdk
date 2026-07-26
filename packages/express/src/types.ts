@@ -31,6 +31,7 @@ import type { TenantScale, ApiKeyInfo, PortalSessionInfo } from '@tenantscale/sd
 
 // ── Express Request Augmentation ──
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 declare global {
   namespace Express {
     interface Request {

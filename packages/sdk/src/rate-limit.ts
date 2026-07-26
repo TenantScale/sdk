@@ -136,7 +136,7 @@ export class RateLimiter {
     const tenantId = apiKey.tenant_id
 
     // ── 1. Resolve plan's daily limit ──
-    let dailyLimit = await this.getPlanDailyLimit(tenantId)
+    const dailyLimit = await this.getPlanDailyLimit(tenantId)
 
     // null = unlimited
     if (dailyLimit === null || dailyLimit === 0) {

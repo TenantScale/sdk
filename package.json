@@ -1,10 +1,11 @@
 {
   "name": "tenantscale-sdk",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
-    "lint": "turbo lint",
+    "lint": "eslint \"packages/*/src/**/*.ts\"",
     "test": "turbo test",
     "prepare": "husky",
     "commitlint": "commitlint",
@@ -14,11 +15,15 @@
   "devDependencies": {
     "@commitlint/cli": "21.2.1",
     "@commitlint/config-conventional": "21.2.0",
+    "@eslint/js": "^9.18.0",
+    "eslint": "^9.18.0",
+    "globals": "^15.14.0",
     "husky": "^9.1.7",
     "lint-staged": "17.2.0",
     "prettier": "3.9.6",
     "turbo": "2.10.6",
-    "typescript": "7.0.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.0",
     "vitest": "4.1.10"
   },
   "pnpm": {

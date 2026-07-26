@@ -150,14 +150,14 @@ export function withTenantScope(options: TenantScopeOptions) {
             if (Array.isArray(args.data)) {
               args.data = args.data.map((item: any) => {
                 if (item == null) return { [tenantColumn]: tenantId }
-                
+
                 const existingTenant = item[tenantColumn]
                 if (existingTenant != null && existingTenant !== tenantId) {
                   throw new Error(
                     `Cannot createMany record for a different tenant (${tenantColumn}=${existingTenant}) when scoped to ${tenantId}`,
                   )
                 }
-                
+
                 return { ...item, [tenantColumn]: tenantId }
               })
             } else {

@@ -79,9 +79,9 @@ describe('CLI smoke tests', () => {
     expect(result.stdout).toContain('init')
   })
 
-  it('CLI --version outputs the version', () => {
+  it('CLI --version outputs the version', async () => {
     const result = run('--version', __dirname)
-    const { version } = require('../../package.json')
+    const { version } = await import('../../package.json')
     expect(result.stdout.trim()).toBe(version)
   })
 })
