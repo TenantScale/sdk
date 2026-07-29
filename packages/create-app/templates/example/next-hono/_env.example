@@ -1,0 +1,13 @@
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL={{supabaseUrl}}
+NEXT_PUBLIC_SUPABASE_ANON_KEY={{supabaseAnonKey}}
+SUPABASE_SERVICE_ROLE_KEY={{supabaseServiceKey}}
+
+# TenantScale API
+NEXT_PUBLIC_API_URL=http://localhost:3001
+CRON_SECRET=change-me-to-a-random-secret
+
+# Stripe (optional — only needed if billing features are enabled)
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_SECRET_KEY={{stripeSecretKey}}
+STRIPE_WEBHOOK_SECRET=

@@ -1,0 +1,21 @@
+# TenantScale — Environment Configuration
+# Copy to .env.local and fill in your values.
+
+# ── Supabase ──
+SUPABASE_URL={{supabaseUrl}}
+SUPABASE_SERVICE_ROLE_KEY={{supabaseServiceKey}}
+NEXT_PUBLIC_SUPABASE_URL={{supabaseUrl}}
+NEXT_PUBLIC_SUPABASE_ANON_KEY={{supabaseAnonKey}}
+
+# ── TenantScale SDK ──
+AUTH_JWT_SECRET=change-me-to-a-random-secret
+AUTH_ADAPTER=supabase
+
+# ── Stripe (optional — for billing) ──
+STRIPE_SECRET_KEY={{stripeSecretKey}}
+STRIPE_WEBHOOK_SECRET=whsec_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+
+# ── App ──
+PORT=3001
+APP_URL=http://localhost:3000

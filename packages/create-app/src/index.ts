@@ -16,42 +16,73 @@
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * IMPLIED, BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 // ──────────────────────────────────────────────────────
 // create-tenantscale-app — CLI entry point
 // ──────────────────────────────────────────────────────
 
-import { existsSync, mkdirSync } from 'fs'
+import { existsSync, mkdirSync, readdirSync } from 'fs'
 import { resolve } from 'path'
-import { scaffold } from './scaffold.js'
+import { runPrompts } from './prompts.js'
+import { scaffold, scaffoldFullExtras } from './scaffold.js'
+import { runPostScaffold } from './post-scaffold/index.js'
+import type { PromptResults } from './types.js'
 
-const projectName = process.argv[2]?.replace(/[^a-z0-9_-]/gi, '-') || 'my-multi-tenant-app'
-const targetDir = resolve(process.cwd(), projectName)
+async function main() {
+  const defaultName = process.argv[2]?.replace(/[^a-z0-9_-]/gi, '-') || 'my-multi-tenant-app'
+  const targetDir = resolve(process.cwd(), defaultName)
 
-if (existsSync(targetDir)) {
-  console.error(`\n  ✖ Directory already exists: ${projectName}`)
-  console.error('  Choose a different name or delete the directory.\n')
-  process.exit(1)
+  // ── Check if target directory already exists ──
+  if (existsSync(targetDir) && readdirNotEmpty(targetDir)) {
+    console.error(`\n  ✖ Directory already exists: ${defaultName}`)
+    console.error('  Choose a different name or delete the directory.\n')
+    process.exit(1)
+  }
+
+  // ── Interactive prompts ──
+  const results = await runPrompts(defaultName)
+
+  const promptResults: PromptResults & { targetDir: string } = {
+    ...results,
+    targetDir,
+  }
+
+  // ── Scaffold ──
+  mkdirSync(targetDir, { recursive: true })
+  console.log()
+
+  try {
+    await scaffold(targetDir, promptResults)
+
+    // For full template, layer extras on top
+    if (results.templateTier === 'full') {
+      await scaffoldFullExtras(targetDir, promptResults)
+    }
+  } catch (err) {
+    console.error(`\n  ✖ ${err instanceof Error ? err.message : 'Scaffold failed'}\n`)
+    process.exit(1)
+  }
+
+  // ── Post-scaffold ──
+  await runPostScaffold(promptResults)
 }
 
-mkdirSync(targetDir, { recursive: true })
+function readdirNotEmpty(dir: string): boolean {
+  try {
+    return readdirSync(dir).length > 0
+  } catch {
+    return false
+  }
+}
 
-console.log(`\n  ◆  Creating TenantScale app: ${projectName}`)
-console.log()
-
-await scaffold(targetDir, projectName)
-
-console.log(`\n  ◆  Done! Scaffolded at: ${targetDir}`)
-console.log()
-console.log('  Next steps:')
-console.log(`    cd ${projectName}`)
-console.log('    cp .env.example .env.local        # Add your Supabase credentials')
-console.log('    pnpm install')
-console.log('    pnpm dev')
-console.log()
+main().catch((err) => {
+  console.error(`\n  ✖ Unexpected error: ${err instanceof Error ? err.message : err}\n`)
+  process.exit(1)
+})
