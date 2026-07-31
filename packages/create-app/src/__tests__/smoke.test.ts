@@ -189,11 +189,13 @@ describe('create-tenantscale-app scaffold', () => {
     })
 
     it('injects supabase credentials when provided', async () => {
-      const tmpDir = await scaffoldToTemp(defaultResults({
-        supabase: 'enter',
-        supabaseUrl: 'https://test-project.supabase.co',
-        supabaseKey: 'test-key-123',
-      }))
+      const tmpDir = await scaffoldToTemp(
+        defaultResults({
+          supabase: 'enter',
+          supabaseUrl: 'https://test-project.supabase.co',
+          supabaseKey: 'test-key-123',
+        }),
+      )
 
       const envExample = readFileSync(join(tmpDir, '.env.example'), 'utf-8')
       expect(envExample).toContain('test-project.supabase.co')

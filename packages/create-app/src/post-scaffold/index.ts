@@ -34,7 +34,8 @@ import type { PromptResults } from '../types.js'
  * Run post-scaffold operations: install deps, git init, print next steps.
  */
 export async function runPostScaffold(results: PromptResults): Promise<void> {
-  const { projectName, targetDir, packageManager, gitInit, runInstall } = results as PromptResults & { targetDir: string }
+  const { projectName, targetDir, packageManager, gitInit, runInstall } =
+    results as PromptResults & { targetDir: string }
 
   // ── Install dependencies ──
   if (runInstall) {
@@ -42,12 +43,19 @@ export async function runPostScaffold(results: PromptResults): Promise<void> {
     s.start(`Installing dependencies with ${packageManager}...`)
 
     try {
-      const installCmd = packageManager === 'yarn' ? 'yarn' : packageManager === 'npm' ? 'npm install' : 'pnpm install'
+      const installCmd =
+        packageManager === 'yarn'
+          ? 'yarn'
+          : packageManager === 'npm'
+            ? 'npm install'
+            : 'pnpm install'
       await execa(installCmd, { cwd: targetDir, stdio: 'pipe', timeout: 120_000 })
       s.stop(`Dependencies installed`)
     } catch (err) {
       s.stop(`Installation failed`)
-      p.log.warn(`Could not install dependencies. Run "${packageManager} install" manually in ${projectName}.`)
+      p.log.warn(
+        `Could not install dependencies. Run "${packageManager} install" manually in ${projectName}.`,
+      )
     }
   }
 
@@ -63,7 +71,13 @@ export async function runPostScaffold(results: PromptResults): Promise<void> {
         cwd: targetDir,
         stdio: 'pipe',
         // Allow empty commits if nothing changed
-        env: { ...process.env, GIT_AUTHOR_NAME: 'TenantScale', GIT_AUTHOR_EMAIL: 'dev@tenantscale.com', GIT_COMMITTER_NAME: 'TenantScale', GIT_COMMITTER_EMAIL: 'dev@tenantscale.com' },
+        env: {
+          ...process.env,
+          GIT_AUTHOR_NAME: 'TenantScale',
+          GIT_AUTHOR_EMAIL: 'dev@tenantscale.com',
+          GIT_COMMITTER_NAME: 'TenantScale',
+          GIT_COMMITTER_EMAIL: 'dev@tenantscale.com',
+        },
       })
       s.stop('Git repository initialized')
     } catch (err) {
@@ -77,20 +91,31 @@ export async function runPostScaffold(results: PromptResults): Promise<void> {
 }
 
 function printNextSteps(results: PromptResults): void {
-  const { projectName, templateTier, stripe, runInstall } = results as PromptResults & { targetDir: string }
+  const { projectName, templateTier, stripe, runInstall } = results as PromptResults & {
+    targetDir: string
+  }
 
-  p.note(`
+  p.note(
+    `
   ${runInstall ? '' : `  ${results.packageManager} install\n`}  ${results.packageManager === 'pnpm' ? 'pnpm' : results.packageManager === 'yarn' ? 'yarn' : 'npm run'} dev
 
   Open http://localhost:3000 in your browser.
-  ${templateTier !== 'minimal'
-    ? `
+  ${
+    templateTier !== 'minimal'
+      ? `
   ✨ Login with:
      Email:    admin@example.com
      Password: admin123`
-    : ''}
-  ${stripe ? `
+      : ''
+  }
+  ${
+    stripe
+      ? `
   💳 Stripe test mode is enabled.
-     Use card 4242 4242 4242 4242 for test payments.` : ''}
-  `.trim(), `🚀  ${projectName} is ready!`)
+     Use card 4242 4242 4242 4242 for test payments.`
+      : ''
+  }
+  `.trim(),
+    `🚀  ${projectName} is ready!`,
+  )
 }

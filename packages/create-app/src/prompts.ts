@@ -34,7 +34,11 @@ import type { PromptResults } from './types.js'
  * Add new entries here to support more frameworks.
  */
 export const FRAMEWORKS: { value: string; label: string; hint?: string }[] = [
-  { value: 'next-hono', label: 'Next.js + Hono', hint: 'Full-stack — Next.js frontend with Hono API' },
+  {
+    value: 'next-hono',
+    label: 'Next.js + Hono',
+    hint: 'Full-stack — Next.js frontend with Hono API',
+  },
 ]
 
 /**
@@ -46,36 +50,22 @@ export async function runPrompts(defaultProjectName: string): Promise<PromptResu
 
   // ── Welcome ──
   if (isInteractive) {
-    p.intro('Let\'s scaffold your TenantScale app')
+    p.intro("Let's scaffold your TenantScale app")
   }
 
-  const projectName = isInteractive
-    ? await askProjectName(defaultProjectName)
-    : defaultProjectName
+  const projectName = isInteractive ? await askProjectName(defaultProjectName) : defaultProjectName
 
-  const templateTier = isInteractive
-    ? await askTemplateTier()
-    : 'example'
+  const templateTier = isInteractive ? await askTemplateTier() : 'example'
 
-  const framework = isInteractive
-    ? await askFramework()
-    : 'next-hono'
+  const framework = isInteractive ? await askFramework() : 'next-hono'
 
-  const language = isInteractive
-    ? await askLanguage()
-    : 'typescript'
+  const language = isInteractive ? await askLanguage() : 'typescript'
 
-  const packageManager = isInteractive
-    ? await askPackageManager()
-    : detectPackageManager()
+  const packageManager = isInteractive ? await askPackageManager() : detectPackageManager()
 
-  const tenantColumn = isInteractive
-    ? await askTenantColumn()
-    : 'tenant_id'
+  const tenantColumn = isInteractive ? await askTenantColumn() : 'tenant_id'
 
-  const supabase = isInteractive
-    ? await askSupabase()
-    : 'skip'
+  const supabase = isInteractive ? await askSupabase() : 'skip'
 
   let supabaseUrl: string | undefined
   let supabaseKey: string | undefined
@@ -96,13 +86,9 @@ export async function runPrompts(defaultProjectName: string): Promise<PromptResu
     }
   }
 
-  const gitInit = isInteractive
-    ? await askGitInit()
-    : true
+  const gitInit = isInteractive ? await askGitInit() : true
 
-  const runInstall = isInteractive
-    ? await askRunInstall()
-    : true
+  const runInstall = isInteractive ? await askRunInstall() : true
 
   if (isInteractive) {
     p.outro('All set! Scaffolding your project...')
@@ -132,7 +118,8 @@ async function askProjectName(defaultName: string): Promise<string> {
     defaultValue: defaultName,
     validate(value) {
       if (!value || value.trim().length === 0) return 'Project name is required'
-      if (!/^[a-z0-9_-]+$/i.test(value.trim())) return 'Use only letters, numbers, hyphens, and underscores'
+      if (!/^[a-z0-9_-]+$/i.test(value.trim()))
+        return 'Use only letters, numbers, hyphens, and underscores'
       return
     },
   })
@@ -144,9 +131,21 @@ async function askTemplateTier(): Promise<'minimal' | 'example' | 'full'> {
   const result = await p.select({
     message: 'Which template would you like to start from?',
     options: [
-      { value: 'minimal', label: 'Minimal', hint: 'Bare scaffold — just TenantScale setup, no example code' },
-      { value: 'example', label: 'Example', hint: 'Working multi-tenant API routes and dashboard pages' },
-      { value: 'full', label: 'Full Demo', hint: 'Example + Stripe billing, Portal integration, RLS policies' },
+      {
+        value: 'minimal',
+        label: 'Minimal',
+        hint: 'Bare scaffold — just TenantScale setup, no example code',
+      },
+      {
+        value: 'example',
+        label: 'Example',
+        hint: 'Working multi-tenant API routes and dashboard pages',
+      },
+      {
+        value: 'full',
+        label: 'Full Demo',
+        hint: 'Example + Stripe billing, Portal integration, RLS policies',
+      },
     ],
   })
   if (p.isCancel(result)) process.exit(0)
@@ -196,7 +195,8 @@ async function askTenantColumn(): Promise<string> {
     defaultValue: 'tenant_id',
     validate(value) {
       if (!value || value.trim().length === 0) return 'Column name is required'
-      if (!/^[a-z_][a-z0-9_]*$/i.test(value.trim())) return 'Must be a valid column name (letters, underscores)'
+      if (!/^[a-z_][a-z0-9_]*$/i.test(value.trim()))
+        return 'Must be a valid column name (letters, underscores)'
       return
     },
   })
