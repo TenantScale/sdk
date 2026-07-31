@@ -54,12 +54,12 @@ jobs:
         run: pnpm test
 
       - name: Generate coverage report
-        if: matrix.node-version == 22
+        if: matrix.node-version == 24
         run: cd packages/sdk && pnpm exec vitest run --coverage --coverage.reporter=text --coverage.reporter=lcov --coverage.reporter=html --coverage.reporter=json-summary
         continue-on-error: true
 
       - name: Update coverage summary
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.node-version == 22
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.node-version == 24
         uses: actions/github-script@v9
         with:
           script: |
@@ -112,7 +112,7 @@ jobs:
             })
 
       - name: Comment coverage summary
-        if: github.event_name == 'pull_request' && matrix.node-version == 22
+        if: github.event_name == 'pull_request' && matrix.node-version == 24
         continue-on-error: true
         uses: actions/github-script@v9
         with:
