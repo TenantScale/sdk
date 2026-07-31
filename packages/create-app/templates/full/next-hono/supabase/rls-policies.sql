@@ -1,8 +1,8 @@
-// ════════════════════════════════════════════════════════════
-// TenantScale RLS Policies — Row-Level Security for Supabase
-// ════════════════════════════════════════════════════════════
-// These policies ensure data is isolated between tenants.
-// Apply via Supabase dashboard or `supabase db push`.
+-- ════════════════════════════════════════════════════════════
+-- TenantScale RLS Policies — Row-Level Security for Supabase
+-- ════════════════════════════════════════════════════════════
+-- These policies ensure data is isolated between tenants.
+-- Apply via Supabase dashboard or `supabase db push`.
 
 -- Helper: extract tenant_id from API key JWT
 create or replace function tenant_id()

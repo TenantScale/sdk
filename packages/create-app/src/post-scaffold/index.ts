@@ -45,11 +45,15 @@ export async function runPostScaffold(results: PromptResults): Promise<void> {
     try {
       const installCmd =
         packageManager === 'yarn'
-          ? 'yarn'
+          ? { file: 'yarn', args: ['install'] }
           : packageManager === 'npm'
-            ? 'npm install'
-            : 'pnpm install'
-      await execa(installCmd, { cwd: targetDir, stdio: 'pipe', timeout: 120_000 })
+            ? { file: 'npm', args: ['install'] }
+            : { file: 'pnpm', args: ['install'] }
+      await execa(installCmd.file, installCmd.args, {
+        cwd: targetDir,
+        stdio: 'pipe',
+        timeout: 120_000,
+      })
       s.stop(`Dependencies installed`)
     } catch (err) {
       s.stop(`Installation failed`)

@@ -149,7 +149,8 @@ function buildVars(results: PromptResults): TemplateVars {
     projectName,
     supabase,
     supabaseUrl,
-    supabaseKey,
+    supabaseAnonKey,
+    supabaseServiceKey,
     stripe,
     stripeKey,
     tenantColumn,
@@ -159,16 +160,20 @@ function buildVars(results: PromptResults): TemplateVars {
 
   const hasSupabaseUrl =
     supabase === 'enter' && typeof supabaseUrl === 'string' && supabaseUrl.length > 0
-  const hasSupabaseKey =
-    supabase === 'enter' && typeof supabaseKey === 'string' && supabaseKey.length > 0
+  const hasSupabaseAnonKey =
+    supabase === 'enter' && typeof supabaseAnonKey === 'string' && supabaseAnonKey.length > 0
+  const hasSupabaseServiceKey =
+    supabase === 'enter' && typeof supabaseServiceKey === 'string' && supabaseServiceKey.length > 0
   const hasStripeKey = stripe && typeof stripeKey === 'string' && stripeKey.length > 0
 
   return {
     projectName,
     tenantColumn: tenantColumn || 'tenant_id',
     supabaseUrl: hasSupabaseUrl ? (supabaseUrl as string) : 'https://your-project.supabase.co',
-    supabaseAnonKey: hasSupabaseKey ? (supabaseKey as string) : 'your-anon-key',
-    supabaseServiceKey: hasSupabaseKey ? (supabaseKey as string) : 'your-service-role-key',
+    supabaseAnonKey: hasSupabaseAnonKey ? (supabaseAnonKey as string) : 'your-anon-key',
+    supabaseServiceKey: hasSupabaseServiceKey
+      ? (supabaseServiceKey as string)
+      : 'your-service-role-key',
     stripeSecretKey: hasStripeKey ? (stripeKey as string) : 'sk_tes..._key',
     framework,
     language,

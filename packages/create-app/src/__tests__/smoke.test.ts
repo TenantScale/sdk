@@ -193,12 +193,21 @@ describe('create-tenantscale-app scaffold', () => {
         defaultResults({
           supabase: 'enter',
           supabaseUrl: 'https://test-project.supabase.co',
-          supabaseKey: 'test-key-123',
+          supabaseAnonKey: 'anon-key-123',
+          supabaseServiceKey: 'service-key-456',
         }),
       )
 
       const envExample = readFileSync(join(tmpDir, '.env.example'), 'utf-8')
       expect(envExample).toContain('test-project.supabase.co')
+      // Service role key must NOT appear in any NEXT_PUBLIC_ var (browser-visible)
+      expect(envExample).toContain('NEXT_PUBLIC_SUPABASE_ANON_KEY=anon-key-123')
+      expect(envExample).toContain('SUPABASE_SERVICE_ROLE_KEY=service-key-456')
+      const nextPublicLines = envExample
+        .split('\n')
+        .filter((line: string) => line.startsWith('NEXT_PUBLIC_'))
+        .join('\n')
+      expect(nextPublicLines).not.toContain('service-key-456')
 
       rmSync(tmpDir, { recursive: true, force: true })
     })

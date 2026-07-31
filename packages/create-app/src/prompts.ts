@@ -68,11 +68,13 @@ export async function runPrompts(defaultProjectName: string): Promise<PromptResu
   const supabase = isInteractive ? await askSupabase() : 'skip'
 
   let supabaseUrl: string | undefined
-  let supabaseKey: string | undefined
+  let supabaseAnonKey: string | undefined
+  let supabaseServiceKey: string | undefined
 
   if (supabase === 'enter') {
     supabaseUrl = await askSupabaseUrl()
-    supabaseKey = await askSupabaseKey()
+    supabaseAnonKey = await askSupabaseAnonKey()
+    supabaseServiceKey = await askSupabaseServiceKey()
   }
 
   // Only ask about Stripe for non-minimal templates
@@ -102,7 +104,8 @@ export async function runPrompts(defaultProjectName: string): Promise<PromptResu
     packageManager,
     supabase,
     supabaseUrl,
-    supabaseKey,
+    supabaseAnonKey,
+    supabaseServiceKey,
     stripe,
     stripeKey,
     tenantColumn,
@@ -229,11 +232,23 @@ async function askSupabaseUrl(): Promise<string> {
   return (result as string).trim()
 }
 
-async function askSupabaseKey(): Promise<string> {
+async function askSupabaseAnonKey(): Promise<string> {
   const result = await p.password({
-    message: 'Supabase anon / service role key',
+    message: 'Supabase anon (public) key',
     validate(value) {
-      if (!value || value.trim().length === 0) return 'Key is required'
+      if (!value || value.trim().length === 0) return 'Anon key is required'
+      return
+    },
+  })
+  if (p.isCancel(result)) process.exit(0)
+  return (result as string).trim()
+}
+
+async function askSupabaseServiceKey(): Promise<string> {
+  const result = await p.password({
+    message: 'Supabase service role key (server-only — never expose this)',
+    validate(value) {
+      if (!value || value.trim().length === 0) return 'Service role key is required'
       return
     },
   })

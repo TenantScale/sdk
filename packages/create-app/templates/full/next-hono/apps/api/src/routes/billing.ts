@@ -1,8 +1,7 @@
 import { Hono } from 'hono'
-import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { requirePortalSession, requirePortalRole } from '../middleware/session-auth.js'
-import { createCheckoutSession, createBillingPortalSession } from '../lib/stripe.js'
+import { createCheckoutSession, createBillingPortalSession } from './stripe.js'
 
 export const billingRoutes = new Hono()
 
@@ -16,10 +15,13 @@ billingRoutes.post(
   '/portal/create-checkout-session',
   requirePortalSession,
   requirePortalRole('owner'),
-  zValidator('json', createCheckoutSchema),
   async (c) => {
     const session = c.get('portalSession')
-    const body = c.req.valid('json')
+    const parsed = createCheckoutSchema.safeParse(await c.req.json())
+    if (!parsed.success) {
+      return c.json({ error: 'Invalid request body', details: parsed.error.flatten() }, 400)
+    }
+    const body = parsed.data
 
     const checkout = await createCheckoutSession({
       tenantId: session.tenant_id,

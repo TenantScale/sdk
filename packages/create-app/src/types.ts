@@ -6,7 +6,8 @@ export interface ScaffoldOptions {
   language: 'typescript' | 'javascript'
   packageManager: 'pnpm' | 'npm' | 'yarn'
   supabaseUrl?: string
-  supabaseKey?: string
+  supabaseAnonKey?: string
+  supabaseServiceKey?: string
   stripeKey?: string
   tenantColumn?: string
 }
@@ -19,7 +20,8 @@ export interface PromptResults {
   packageManager: 'pnpm' | 'npm' | 'yarn'
   supabase: 'skip' | 'enter'
   supabaseUrl?: string
-  supabaseKey?: string
+  supabaseAnonKey?: string
+  supabaseServiceKey?: string
   stripe: boolean
   stripeKey?: string
   tenantColumn: string
