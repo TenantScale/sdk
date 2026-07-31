@@ -4,7 +4,7 @@ import { useAuditLog } from '@tenantscale/react'
 import { formatDate } from '@/lib/utils'
 
 export default function AuditPage() {
-  const { events, isLoading, meta, page, hasMore, nextPage, prevPage, goToPage } = useAuditLog()
+  const { events, isLoading, meta, page, hasMore, nextPage, prevPage } = useAuditLog()
 
   if (isLoading && !events?.length) return <p className="text-space-300 text-sm mt-8">Loading...</p>
 

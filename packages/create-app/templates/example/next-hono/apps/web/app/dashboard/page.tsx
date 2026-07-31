@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 export default function DashboardPage() {
   const { tenant, isLoading: loadingTenant, error: tenantErr } = useTenant()
   const { plan } = usePlan()
-  const { keys, isLoading: loadingKeys } = useApiKeys()
+  const { keys } = useApiKeys()
 
   if (loadingTenant) return <p className="text-space-300 text-sm mt-8">Loading...</p>
   if (tenantErr) return <p className="text-red-400 text-sm mt-8">Failed to load tenant</p>
