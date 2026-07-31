@@ -6,6 +6,14 @@
 |---------|--------------------|
 | 0.x     | ✅ Active development |
 
+### Supported Runtimes
+
+| Runtime | Supported          |
+|---------|--------------------|
+| Node.js 24 | ✅ Active LTS (recommended) |
+| Node.js 22 | ✅ Maintenance LTS (until 2027-04-30) |
+| Node.js ≤20 | ❌ EOL — not supported |
+
 ## Reporting a Vulnerability
 
 TenantScale is a middleware library that handles API key authentication, plan enforcement, and tenant isolation. Security is our top priority.

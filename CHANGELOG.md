@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- **Node.js 22+ required** — dropped support for Node 20 (EOL 2026-04-30). Node 24 is the recommended/primary runtime; CI tests 22 and 24. Update `.nvmrc` or CI matrices accordingly.
+
 ## [0.4.0] — 2026-07-23
 
 ### Added

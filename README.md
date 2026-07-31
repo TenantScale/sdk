@@ -28,6 +28,8 @@ Stop hand-rolling multi-tenancy per project. Add it as middleware once, then shi
 
 ---
 
+> **Requirements:** Node.js **22+** (Node 24 recommended — we develop and test against it). Works with any framework that supports middleware. See [Installation docs](https://tenantscale.dev/sdk/installation) for framework adapters and peer dependencies.
+
 ## ✨ What It Does
 
 | Capability              | What It Means For Your App                                                                           |

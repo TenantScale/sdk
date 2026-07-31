@@ -26,7 +26,7 @@ A clear and concise description of what you expected to happen.
 **Environment (please complete):**
 - SDK version: [e.g. 0.1.0]
 - Framework: [e.g. Express 4.21, Hono 4.12, Next.js 15]
-- Node.js version: [e.g. 20.11.0]
+- Node.js version: [e.g. 24.3.0]
 - Database: [e.g. Supabase, PostgreSQL]
 
 **Additional context**
