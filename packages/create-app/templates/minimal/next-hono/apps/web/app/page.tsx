@@ -1,5 +1,3 @@
-import Link from 'next/link'
-
 export default function Home() {
   return (
     <main style={{ padding: '2rem', maxWidth: 640, margin: '0 auto' }}>
@@ -11,7 +9,10 @@ export default function Home() {
         <li>Configure your <code>.env.local</code> with Supabase credentials</li>
       </ul>
       <p>
-        <Link href="/health">Health check</Link>
+        <a href={`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}/health`}>
+          Health check
+        </a>{' '}
+        (API server on port 3001)
       </p>
     </main>
   )

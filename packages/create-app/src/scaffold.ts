@@ -136,8 +136,22 @@ export async function scaffoldFullExtras(targetDir: string, results: PromptResul
 
   const vars: TemplateVars = buildVars(results)
 
+  // When the user opted out of Stripe, skip billing files entirely so the
+  // generated project matches what the prompts promised (no dead billing
+  // routes, no unmounted imports).
+  const exclude = !results.stripe
+    ? [
+        'apps/api/src/index.ts',
+        'apps/api/src/routes/billing.ts',
+        'apps/api/src/routes/stripe.ts',
+        'apps/api/src/routes/stripe-webhook.ts',
+        'apps/api/src/lib/billing.ts',
+        'apps/api/src/middleware/session-auth.ts',
+      ]
+    : []
+
   try {
-    copyRecursive(fullDir, targetDir, vars)
+    copyRecursive(fullDir, targetDir, vars, exclude)
   } catch (err) {
     cleanup(targetDir)
     throw new Error(`Full template extras failed: ${err instanceof Error ? err.message : err}`)
@@ -180,7 +194,13 @@ function buildVars(results: PromptResults): TemplateVars {
   }
 }
 
-function copyRecursive(srcDir: string, destDir: string, vars: TemplateVars) {
+function copyRecursive(
+  srcDir: string,
+  destDir: string,
+  vars: TemplateVars,
+  exclude: string[] = [],
+  relPrefix = '',
+) {
   // Allow template dir to not exist (e.g. full extras for a new framework)
   try {
     statSync(srcDir)
@@ -192,9 +212,13 @@ function copyRecursive(srcDir: string, destDir: string, vars: TemplateVars) {
 
   for (const entry of entries) {
     const srcPath = join(srcDir, entry)
+    const relPath = relPrefix ? `${relPrefix}/${entry}` : entry
 
     // Skip dotfiles that should be handled by _ prefix convention
     if (entry.startsWith('.') && !entry.startsWith('_')) continue
+
+    // Skip excluded relative paths (used to gate optional features)
+    if (exclude.includes(relPath)) continue
 
     // Rename _prefix to dotfile: _gitignore → .gitignore, _env.example → .env.example
     // but preserve double-underscore prefixes like __tests__
@@ -204,7 +228,7 @@ function copyRecursive(srcDir: string, destDir: string, vars: TemplateVars) {
 
     if (stat.isDirectory()) {
       mkdirSync(destPath, { recursive: true })
-      copyRecursive(srcPath, destPath, vars)
+      copyRecursive(srcPath, destPath, vars, exclude, relPath)
     } else {
       let content = readFileSync(srcPath, 'utf-8')
       content = interpolate(content, vars)

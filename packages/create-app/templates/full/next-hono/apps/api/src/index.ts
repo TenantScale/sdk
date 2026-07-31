@@ -6,6 +6,8 @@ import { apiKeyRoutes } from './routes/api-keys.js'
 import { teamRoutes } from './routes/team.js'
 import { auditRoutes } from './routes/audit.js'
 import { webhookRoutes } from './routes/webhooks.js'
+import { billingRoutes } from './routes/billing.js'
+import { handleStripeWebhook } from './routes/stripe-webhook.js'
 
 const app = new Hono()
 
@@ -24,6 +26,10 @@ app.route('/v1/portal', apiKeyRoutes)
 app.route('/v1/portal', teamRoutes)
 app.route('/v1/portal', auditRoutes)
 app.route('/v1/portal', webhookRoutes)
+app.route('/v1/portal', billingRoutes)
+
+// Stripe webhook — verify signature and process subscription events
+app.post('/webhooks/stripe', (c) => handleStripeWebhook(c.req.raw))
 
 app.get('/health', (c) => c.json({ status: 'ok' }))
 

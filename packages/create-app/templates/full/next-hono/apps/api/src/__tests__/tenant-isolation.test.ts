@@ -29,8 +29,8 @@ describe('tenant isolation', () => {
 
   it('injects tenant context from API key', () => {
     // Unit test for middleware that extracts tenant from auth header
-    const header = 'Bearer tsk_tenant123_keyabc'
+    const header = 'Bearer tk_tenant123_keyabc'
     const token = header.replace('Bearer ', '')
-    expect(token.startsWith('tsk_')).toBe(true)
+    expect(token.startsWith('tk_')).toBe(true)
   })
 })

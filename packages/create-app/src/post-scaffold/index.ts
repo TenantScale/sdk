@@ -71,7 +71,7 @@ export async function runPostScaffold(results: PromptResults): Promise<void> {
     try {
       await execa('git', ['init'], { cwd: targetDir, stdio: 'pipe' })
       await execa('git', ['add', '.'], { cwd: targetDir, stdio: 'pipe' })
-      await execa('git', ['commit', '-m', 'initial commit'], {
+      await execa('git', ['commit', '-m', 'initial commit', '--allow-empty'], {
         cwd: targetDir,
         stdio: 'pipe',
         // Allow empty commits if nothing changed
@@ -107,9 +107,7 @@ function printNextSteps(results: PromptResults): void {
   ${
     templateTier !== 'minimal'
       ? `
-  ✨ Login with:
-     Email:    admin@example.com
-     Password: admin123`
+  Create your account via the sign-up page (Supabase Auth) — there is no pre-seeded login.`
       : ''
   }
   ${

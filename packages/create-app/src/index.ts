@@ -37,17 +37,20 @@ import type { PromptResults } from './types.js'
 
 async function main() {
   const defaultName = process.argv[2]?.replace(/[^a-z0-9_-]/gi, '-') || 'my-multi-tenant-app'
-  const targetDir = resolve(process.cwd(), defaultName)
-
-  // ── Check if target directory already exists ──
-  if (existsSync(targetDir) && readdirNotEmpty(targetDir)) {
-    console.error(`\n  ✖ Directory already exists: ${defaultName}`)
-    console.error('  Choose a different name or delete the directory.\n')
-    process.exit(1)
-  }
 
   // ── Interactive prompts ──
   const results = await runPrompts(defaultName)
+
+  // Compute targetDir from the FINAL project name (user may have changed it
+  // during prompts — scaffolding into the argv-derived name would diverge).
+  const targetDir = resolve(process.cwd(), results.projectName)
+
+  // ── Check if target directory already exists ──
+  if (existsSync(targetDir) && readdirNotEmpty(targetDir)) {
+    console.error(`\n  ✖ Directory already exists: ${results.projectName}`)
+    console.error('  Choose a different name or delete the directory.\n')
+    process.exit(1)
+  }
 
   const promptResults: PromptResults & { targetDir: string } = {
     ...results,

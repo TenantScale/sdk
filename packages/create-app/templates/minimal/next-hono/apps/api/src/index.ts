@@ -5,11 +5,20 @@ import { TenantScale } from '@tenantscale/sdk'
 
 const app = new Hono()
 
-app.use('*', cors({ origin: '*', credentials: true }))
+app.use(
+  '*',
+  cors({
+    // Reflect the request origin so credentialed requests work in the browser
+    // (origin: '*' + credentials: true is rejected by browsers).
+    origin: true,
+    credentials: true,
+  }),
+)
 
 // ── TenantScale SDK ──
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
 const ts = new TenantScale({
-  supabaseUrl: process.env.SUPABASE_URL!,
+  supabaseUrl: supabaseUrl!,
   supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
 })
 

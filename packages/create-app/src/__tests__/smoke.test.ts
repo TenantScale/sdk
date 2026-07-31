@@ -167,6 +167,25 @@ describe('create-tenantscale-app scaffold', () => {
 
       rmSync(tmpDir, { recursive: true, force: true })
     })
+
+    it('omits billing extras when Stripe is declined', async () => {
+      const tmpDir = await scaffoldToTemp(defaultResults({ templateTier: 'full', stripe: false }))
+
+      // Example base is still scaffolded
+      expect(existsSync(join(tmpDir, 'apps/api/src/routes/me.ts'))).toBe(true)
+
+      // No Stripe/billing files — project matches the prompt choice
+      expect(existsSync(join(tmpDir, 'apps/api/src/routes/billing.ts'))).toBe(false)
+      expect(existsSync(join(tmpDir, 'apps/api/src/routes/stripe.ts'))).toBe(false)
+      expect(existsSync(join(tmpDir, 'apps/api/src/routes/stripe-webhook.ts'))).toBe(false)
+      expect(existsSync(join(tmpDir, 'apps/api/src/lib/billing.ts'))).toBe(false)
+      expect(existsSync(join(tmpDir, 'apps/api/src/middleware/session-auth.ts'))).toBe(false)
+
+      // RLS policies are not Stripe-specific — still present
+      expect(existsSync(join(tmpDir, 'supabase/rls-policies.sql'))).toBe(true)
+
+      rmSync(tmpDir, { recursive: true, force: true })
+    })
   })
 
   describe('template variable substitution', () => {

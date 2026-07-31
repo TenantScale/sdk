@@ -6,7 +6,7 @@ import { createCheckoutSession, createBillingPortalSession } from './stripe.js'
 export const billingRoutes = new Hono()
 
 const createCheckoutSchema = z.object({
-  plan_id: z.enum(['hobby', 'pro', 'scale']),
+  price_id: z.string().startsWith('price_'),
   billing_interval: z.enum(['month', 'year']).default('month'),
 })
 
@@ -25,7 +25,7 @@ billingRoutes.post(
 
     const checkout = await createCheckoutSession({
       tenantId: session.tenant_id,
-      priceId: body.plan_id,
+      priceId: body.price_id,
       interval: body.billing_interval,
       successUrl: `${process.env.APP_URL}/subscription?success=true`,
       cancelUrl: `${process.env.APP_URL}/subscription?canceled=true`,
