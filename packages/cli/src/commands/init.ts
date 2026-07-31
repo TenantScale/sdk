@@ -178,7 +178,7 @@ function run(cmd: string, cwd: string) {
 
 export async function initAction(
   dirArg?: string,
-  options?: { framework?: string; table?: string; nonInteractive?: boolean },
+  options?: { framework?: string; table?: string; nonInteractive?: boolean; skipInstall?: boolean },
 ) {
   // Determine project directory
   let projectDir = dirArg || './my-multi-tenant-app'
@@ -263,13 +263,40 @@ export async function initAction(
       ? 'yarn'
       : 'npm'
 
-  // npm init and install
-  const initCmd = pm === 'pnpm' ? `${pm} init` : `${pm} init -y`
-  console.log(pc.dim(`\n  Running ${initCmd}...`))
-  run(initCmd, resolvedDir)
+  // npm init and install (skipped with --skip-install)
+  if (!options?.skipInstall) {
+    const initCmd = pm === 'pnpm' ? `${pm} init` : `${pm} init -y`
+    console.log(pc.dim(`\n  Running ${initCmd}...`))
+    run(initCmd, resolvedDir)
 
-  console.log(pc.dim(`  Installing @tenantscale/sdk...`))
-  run(`${pm} install @tenantscale/sdk`, resolvedDir)
+    console.log(pc.dim(`  Installing @tenantscale/sdk...`))
+    run(`${pm} install @tenantscale/sdk`, resolvedDir)
+  } else {
+    // With --skip-install the scaffold still needs a package.json to be usable
+    const pkgPath = join(resolvedDir, 'package.json')
+    if (!existsSync(pkgPath)) {
+      writeFileSync(
+        pkgPath,
+        JSON.stringify(
+          {
+            name: (projectDir.split(/[\\/]/).pop() || 'my-multi-tenant-app').replace(
+              /[^a-z0-9_-]/gi,
+              '-',
+            ),
+            version: '0.1.0',
+            private: true,
+            dependencies: {
+              '@tenantscale/sdk': 'latest',
+            },
+          },
+          null,
+          2,
+        ) + '\n',
+        'utf-8',
+      )
+      console.log(pc.green('  \u2713'), `Created ${relative(process.cwd(), pkgPath)}`)
+    }
+  }
 
   // ── success message ───────────────────────────────────────────────────────
 

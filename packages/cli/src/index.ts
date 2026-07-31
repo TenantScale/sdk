@@ -51,6 +51,7 @@ program
   .option('-f, --framework <framework>', 'Framework to use (hono, express)', 'none')
   .option('-t, --table <table>', 'Table name to add tenant_id to', 'projects')
   .option('--non-interactive', 'Skip prompts and use provided flags')
+  .option('--skip-install', 'Skip package init and dependency install')
   .action(initAction)
 
 program

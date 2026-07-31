@@ -25,8 +25,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { execSync } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { tmpdir } from 'node:os'
 
 const cliEntry = join(__dirname, '../../dist/index.js')
 
@@ -94,12 +94,25 @@ describe('tenantscale init --non-interactive', () => {
   })
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true })
+    // Retry cleanup — on Windows a briefly-live child process can hold a
+    // file lock (EBUSY/EPERM); wait and retry before giving up.
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        rmSync(tmpDir, { recursive: true, force: true })
+        break
+      } catch {
+        // Wait a bit for child processes to release the directory
+        const start = Date.now()
+        while (Date.now() - start < 250) {
+          // busy wait
+        }
+      }
+    }
   })
 
   it('creates expected files in the project directory', () => {
     const projectDir = join(tmpDir, 'my-app')
-    const result = run(`init ${projectDir} --non-interactive`, tmpDir)
+    const result = run(`init ${projectDir} --non-interactive --skip-install`, tmpDir)
 
     expect(result.stdout).toContain('SUCCESS')
     expect(result.stdout).toContain('Your TenantScale project is ready!')
@@ -121,7 +134,7 @@ describe('tenantscale init --non-interactive', () => {
 
   it('--framework hono creates hono middleware', () => {
     const projectDir = join(tmpDir, 'hono-app')
-    const result = run(`init ${projectDir} --non-interactive --framework hono`, tmpDir)
+    const result = run(`init ${projectDir} --non-interactive --skip-install --framework hono`, tmpDir)
 
     expect(result.stdout).toContain('SUCCESS')
 
@@ -137,7 +150,7 @@ describe('tenantscale init --non-interactive', () => {
 
   it('--framework express creates express middleware', () => {
     const projectDir = join(tmpDir, 'express-app')
-    const result = run(`init ${projectDir} --non-interactive --framework express`, tmpDir)
+    const result = run(`init ${projectDir} --non-interactive --skip-install --framework express`, tmpDir)
 
     expect(result.stdout).toContain('SUCCESS')
 
@@ -153,7 +166,7 @@ describe('tenantscale init --non-interactive', () => {
 
   it('--table option customizes the migration SQL', () => {
     const projectDir = join(tmpDir, 'custom-table')
-    const result = run(`init ${projectDir} --non-interactive --table organizations`, tmpDir)
+    const result = run(`init ${projectDir} --non-interactive --skip-install --table organizations`, tmpDir)
 
     expect(result.stdout).toContain('SUCCESS')
 
