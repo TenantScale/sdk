@@ -27,14 +27,13 @@ export async function handleStripeWebhook(req: Request): Promise<Response> {
 
   switch (event.type) {
     case 'checkout.session.completed': {
-      const session = event.data.object as Stripe.Checkout.Session
-      // Activate subscription for the tenant
+      // event.data.object is Stripe.Checkout.Session — activate the subscription
+      // for the tenant (e.g. set their plan to active in your database)
       break
     }
     case 'customer.subscription.updated':
     case 'customer.subscription.deleted': {
-      const subscription = event.data.object as Stripe.Subscription
-      // Sync subscription status
+      // event.data.object is Stripe.Subscription — sync subscription status
       break
     }
   }

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 
 // Example test for a tenant-scoped API route
 describe('GET /v1/me', () => {

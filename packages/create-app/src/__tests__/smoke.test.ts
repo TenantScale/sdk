@@ -27,7 +27,7 @@
 // ──────────────────────────────────────────────────────
 
 import { describe, it, expect } from 'vitest'
-import { mkdtempSync, existsSync, readdirSync, readFileSync, rmSync } from 'fs'
+import { mkdtempSync, existsSync, readFileSync, rmSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import type { PromptResults } from '../types.js'
@@ -182,7 +182,6 @@ describe('create-tenantscale-app scaffold', () => {
     it('replaces tenantColumn in env example', async () => {
       const tmpDir = await scaffoldToTemp(defaultResults({ tenantColumn: 'org_id' }))
 
-      const envExample = readFileSync(join(tmpDir, '.env.example'), 'utf-8')
       // env.example doesn't currently have {{tenantColumn}}, but verify the template works
       expect(existsSync(join(tmpDir, '.env.example'))).toBe(true)
 
