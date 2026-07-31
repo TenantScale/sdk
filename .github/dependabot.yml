@@ -19,12 +19,6 @@ updates:
         update-types:
           - "minor"
           - "patch"
-    ignore:
-      # jsdom 30+ requires Node >= 22.19.0 via undici 8.x (webidl.markAsUncloneable
-      # binding missing on Node 20). Repo supports Node >= 20.9.0 — remove this
-      # entry once Node 20 support is dropped.
-      - dependency-name: "jsdom"
-        update-types: ["version-update:semver-major"]
     open-pull-requests-limit: 10
     labels:
       - "dependencies"

@@ -11,7 +11,7 @@ Guidance for AI coding agents working in this repository.
 
 ## Environment and setup
 
-- Node.js `>=20` (see `.nvmrc`).
+- Node.js `>=22` (see `.nvmrc`).
 - Package manager: `pnpm@9.15.0`.
 - Install dependencies from repo root:
   - `pnpm install`

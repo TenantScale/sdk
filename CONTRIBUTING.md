@@ -77,7 +77,7 @@ These are issues specifically scoped for first-time contributors. Each should ta
 
 ### Prerequisites
 
-- **Node.js** >= 20 (we recommend using [nvm](https://github.com/nvm-sh/nvm) — `.nvmrc` is included)
+- **Node.js** >= 22 (we recommend using [nvm](https://github.com/nvm-sh/nvm) — `.nvmrc` is included)
 - **pnpm** >= 9 (install via `npm install -g pnpm` or `corepack enable && corepack prepare pnpm@latest --activate`)
 
 ### Setup
