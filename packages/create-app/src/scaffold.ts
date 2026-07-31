@@ -84,18 +84,7 @@ function resolveTemplateDir(tier: string, framework: string): string {
  * On any failure during scaffold, the target directory is cleaned up.
  */
 export async function scaffold(targetDir: string, results: PromptResults): Promise<void> {
-  const {
-    projectName,
-    templateTier,
-    framework,
-    language,
-    supabase,
-    supabaseUrl,
-    supabaseKey,
-    stripe,
-    stripeKey,
-    tenantColumn,
-  } = results
+  const { templateTier, framework } = results
 
   // Minimal uses its own template; example and full share the example template as base
   const baseTier = templateTier === 'minimal' ? 'minimal' : 'example'
@@ -120,17 +109,7 @@ export async function scaffold(targetDir: string, results: PromptResults): Promi
   }
 
   // Build template variables
-  const vars: TemplateVars = {
-    projectName,
-    tenantColumn: tenantColumn || 'tenant_id',
-    supabaseUrl:
-      supabase === 'enter' && supabaseUrl ? supabaseUrl : 'https://your-project.supabase.co',
-    supabaseAnonKey: supabase === 'enter' && supabaseKey ? supabaseKey : 'your-anon-key',
-    supabaseServiceKey: supabase === 'enter' && supabaseKey ? supabaseKey : 'your-service-role-key',
-    stripeSecretKey: stripe && stripeKey ? stripeKey : 'sk_test_your_stripe_secret_key',
-    framework,
-    language,
-  }
+  const vars: TemplateVars = buildVars(results)
 
   try {
     copyRecursive(templateDir, targetDir, vars)
@@ -177,14 +156,20 @@ function buildVars(results: PromptResults): TemplateVars {
     framework,
     language,
   } = results
+
+  const hasSupabaseUrl =
+    supabase === 'enter' && typeof supabaseUrl === 'string' && supabaseUrl.length > 0
+  const hasSupabaseKey =
+    supabase === 'enter' && typeof supabaseKey === 'string' && supabaseKey.length > 0
+  const hasStripeKey = stripe && typeof stripeKey === 'string' && stripeKey.length > 0
+
   return {
     projectName,
     tenantColumn: tenantColumn || 'tenant_id',
-    supabaseUrl:
-      supabase === 'enter' && supabaseUrl ? supabaseUrl : 'https://your-project.supabase.co',
-    supabaseAnonKey: supabase === 'enter' && supabaseKey ? supabaseKey : 'your-anon-key',
-    supabaseServiceKey: supabase === 'enter' && supabaseKey ? supabaseKey : 'your-service-role-key',
-    stripeSecretKey: stripe && stripeKey ? stripeKey : 'sk_test_your_stripe_secret_key',
+    supabaseUrl: hasSupabaseUrl ? (supabaseUrl as string) : 'https://your-project.supabase.co',
+    supabaseAnonKey: hasSupabaseKey ? (supabaseKey as string) : 'your-anon-key',
+    supabaseServiceKey: hasSupabaseKey ? (supabaseKey as string) : 'your-service-role-key',
+    stripeSecretKey: hasStripeKey ? (stripeKey as string) : 'sk_tes..._key',
     framework,
     language,
   }
