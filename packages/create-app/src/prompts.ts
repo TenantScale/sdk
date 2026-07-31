@@ -46,7 +46,7 @@ export const FRAMEWORKS: { value: string; label: string; hint?: string }[] = [
  * Falls back to defaults when `process.stdin` is not a TTY (CI mode).
  */
 export async function runPrompts(defaultProjectName: string): Promise<PromptResults> {
-  const isInteractive = !!process.stdin.isTTY
+  const isInteractive = process.stdin.isTTY === true
 
   // ── Welcome ──
   if (isInteractive) {
