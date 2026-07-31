@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest'
 
-// Example test for a tenant-scoped API route
-describe('GET /v1/me', () => {
+// Integration tests for a tenant-scoped API route.
+// Skipped by default — set TEST_API_URL to run them against a live server,
+// e.g. TEST_API_URL=http://localhost:3001 pnpm test
+describe.skipIf(!process.env.TEST_API_URL)('GET /v1/me', () => {
   it('returns 401 without API key', async () => {
-    const res = await fetch('http://localhost:3001/v1/me', {
+    const res = await fetch(`${process.env.TEST_API_URL}/v1/me`, {
       headers: {},
     })
     expect(res.status).toBe(401)
@@ -11,7 +13,7 @@ describe('GET /v1/me', () => {
 
   it('validates API key and returns tenant ID', async () => {
     // Integration test — requires running API server
-    // const res = await fetch('http://localhost:3001/v1/me', {
+    // const res = await fetch(`${process.env.TEST_API_URL}/v1/me`, {
     //   headers: { Authorization: 'Bearer <test-api-key>' },
     // })
     // expect(res.status).toBe(200)

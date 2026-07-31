@@ -4,6 +4,9 @@
   "description": "Scaffold a full-stack multi-tenant SaaS app with Next.js, Hono, and TenantScale",
   "type": "module",
   "sideEffects": false,
+  "engines": {
+    "node": ">=22"
+  },
   "bin": {
     "create-app": "./dist/index.js"
   },

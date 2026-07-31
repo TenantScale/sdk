@@ -17,9 +17,17 @@ app.use(
 
 // ── TenantScale SDK ──
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error(
+    'Missing Supabase environment variables. Set NEXT_PUBLIC_SUPABASE_URL (or SUPABASE_URL) and SUPABASE_SERVICE_ROLE_KEY in your .env file.',
+  )
+}
+
 const ts = new TenantScale({
-  supabaseUrl: supabaseUrl!,
-  supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  supabaseUrl,
+  supabaseKey,
 })
 
 // ── Health check ──

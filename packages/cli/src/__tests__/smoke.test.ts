@@ -93,7 +93,7 @@ describe('tenantscale init --non-interactive', () => {
     tmpDir = mkdtempSync(join(tmpdir(), 'tscale-test-'))
   })
 
-  afterEach(() => {
+  afterEach(async () => {
     // Retry cleanup — on Windows a briefly-live child process can hold a
     // file lock (EBUSY/EPERM); wait and retry before giving up.
     for (let attempt = 0; attempt < 5; attempt++) {
@@ -102,10 +102,7 @@ describe('tenantscale init --non-interactive', () => {
         break
       } catch {
         // Wait a bit for child processes to release the directory
-        const start = Date.now()
-        while (Date.now() - start < 250) {
-          // busy wait
-        }
+        await new Promise((resolve) => setTimeout(resolve, 250))
       }
     }
   })
