@@ -134,7 +134,10 @@ describe('tenantscale init --non-interactive', () => {
 
   it('--framework hono creates hono middleware', () => {
     const projectDir = join(tmpDir, 'hono-app')
-    const result = run(`init ${projectDir} --non-interactive --skip-install --framework hono`, tmpDir)
+    const result = run(
+      `init ${projectDir} --non-interactive --skip-install --framework hono`,
+      tmpDir,
+    )
 
     expect(result.stdout).toContain('SUCCESS')
 
@@ -150,7 +153,10 @@ describe('tenantscale init --non-interactive', () => {
 
   it('--framework express creates express middleware', () => {
     const projectDir = join(tmpDir, 'express-app')
-    const result = run(`init ${projectDir} --non-interactive --skip-install --framework express`, tmpDir)
+    const result = run(
+      `init ${projectDir} --non-interactive --skip-install --framework express`,
+      tmpDir,
+    )
 
     expect(result.stdout).toContain('SUCCESS')
 
@@ -166,7 +172,10 @@ describe('tenantscale init --non-interactive', () => {
 
   it('--table option customizes the migration SQL', () => {
     const projectDir = join(tmpDir, 'custom-table')
-    const result = run(`init ${projectDir} --non-interactive --skip-install --table organizations`, tmpDir)
+    const result = run(
+      `init ${projectDir} --non-interactive --skip-install --table organizations`,
+      tmpDir,
+    )
 
     expect(result.stdout).toContain('SUCCESS')
 
