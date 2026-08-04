@@ -1,6 +1,6 @@
 {
   "name": "@tenantscale/mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "MCP server for TenantScale — gives AI coding tools real-time tenant context during development",
   "type": "module",
   "sideEffects": false,
@@ -37,5 +37,8 @@
   "license": "MIT",
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

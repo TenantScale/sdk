@@ -1,10 +1,23 @@
 # Changelog
 
-## [Unreleased]
+## [0.4.1] — 2026-08-04
+
+### Added
+
+- **`engines.node >=22` on all packages** — `@tenantscale/sdk`, every adapter, the CLI, MCP, and Prisma packages now declare Node 22+ so npm warns on unsupported runtimes
+- **`@tenantscale/prisma` (0.1.0)** — first release of the Prisma tenant-safe query guard
+- **`create-tenantscale-app` interactive scaffolding** — three template tiers (Minimal, Example, Full) with interactive prompts, post-scaffold hooks, and `--skip-install` (from the CLI overhaul)
+- **`@tenantscale/cli init --skip-install`** — scaffolds a minimal `package.json` without shelling out to a package manager
 
 ### Changed
 
-- **Node.js 22+ required** — dropped support for Node 20 (EOL 2026-04-30). Node 24 is the recommended/primary runtime; CI tests 22 and 24. Update `.nvmrc` or CI matrices accordingly.
+- **Node.js 22+ required** — dropped support for Node 20 (EOL 2026-04-30). Node 24 is the recommended/primary runtime; CI tests 22 and 24. Update `.nvmrc` or CI matrices accordingly
+- **`@tenantscale/create-app` (0.2.0)** — restored `execa@^10`; scaffolded templates now guard Supabase env vars and gate network tests behind `TEST_API_URL`
+- **`@tenantscale/next` version sync** — repo manifest corrected to 0.1.1 (published artifact was ahead at 0.1.0)
+
+### Security
+
+- **Supported Runtimes policy** — `SECURITY.md` now documents Node 24 (Active LTS, recommended), Node 22 (Maintenance LTS), and Node ≤20 (EOL, unsupported)
 
 ## [0.4.0] — 2026-07-23
 

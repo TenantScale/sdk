@@ -1,6 +1,6 @@
 {
   "name": "@tenantscale/hono",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Hono.js middleware adapter for TenantScale — API key auth, plan enforcement, rate limiting, audit logging",
   "type": "module",
   "sideEffects": false,
@@ -41,5 +41,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@tenantscale/react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "React SDK for TenantScale — tenant context, plan features, API key management, and audit logging hooks",
   "type": "module",
   "sideEffects": false,
@@ -52,5 +52,8 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

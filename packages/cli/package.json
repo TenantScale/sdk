@@ -1,6 +1,6 @@
 {
   "name": "@tenantscale/cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Scaffold multi-tenant SaaS projects with TenantScale",
   "type": "module",
   "sideEffects": false,
@@ -34,5 +34,8 @@
     "type": "git",
     "url": "https://github.com/TenantScale/sdk.git",
     "directory": "packages/cli"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
