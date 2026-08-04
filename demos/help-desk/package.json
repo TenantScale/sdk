@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@tenantscale/sdk": "workspace:*",
-    "hono": "^4.12.32",
+    "hono": "^4.12.33",
     "@hono/node-server": "^2.0.12",
     "zod": "^4.4.3"
   },
