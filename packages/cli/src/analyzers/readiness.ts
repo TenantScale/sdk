@@ -193,6 +193,11 @@ export function scoreReadiness(
     auditScore = Math.max(auditScore, 5)
   }
 
+  // Look for audit patterns in source files
+  if (sourceFilesContain()) {
+    auditScore = Math.max(auditScore, 5)
+  }
+
   if (auditScore < 5) {
     actions.push({
       priority: 'medium',

@@ -257,5 +257,6 @@ function inferNextRoutePath(filePath: string): string {
   if (match) {
     return '/' + match[1]
   }
-  return '/' + normalized.split('/').slice(-2, -1)[0] || '/unknown'
+  const segment = normalized.split('/').slice(-2, -1)[0]
+  return segment ? '/' + segment : '/unknown'
 }

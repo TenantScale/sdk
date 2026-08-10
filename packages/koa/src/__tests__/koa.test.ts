@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import Koa from 'koa'
 import { AuthenticationError, AuthorizationError, RateLimitExceededError } from '@tenantscale/sdk'
 import {
@@ -31,7 +31,6 @@ import {
   requirePortalSession,
   requirePortalRole,
   requireSuperAdmin,
-  requirePlanLimit,
   rateLimitByApiKey,
   rateLimitByIp,
   auditLog,

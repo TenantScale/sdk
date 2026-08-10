@@ -17,8 +17,6 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { TenantScale } from '@tenantscale/sdk'
-import { createTenantSafeClient } from '@tenantscale/sdk/middleware'
-import { z } from 'zod'
 
 // ── Demo Data Store (in-memory) ───────────────────────
 // Each tenant has tickets that ONLY they can see.
@@ -269,7 +267,6 @@ app.post('/tickets', demoProtect, async (c) => {
 })
 
 app.patch('/tickets/:id', demoProtect, async (c) => {
-  const tenant: any = c.get('tenant')
   const apiKey: string = c.get('apiKey')
   const tenantData = STORE[apiKey]
   const ticketId = c.req.param('id')
@@ -300,7 +297,6 @@ app.patch('/tickets/:id', demoProtect, async (c) => {
 })
 
 app.delete('/tickets/:id', demoProtect, async (c) => {
-  const tenant: any = c.get('tenant')
   const apiKey: string = c.get('apiKey')
   const tenantData = STORE[apiKey]
   const ticketId = c.req.param('id')

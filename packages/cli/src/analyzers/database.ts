@@ -105,7 +105,7 @@ const CREATE_TABLE_RE = /create\s+table\s+(?:if\s+not\s+exists\s+)?(?:public\.)?
 export function analyzeDatabase(projectDir: string, sourceFiles: string[]): DatabaseInfo {
   const evidence: string[] = []
   const orm = detectOrm(projectDir, sourceFiles, evidence)
-  const tables = discoverTables(projectDir, sourceFiles, orm, evidence)
+  const tables = discoverTables(projectDir, orm, evidence)
   const tenantTables = tables
     .filter((t) => t.tenantScopeScore > 0.3)
     .sort((a, b) => b.tenantScopeScore - a.tenantScopeScore)
@@ -202,7 +202,6 @@ function detectOrm(
 
 function discoverTables(
   projectDir: string,
-  sourceFiles: string[],
   orm: DatabaseInfo['orm'],
   evidence: string[],
 ): TableInfo[] {
