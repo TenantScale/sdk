@@ -37,6 +37,7 @@ function makeMockSupabase(overrides: Record<string, unknown> = {}) {
   const mockSelect = vi.fn(() => ({ eq: mockEq }))
   // The update chain: .update({...}).eq('id', id).then(ok, err)
   const mockUpdateThen = vi.fn()
+  // oxlint-disable-next-line unicorn/no-thenable -- intentional mock of Supabase's promise-like chain
   const mockUpdateEq = vi.fn(() => ({ then: mockUpdateThen }))
   const mockUpdate = vi.fn(() => ({ eq: mockUpdateEq }))
   const mockFrom = vi.fn((table: string) => {

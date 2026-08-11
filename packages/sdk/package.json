@@ -22,7 +22,8 @@
     "dev": "tsc --watch",
     "test": "vitest run",
     "prepublishOnly": "pnpm build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint src/"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.0",

@@ -14,7 +14,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "oxlint src/"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

@@ -64,7 +64,7 @@ export function scoreReadiness(
   database: DatabaseInfo,
   routes: RouteAnalysis,
   auth: AuthInfo,
-  framework: FrameworkInfo,
+  _framework: FrameworkInfo,
 ): ReadinessScore {
   const actions: ReadinessAction[] = []
 

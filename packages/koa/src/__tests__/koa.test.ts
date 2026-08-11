@@ -24,7 +24,7 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import Koa from 'koa'
-import { AuthenticationError, AuthorizationError, RateLimitExceededError } from '@tenantscale/sdk'
+import { AuthorizationError, RateLimitExceededError } from '@tenantscale/sdk'
 import {
   authenticateApiKey,
   requireScope,

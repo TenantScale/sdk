@@ -198,6 +198,26 @@ describe('validateSession', () => {
     expect(result.tenant_id).toBeNull()
   })
 
+  // Test: allowSuperAdminWithoutTenant=false rejects super_admins without membership
+  // Category: Error Path
+  // What it proves: The option can deny access to super_admins who have no tenant membership
+  // Risk if missing: The option would be a no-op instead of a real security control
+  it('rejects super_admin without tenant membership when allowSuperAdminWithoutTenant is false', async () => {
+    const { supabase, mockGetUser, mockMaybeSingle1, mockMaybeSingle2 } = makeMockSupabase()
+
+    mockGetUser.mockResolvedValue(
+      makeMockUserResponse({ id: 'user_005', email: 'admin@example.com' }),
+    )
+    mockMaybeSingle1.mockResolvedValue({ data: { id: 'admin_002' }, error: null })
+    mockMaybeSingle2.mockResolvedValue({ data: null, error: null })
+
+    await expect(
+      validateSession(supabase as any, 'admin.jwt', {
+        allowSuperAdminWithoutTenant: false,
+      }),
+    ).rejects.toThrow(AuthorizationError)
+  })
+
   // Test: User without email gets empty string
   // Category: Happy Path
   // What it proves: A user with no email returns an empty string, not null or undefined

@@ -18,7 +18,8 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "lint": "oxlint src/"
   },
   "dependencies": {},
   "peerDependencies": {

@@ -54,7 +54,7 @@ import type { HonoAdapterOptions, ErrorResponse } from './types.js'
  * app.onError(errorHandler({ ts }))
  * ```
  */
-export function errorHandler(options?: HonoAdapterOptions) {
+export function errorHandler(_options?: HonoAdapterOptions) {
   return (err: Error, c: Context): Response => {
     // Not a TenantScale error — re-throw for generic handler
     if (!(err instanceof TenantScaleError)) {

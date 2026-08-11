@@ -360,7 +360,7 @@ app.get('/admin/tenants', demoProtect, async (c) => {
     return c.json({ error: 'Admin access required' }, 403)
   }
   return c.json({
-    tenants: Object.entries(STORE).map(([key, data]) => ({
+    tenants: Object.entries(STORE).map(([, data]) => ({
       name: data.tenant_name,
       slug: data.tenant_slug,
       plan: data.plan,
