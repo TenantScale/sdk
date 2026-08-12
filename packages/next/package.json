@@ -25,7 +25,7 @@
     "dev": "tsup src/index.ts --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "lint": "eslint src/"
+    "lint": "oxlint src/"
   },
   "peerDependencies": {
     "@tenantscale/sdk": "workspace:*",

@@ -302,6 +302,6 @@ function formatBar(pct: number, width = 15): string {
   if (!isFinite(pct) || pct < 0) pct = 0
   const filled = Math.round((pct / 100) * width)
   const empty = Math.max(0, width - filled)
-  const color = pct >= 80 ? pc.bgGreen : pct >= 50 ? pc.bgYellow : pct >= 0 ? pc.dim : pc.dim
+  const color = pct >= 80 ? pc.bgGreen : pct >= 50 ? pc.bgYellow : pc.dim
   return color(' '.repeat(filled)) + pc.dim('─'.repeat(empty))
 }

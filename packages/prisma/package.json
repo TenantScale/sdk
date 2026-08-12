@@ -25,7 +25,8 @@
     "build": "tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && node scripts/postbuild-cjs.mjs",
     "dev": "tsc -p tsconfig.esm.json --watch",
     "test": "vitest run",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "lint": "oxlint src/"
   },
   "dependencies": {},
   "peerDependencies": {

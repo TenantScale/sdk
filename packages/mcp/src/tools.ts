@@ -236,7 +236,7 @@ function handleValidateQuery(query: string, table: string): string {
   }
 
   if (
-    !upper.includes('tenant_id') &&
+    !upper.includes('TENANT_ID') &&
     (upper.startsWith('INSERT') || upper.startsWith('UPDATE') || upper.startsWith('DELETE'))
   ) {
     issues.push(

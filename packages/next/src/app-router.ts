@@ -41,7 +41,7 @@ export interface AppRouterHandlerFactory {
   ) => (request: Request, routeParams: RouteParams) => Promise<Response>
 }
 
-async function getSessionFromCookies(request: Request, options: NextAdapterOptions) {
+async function getSessionFromCookies(options: NextAdapterOptions) {
   const cookieStore = await cookies()
   const cookie = cookieStore.get('tenant_session')
   if (!cookie?.value) {
@@ -57,7 +57,7 @@ export function createAppRouterHandler(options: NextAdapterOptions): AppRouterHa
     withSession(handler) {
       return async (request, routeParams) => {
         try {
-          const { session, tenantId } = await getSessionFromCookies(request, options)
+          const { session, tenantId } = await getSessionFromCookies(options)
           return await handler(request, { session, tenantId }, routeParams)
         } catch (err) {
           return errorResponse(err)

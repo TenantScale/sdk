@@ -95,7 +95,7 @@ export function withTenantScope(options: TenantScopeOptions) {
   return {
     name: 'tenantScope',
     query: {
-      $allOperations: async ({ args, query, model }: PrismaExtensionCallbackArgs) => {
+      $allOperations: async ({ args, query }: PrismaExtensionCallbackArgs) => {
         // Skip raw queries - they bypass tenant isolation
         if (args.operation === '$queryRaw' || args.operation === '$executeRaw') {
           return query(args)

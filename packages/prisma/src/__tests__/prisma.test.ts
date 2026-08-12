@@ -1,23 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { withTenantScope, tenantFilter } from '../index.js'
 
-// Mock Prisma client types for testing
-type MockPrismaClient = {
-  $extends: (extension: any) => MockPrismaClient
-  user: {
-    findMany: (args?: any) => Promise<any[]>
-    findFirst: (args?: any) => Promise<any>
-    findUnique: (args?: any) => Promise<any>
-    create: (args: any) => Promise<any>
-    createMany: (args: any) => Promise<any>
-    update: (args: any) => Promise<any>
-    updateMany: (args: any) => Promise<any>
-    delete: (args: any) => Promise<any>
-    deleteMany: (args: any) => Promise<any>
-    upsert: (args: any) => Promise<any>
-  }
-}
-
 describe('withTenantScope', () => {
   it('creates a Prisma client extension', () => {
     const extension = withTenantScope({ tenantId: 'tenant-123' })

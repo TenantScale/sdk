@@ -55,7 +55,7 @@ export async function runPostScaffold(results: PromptResults): Promise<void> {
         timeout: 120_000,
       })
       s.stop(`Dependencies installed`)
-    } catch (err) {
+    } catch {
       s.stop(`Installation failed`)
       p.log.warn(
         `Could not install dependencies. Run "${packageManager} install" manually in ${projectName}.`,
@@ -84,7 +84,7 @@ export async function runPostScaffold(results: PromptResults): Promise<void> {
         },
       })
       s.stop('Git repository initialized')
-    } catch (err) {
+    } catch {
       s.stop('Git init skipped')
       p.log.warn('Could not initialize git (make sure git is installed).')
     }

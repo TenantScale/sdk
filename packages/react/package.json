@@ -21,7 +21,8 @@
     "build": "tsc && tsup src/index.ts --format cjs --out-dir dist --clean false",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "prepublishOnly": "pnpm build"
+    "prepublishOnly": "pnpm build",
+    "lint": "oxlint src/"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0"

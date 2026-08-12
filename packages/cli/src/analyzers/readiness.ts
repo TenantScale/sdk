@@ -64,7 +64,7 @@ export function scoreReadiness(
   database: DatabaseInfo,
   routes: RouteAnalysis,
   auth: AuthInfo,
-  framework: FrameworkInfo,
+  _framework: FrameworkInfo,
 ): ReadinessScore {
   const actions: ReadinessAction[] = []
 
@@ -190,6 +190,11 @@ export function scoreReadiness(
   // Look for audit patterns in route analysis
   const routeEvidence = routes.evidence.join(' ').toLowerCase()
   if (routeEvidence.includes('audit')) {
+    auditScore = Math.max(auditScore, 5)
+  }
+
+  // Look for audit patterns in source files
+  if (sourceFilesContain()) {
     auditScore = Math.max(auditScore, 5)
   }
 

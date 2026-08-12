@@ -22,14 +22,9 @@
  * SOFTWARE.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import Fastify from 'fastify'
-import {
-  AuthenticationError,
-  AuthorizationError,
-  PlanLimitExceededError,
-  RateLimitExceededError,
-} from '@tenantscale/sdk'
+import { AuthorizationError, RateLimitExceededError } from '@tenantscale/sdk'
 
 import {
   authenticateApiKey,
@@ -79,13 +74,6 @@ const mockPortalSession = {
   role: 'admin',
   membership_id: 'mem_1',
   is_super_admin: false,
-}
-
-async function buildApp(ts: any, plugin: any) {
-  const app = Fastify()
-  app.addHook('preHandler', plugin)
-  app.get('/test', async () => ({ ok: true }))
-  return app
 }
 
 describe('fastify adapter', () => {

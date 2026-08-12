@@ -88,6 +88,13 @@ export async function validateSession(
     )
   }
 
+  if (!membership && isSuperAdmin && options.allowSuperAdminWithoutTenant === false) {
+    throw new AuthorizationError(
+      'Super admin requires a tenant membership.',
+      'NO_TENANT_MEMBERSHIP',
+    )
+  }
+
   if (membership) {
     const tenant = membership.tenant as unknown as { id: string; name: string; slug: string }
     return {
