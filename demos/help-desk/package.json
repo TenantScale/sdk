@@ -9,13 +9,13 @@
   },
   "dependencies": {
     "@tenantscale/sdk": "workspace:*",
-    "hono": "^4.12.33",
+    "hono": "^4.13.1",
     "@hono/node-server": "^2.1.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",
-    "tsx": "^4.23.5",
+    "tsx": "^4.23.11",
     "typescript": "^7.0.2"
   }
 }
