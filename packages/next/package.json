@@ -35,7 +35,7 @@
     "@tenantscale/sdk": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^26.1.2",
+    "@types/node": "^26.2.0",
     "next": "~16.2.12",
     "next-test-api-route-handler": "^5.0.5",
     "tsup": "^8.5.1",
