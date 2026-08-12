@@ -25,6 +25,13 @@ updates:
     commit-message:
       prefix: "deps"
       prefix-development: "deps(dev)"
+    ignore:
+      # next >=16.3.0's hasNecessaryDependencies requires typescript/bin/tsc on
+      # disk, but this repo aliases npm:@typescript/typescript6 which only ships
+      # bin/tsc6. Remove this ignore once upstream supports the TS6 alias.
+      - dependency-name: "next"
+        versions:
+          - ">=16.3.0"
 
   - package-ecosystem: "github-actions"
     directory: "/"
