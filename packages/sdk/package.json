@@ -26,8 +26,8 @@
     "lint": "oxlint src/"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.112.0",
-    "stripe": "^22.4.0",
+    "@supabase/supabase-js": "^2.112.3",
+    "stripe": "^22.5.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
