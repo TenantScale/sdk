@@ -17,7 +17,7 @@
   <a href="https://github.com/TenantScale/sdk/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
   <a href="https://github.com/TenantScale/sdk/blob/main/CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
   <a href="https://conventionalcommits.org"><img src="https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg" alt="Conventional Commits"></a>
-  <a href="https://discord.gg/wg5VZTNQ5"><img src="https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://discord.gg/rf2p46wh7u"><img src="https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
 </p>
 
 <br>
@@ -310,7 +310,7 @@ Thanks to every contributor who makes TenantScale better!
 
 ## 💬 Community
 
-- [Discord](https://discord.gg/wg5VZTNQ5) — questions, ideas, show-and-tell
+- [Discord](https://discord.gg/rf2p46wh7u) — questions, ideas, show-and-tell
 - [GitHub Discussions](https://github.com/TenantScale/sdk/discussions) — long-form Q&A
 
 ## 📚 Related Repos

@@ -423,7 +423,7 @@ Contribution types we recognize:
 
 ## Getting Help
 
-- **Discord:** [Join the server](https://discord.gg/tenantscale) — best for quick questions
+- **Discord:** [Join the server](https://discord.gg/rf2p46wh7u) — best for quick questions
 - **GitHub Discussions:** [Start a discussion](https://github.com/TenantScale/sdk/discussions) — best for longer conversations
 - **Issues:** Open an issue for bugs or feature requests
 - **Maintainers:** Tag `@TenantScale/maintainers` in your PR for review
