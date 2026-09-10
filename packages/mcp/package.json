@@ -19,11 +19,11 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
-    "@supabase/supabase-js": "^2.112.3"
+    "@supabase/supabase-js": "^2.115.0"
   },
   "devDependencies": {
     "typescript": "7.0.2",
-    "tsx": "^4.23.12",
+    "tsx": "^4.23.13",
     "@types/node": "26.2.0"
   },
   "keywords": [
