@@ -64,9 +64,13 @@ export function getTenantScaleContext(): TenantScaleRequestContext | undefined {
 
 /**
  * Set the tenant context in AsyncLocalStorage.
- * Called internally by the guard after successful authentication.
  *
- * @internal
+ * This is an opt-in helper, NOT called automatically by the guard - the guard
+ * attaches context to the request object instead (see TenantScaleGuard). Use
+ * this inside a storage.run() scope (or runWithTenantScaleContext()) when you
+ * need ALS-scoped tenant context for background/async work.
+ *
+ * @param context - The tenant context to store
  */
 export function setTenantScaleContext(context: TenantScaleRequestContext): void {
   storage.enterWith(context)

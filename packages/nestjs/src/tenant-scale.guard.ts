@@ -24,7 +24,6 @@
 
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import { setTenantScaleContext } from './request-context.js'
 import { TenantScaleService } from './tenant-scale.service.js'
 
 // Metadata keys
@@ -80,15 +79,15 @@ export class TenantScaleGuard implements CanActivate {
 
     const apiKeyInfo = await this.tenantScaleService.authenticateApiKey(token)
 
-    // Set tenant context on request (Express and Fastify both support this)
+    // Set tenant context on request (Express and Fastify both support this).
+    // TenantScale's isolation model is per-request state on the request object -
+    // used by the @TenantContext()/@TenantId() decorators and the SDK core alike.
+    // We intentionally do NOT push this into AsyncLocalStorage here: the guard
+    // runs outside any storage.run() scope, so an enterWith() would leak the
+    // tenant into unrelated async work. Use runWithTenantScaleContext() explicitly
+    // in handlers that need ALS-scoped context.
     ;(req as Record<string, unknown>).tenantKey = apiKeyInfo
     ;(req as Record<string, unknown>).tenantId = apiKeyInfo.tenant_id
-
-    // Set context in AsyncLocalStorage for async operations
-    setTenantScaleContext({
-      tenantId: apiKeyInfo.tenant_id,
-      tenantKey: apiKeyInfo,
-    })
 
     // Check scope requirements
     if (requiredScopes && requiredScopes.length > 0) {
