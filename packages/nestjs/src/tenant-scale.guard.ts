@@ -96,18 +96,26 @@ export class TenantScaleGuard implements CanActivate {
 
     // Check plan limit requirements
     if (planLimitConfig) {
-      const feature =
-        typeof planLimitConfig === 'string' ? planLimitConfig : planLimitConfig.feature
-      const currentCount =
-        typeof planLimitConfig === 'string'
-          ? 0
-          : typeof planLimitConfig.currentCount === 'function'
-            ? planLimitConfig.currentCount(req)
-            : (planLimitConfig.currentCount ?? 0)
+      const config =
+        typeof planLimitConfig === 'string' ? { feature: planLimitConfig } : planLimitConfig
+      const countSource = config.currentCount
+
+      // Fail closed: a plan limit without a count source can never be enforced.
+      // @RequirePlanLimit('pro') with no count silently passed forever because
+      // currentCount defaulted to 0. Surface the misconfiguration instead.
+      if (countSource === undefined) {
+        throw new Error(
+          `TenantScaleGuard: @RequirePlanLimit('${config.feature}') requires a currentCount ` +
+            'argument (a number or (req) => number function). Without it the limit ' +
+            'cannot be enforced, so this route is rejecting until you provide one.',
+        )
+      }
+
+      const currentCount = typeof countSource === 'function' ? countSource(req) : countSource
 
       await this.tenantScaleService.requirePlanLimit(
         apiKeyInfo.tenant_id,
-        feature,
+        config.feature,
         typeof currentCount === 'number' ? currentCount : await currentCount,
       )
     }

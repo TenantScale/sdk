@@ -44,7 +44,7 @@ export class UsersController {
 
   @Get()
   @AuthenticateApiKey()
-  @RequirePlanLimit('pro')
+  @RequirePlanLimit('pro', 3)
   @AuditLog({ action: 'List Users', resource: 'users' })
   async findUsers() {
     return this.tenantScale.sdk
@@ -231,15 +231,11 @@ async handler() { }
 
 ### @RequirePlanLimit
 
-Requires a specific plan feature. Automatically applies the guard:
+Requires a specific plan feature. Automatically applies the guard.
 
-```ts
-@Get()
-@RequirePlanLimit('pro')
-async premiumFeature() { }
-```
-
-You can optionally provide a current count to enforce specific limits:
+> **Important:** since the guard is fail-closed, you **must** provide a
+> `currentCount` — a number or a `(req) => number` function. Without it the
+> limit cannot be enforced and the request is rejected.
 
 ```ts
 @Get()
@@ -247,7 +243,8 @@ You can optionally provide a current count to enforce specific limits:
 async premiumFeature() { }
 ```
 
-Or use a function to dynamically calculate the count from the request:
+Provide a number for a static count, or use a function to dynamically
+calculate the count from the request:
 
 ```ts
 @Post('items')
@@ -398,7 +395,7 @@ export class UsersController {
 
   @Get('premium')
   @AuthenticateApiKey()
-  @RequirePlanLimit('pro')
+  @RequirePlanLimit('pro', 3)
   async premiumFeature(@TenantId() tenantId: string) {
     // Premium feature logic
   }
@@ -479,7 +476,7 @@ async handler() { }
 
 // ✅ Use decorators that include the guard
 @Get()
-@RequirePlanLimit('pro')
+@RequirePlanLimit('pro', 3)
 async handler() { }
 
 // ✅ Or apply guard explicitly

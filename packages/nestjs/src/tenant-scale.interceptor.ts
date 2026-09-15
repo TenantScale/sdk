@@ -25,7 +25,7 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { Observable } from 'rxjs'
-import { tap, catchError } from 'rxjs/operators'
+import { tap } from 'rxjs/operators'
 import { TenantScaleService } from './tenant-scale.service.js'
 
 // Metadata key
@@ -79,10 +79,6 @@ export class TenantScaleInterceptor implements NestInterceptor {
             )
           }
         }
-      }),
-      catchError((error) => {
-        // Optionally log errors here
-        throw error
       }),
     )
   }

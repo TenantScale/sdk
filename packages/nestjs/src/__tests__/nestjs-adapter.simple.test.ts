@@ -375,12 +375,12 @@ describe('TenantScale NestJS adapter', () => {
     })
 
     it('checks plan limit when metadata is set', async () => {
-      vi.spyOn(guard['tenantScaleService'].sdk.plans, 'getPlanLimit').mockResolvedValue(null)
+      vi.spyOn(guard['tenantScaleService'].sdk.plans, 'getPlanLimit').mockResolvedValue(10)
       const context = createMockExecutionContext(
         reflector,
         true,
         { 'x-api-key': 'valid' },
-        { feature: 'pro-feature' },
+        { feature: 'pro-feature', currentCount: 2 },
       )
       expect(await guard.canActivate(context)).toBe(true)
     })
@@ -461,8 +461,7 @@ describe('TenantScale NestJS adapter', () => {
       expect(requirePlanLimitSpy).toHaveBeenCalledWith('tenant-1', 'pro-feature', 4)
     })
 
-    it('defaults to 0 when RequirePlanLimit is used without current count', async () => {
-      vi.spyOn(guard['tenantScaleService'].sdk.plans, 'getPlanLimit').mockResolvedValue(5)
+    it('fails closed when RequirePlanLimit is used without a current count', async () => {
       const requirePlanLimitSpy = vi.spyOn(guard['tenantScaleService'], 'requirePlanLimit')
 
       const context = createMockExecutionContext(
@@ -472,12 +471,13 @@ describe('TenantScale NestJS adapter', () => {
         { feature: 'pro-feature' },
       )
 
-      expect(await guard.canActivate(context)).toBe(true)
-      expect(requirePlanLimitSpy).toHaveBeenCalledWith('tenant-1', 'pro-feature', 0)
+      await expect(guard.canActivate(context)).rejects.toThrow(
+        "TenantScaleGuard: @RequirePlanLimit('pro-feature') requires a currentCount",
+      )
+      expect(requirePlanLimitSpy).not.toHaveBeenCalled()
     })
 
-    it('handles backward compatibility when RequirePlanLimit is used with old string format', async () => {
-      vi.spyOn(guard['tenantScaleService'].sdk.plans, 'getPlanLimit').mockResolvedValue(5)
+    it('fails closed when RequirePlanLimit is used with the old bare-string format', async () => {
       const requirePlanLimitSpy = vi.spyOn(guard['tenantScaleService'], 'requirePlanLimit')
 
       const context = createMockExecutionContext(
@@ -487,8 +487,10 @@ describe('TenantScale NestJS adapter', () => {
         'pro-feature',
       )
 
-      expect(await guard.canActivate(context)).toBe(true)
-      expect(requirePlanLimitSpy).toHaveBeenCalledWith('tenant-1', 'pro-feature', 0)
+      await expect(guard.canActivate(context)).rejects.toThrow(
+        "TenantScaleGuard: @RequirePlanLimit('pro-feature') requires a currentCount",
+      )
+      expect(requirePlanLimitSpy).not.toHaveBeenCalled()
     })
 
     it('blocks request when plan limit is exceeded with provided count', async () => {
