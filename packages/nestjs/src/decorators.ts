@@ -48,12 +48,9 @@ export const AuthenticateApiKey = () =>
  * Automatically applies TenantScaleGuard.
  *
  * @param feature - The plan feature to check (e.g., 'pro', 'enterprise')
- * @param currentCount - Current count for the plan limit. Can be a number or a function that receives the request.
- *
- * @example
- * @RequirePlanLimit('pro')
- * @Get('premium')
- * premiumRoute() { ... }
+ * @param currentCount - The current usage count for the plan limit. Required -
+ *   a number or a function receiving the request. Without it the limit cannot
+ *   be enforced and the guard rejects the request (fail closed).
  *
  * @example
  * @RequirePlanLimit('pro', (req) => req.body.items.length)
