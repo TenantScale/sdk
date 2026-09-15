@@ -13,3 +13,4 @@ package-lock.json
 .hermes
 coverage-summary.json
 merge_simulation.txt
+PR_DESCRIPTION.md
