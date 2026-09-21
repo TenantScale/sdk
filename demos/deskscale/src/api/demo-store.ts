@@ -1,5 +1,5 @@
 import { eq, sql } from 'drizzle-orm'
-import { AuthenticationError, AuthorizationError, PlanLimitExceededError } from '@tenantscale/sdk'
+import { AuthenticationError, AuthorizationError } from '@tenantscale/sdk'
 import type { ApiKeyInfo, AuditEventInput } from '@tenantscale/sdk'
 import { db } from './db/index.js'
 import { agents, conversations, tenants } from './db/schema.js'
@@ -106,5 +106,3 @@ export class DemoStore {
     } as unknown as DemoAgent
   }
 }
-
-export { PlanLimitExceededError }
