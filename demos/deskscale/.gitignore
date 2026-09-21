@@ -1,0 +1,5 @@
+deskscale.db
+deskscale.db-wal
+deskscale.db-shm
+web-dist/
+node_modules/
