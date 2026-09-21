@@ -175,7 +175,7 @@ export async function seed(): Promise<void> {
   const tenantsOut = await db
     .select({ id: tenants.id, name: tenants.name, plan: tenants.plan })
     .from(tenants)
-  const agentsOut = await db.select({ name: agents.name, apiKey: agents.apiKey }).from(agents)
+  const agentsOut = await db.select({ name: agents.name }).from(agents)
   const convCount = await db.select({ n: sql<number>`count(*)` }).from(conversations)
   console.log(
     'Seeded',
@@ -183,7 +183,7 @@ export async function seed(): Promise<void> {
     'tenants:',
     tenantsOut.map((t) => `${t.name}(${t.plan})`).join(', '),
   )
-  console.log('Agents:', agentsOut.map((a) => `${a.name} [${a.apiKey}]`).join(', '))
+  console.log('Agents:', agentsOut.length, 'agents created (demo-only keys)')
   console.log('Conversations:', convCount[0].n)
 }
 
