@@ -4,12 +4,6 @@ import { createRoot } from 'react-dom/client'
 const API = '/api'
 let sessionKey = localStorage.getItem('ts_key') || null
 
-const PLAN_COLORS = {
-  '#f97316': 'Acme Corp',
-  '#14b8a6': 'Globex Industries',
-  '#6366f1': 'Initech',
-}
-
 async function api(path, opts = {}) {
   const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) }
   if (sessionKey) headers['x-api-key'] = sessionKey
@@ -536,7 +530,7 @@ function ConversationsView() {
                   padding: '10px 18px',
                   borderRadius: 8,
                   border: 'none',
-                  background: tenantColor(detail),
+                  background: KEYS.find((k) => k.key === loggedKey)?.color || '#3b82f6',
                   color: '#fff',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -580,10 +574,6 @@ function ConversationsView() {
       </div>
     </div>
   )
-}
-
-function tenantColor() {
-  return '#3b82f6'
 }
 
 function PulsePanel({ events }) {
