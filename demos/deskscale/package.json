@@ -1,0 +1,35 @@
+{
+  "name": "@tenantscale/demo-deskscale",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n API,WEB -c blue,magenta \"pnpm run dev:api\" \"pnpm run dev:web\"",
+    "dev:api": "tsx watch src/api/main.ts",
+    "dev:web": "vite",
+    "build": "vite build web",
+    "start": "tsx src/api/main.ts",
+    "seed": "tsx src/api/seed.ts"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "@tenantscale/sdk": "workspace:*",
+    "@tenantscale/nestjs": "workspace:*",
+    "better-sqlite3": "^12.0.0",
+    "drizzle-orm": "^0.44.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^26.4.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "concurrently": "^9.2.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vite": "^7.0.0"
+  }
+}
