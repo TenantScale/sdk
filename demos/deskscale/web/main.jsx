@@ -52,6 +52,24 @@ function App() {
     setSession(null)
   }
 
+  // Restore a saved session on load (reload-safe).
+  useEffect(() => {
+    if (!sessionKey || session) return
+    ;(async () => {
+      setLoading(true)
+      const { status, body } = await api('/me')
+      setLoading(false)
+      if (status === 200) {
+        setSession(body)
+        setTab(body.agent?.scopes?.includes('admin:view') ? 'admin' : 'conversations')
+      } else {
+        sessionKey = null
+        localStorage.removeItem('ts_key')
+        setLoggedKey(null)
+      }
+    })()
+  }, [])
+
   if (!loggedKey) {
     return <LoginScreen keys={KEYS} onLogin={login} loading={loading} />
   }
@@ -73,7 +91,7 @@ function App() {
       onLogout={logout}
       onSwitch={login}
     >
-      {tab === 'admin' && isSuper ? <AdminDesk /> : <ConversationsView />}
+      {tab === 'admin' && isSuper ? <AdminDesk /> : <ConversationsView brandColor={tenant?.brandColor} />}
     </Shell>
   )
 }
@@ -247,7 +265,7 @@ function NavBtn({ active, onClick, children }) {
 }
 
 // ── Conversations view (tenant inbox) ──
-function ConversationsView() {
+function ConversationsView({ brandColor = '#3b82f6' }) {
   const [convos, setConvos] = useState(null)
   const [contacts, setContacts] = useState(null)
   const [selected, setSelected] = useState(null)
@@ -257,6 +275,7 @@ function ConversationsView() {
   const [newMsg, setNewMsg] = useState('')
   const [pulse, setPulse] = useState([])
   const [probe, setProbe] = useState(null)
+  const [toast, setToast] = useState(null)
 
   async function refresh() {
     const [cRes, ctRes] = await Promise.all([api('/conversations'), api('/contacts')])
@@ -349,7 +368,30 @@ function ConversationsView() {
   const convCount = convos.data?.length ?? 0
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 20 }}>
+    <div style={{ position: 'relative' }}>
+      {toast && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            left: 0,
+            zIndex: 10,
+            margin: '0 auto',
+            width: 'fit-content',
+            padding: '10px 18px',
+            borderRadius: 10,
+            fontSize: 13,
+            fontWeight: 600,
+            color: '#fff',
+            background: toast.type === 'fail' ? '#dc2626' : '#059669',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+          }}
+        >
+          {toast.msg}
+        </div>
+      )}
+      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 20 }}>
       {/* left: inbox + compose + contacts */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div
@@ -530,7 +572,7 @@ function ConversationsView() {
                   padding: '10px 18px',
                   borderRadius: 8,
                   border: 'none',
-                  background: KEYS.find((k) => k.key === loggedKey)?.color || '#3b82f6',
+                  background: brandColor,
                   color: '#fff',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -571,6 +613,7 @@ function ConversationsView() {
 
         {/* live pulse */}
         <PulsePanel events={pulse} />
+      </div>
       </div>
     </div>
   )
