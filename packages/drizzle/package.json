@@ -5,6 +5,7 @@
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -39,6 +40,19 @@
     "url": "https://github.com/TenantScale/sdk.git",
     "directory": "packages/drizzle"
   },
+  "keywords": [
+    "multi-tenant",
+    "saas",
+    "drizzle",
+    "orm",
+    "tenant-isolation",
+    "b2b",
+    "tenantscale"
+  ],
+  "bugs": {
+    "url": "https://github.com/TenantScale/sdk/issues"
+  },
+  "homepage": "https://github.com/TenantScale/sdk",
   "engines": {
     "node": ">=22"
   }
