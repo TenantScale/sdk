@@ -89,7 +89,7 @@ export function withTenantScope(options: TenantScopeOptions) {
   const { tenantId, tenantColumn = 'tenant_id' } = options
 
   if (!tenantId) {
-    throw new Error('tenantId is required')
+    throw new Error('tenantId is required. Pass the resolved tenant ID to the tenant filter.')
   }
 
   return {
@@ -231,7 +231,7 @@ export function withTenantScope(options: TenantScopeOptions) {
  */
 export function tenantFilter(tenantId: string, column = 'tenant_id'): Record<string, unknown> {
   if (!tenantId) {
-    throw new Error('tenantId is required')
+    throw new Error('tenantId is required. Pass the resolved tenant ID to the tenant filter.')
   }
 
   return { [column]: tenantId }

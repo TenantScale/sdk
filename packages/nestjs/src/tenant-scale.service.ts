@@ -73,7 +73,9 @@ export class TenantScaleService {
 
   requireScope(apiKey: ApiKeyInfo | undefined, ...scopes: string[]): void {
     if (!apiKey) {
-      throw new UnauthorizedException('API key not found in request context')
+      throw new UnauthorizedException(
+        'API key not found in request context. Ensure the API key guard runs before this check.',
+      )
     }
     try {
       this.tenantScale.requireScope(apiKey, ...scopes)

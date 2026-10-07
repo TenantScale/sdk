@@ -50,7 +50,7 @@ import type { SQL, SQLWrapper } from 'drizzle-orm'
  */
 export function tenantFilter(column: SQLWrapper, tenantId: string): SQL {
   if (!tenantId) {
-    throw new Error('tenantId is required')
+    throw new Error('tenantId is required. Pass the resolved tenant ID to the tenant filter.')
   }
 
   return eq(column, tenantId)

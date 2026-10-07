@@ -74,7 +74,9 @@ export class TenantScaleGuard implements CanActivate {
 
     const token = this.extractToken(req, apiKeyHeader)
     if (!token) {
-      throw new UnauthorizedException('Authentication required')
+      throw new UnauthorizedException(
+        `Authentication required. Provide an API key in the ${apiKeyHeader} header.`,
+      )
     }
 
     const apiKeyInfo = await this.tenantScaleService.authenticateApiKey(token)

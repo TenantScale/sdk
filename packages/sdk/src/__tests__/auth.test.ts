@@ -461,3 +461,32 @@ describe('requireScope', () => {
     }
   })
 })
+
+// ──────────────────────────────────────────────────────
+// Actionable error message hints (#1)
+// ──────────────────────────────────────────────────────
+
+describe('actionable error message hints', () => {
+  it('guides the user to provide an API key when it is empty', async () => {
+    const { supabase } = makeMockSupabase()
+    await expect(validateApiKey(supabase as any, '')).rejects.toThrow(
+      'Provide the API key in the x-api-key header',
+    )
+  })
+
+  it('explains how to fix an invalid API key', async () => {
+    const { supabase, mockSingle } = makeMockSupabase()
+    mockSingle.mockResolvedValue({ data: null, error: null })
+    await expect(validateApiKey(supabase as any, 'tk_wrong')).rejects.toThrow(
+      'Check the key matches the value sent in the x-api-key header',
+    )
+  })
+
+  it('tells the user how to fix a deactivated key', async () => {
+    const { supabase, mockSingle } = makeMockSupabase()
+    mockSingle.mockResolvedValue({ data: validKeyRecord({ is_active: false }), error: null })
+    await expect(validateApiKey(supabase as any, 'tk_dead')).rejects.toThrow(
+      'Re-enable it in the TenantScale dashboard',
+    )
+  })
+})
