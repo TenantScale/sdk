@@ -33,6 +33,7 @@
 import { testApiHandler } from 'next-test-api-route-handler' // Must be first import
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createAppRouterHandler } from '../app-router.js'
+import { requireScope, requirePlanLimit, rateLimitByApiKey, auditLog } from '../middleware.js'
 
 // ── Mock TenantScale instance for integration testing ──
 // We mock the SDK to avoid real Supabase calls, but test the real Next.js environment
@@ -365,6 +366,144 @@ describe('App Router Integration Tests (Real Next.js Environment)', () => {
           expect(await res.json()).toEqual({ method: 'POST' })
         },
       })
+    })
+  })
+})
+
+// ──────────────────────────────────────────────────────
+// Middleware Integration (real Next.js App Router environment)
+// ──────────────────────────────────────────────────────
+
+describe('Middleware Integration (Real Next.js Environment)', () => {
+  const middlewareTs = {
+    validateApiKey: vi.fn(),
+    requireScope: vi.fn(),
+    validateSession: vi.fn(),
+    requirePortalRole: vi.fn(),
+    requireSuperAdmin: vi.fn(),
+    plans: { getPlanLimit: vi.fn() },
+    rateLimiter: {
+      checkDailyLimit: vi.fn(),
+      checkIpCreationLimit: vi.fn(),
+    },
+    logAuditEvent: vi.fn().mockResolvedValue(undefined),
+    logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+  } as any
+
+  const apiKey = {
+    raw: 'tk_int_abc',
+    tenant_id: 'tenant_1',
+    scopes: ['admin', 'read'],
+    created_by: 'user_1',
+    key_record_id: 'key_1',
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('protects a route with requireScope using real headers() + x-api-key', async () => {
+    middlewareTs.validateApiKey.mockResolvedValue(apiKey)
+    await testApiHandler({
+      appHandler: {
+        dynamic: 'force-dynamic',
+        async GET(_request) {
+          const wrapped = requireScope(
+            { ts: middlewareTs },
+            'admin',
+          )(async () => Response.json({ ok: true }))
+          return wrapped(_request, { params: Promise.resolve({}) })
+        },
+      },
+      requestPatcher(req) {
+        req.headers.set('x-api-key', 'tk_int_abc')
+      },
+      async test({ fetch }) {
+        const res = await fetch()
+        expect(res.status).toBe(200)
+        expect(await res.json()).toEqual({ ok: true })
+        expect(middlewareTs.requireScope).toHaveBeenCalledWith(apiKey, 'admin')
+      },
+    })
+  })
+
+  it('enforces a plan limit through a real route and returns a JSON error', async () => {
+    middlewareTs.validateApiKey.mockResolvedValue(apiKey)
+    middlewareTs.plans.getPlanLimit.mockResolvedValue(3)
+    await testApiHandler({
+      appHandler: {
+        dynamic: 'force-dynamic',
+        async GET(_request) {
+          const wrapped = requirePlanLimit(
+            { ts: middlewareTs },
+            'max_tenants',
+            3,
+          )(async () => Response.json({ ok: true }))
+          return wrapped(_request, { params: Promise.resolve({}) })
+        },
+      },
+      requestPatcher(req) {
+        req.headers.set('x-api-key', 'tk_int_abc')
+      },
+      async test({ fetch }) {
+        const res = await fetch()
+        expect(res.status).toBe(403)
+        const body = await res.json()
+        expect(body.code).toBe('PLAN_LIMIT_REACHED')
+      },
+    })
+  })
+
+  it('rate-limits by API key and sets response headers through a real route', async () => {
+    middlewareTs.validateApiKey.mockResolvedValue(apiKey)
+    middlewareTs.rateLimiter.checkDailyLimit.mockResolvedValue({
+      allowed: true,
+      remaining: 42,
+      limit: 100,
+    })
+    await testApiHandler({
+      appHandler: {
+        dynamic: 'force-dynamic',
+        async GET(_request) {
+          const wrapped = rateLimitByApiKey({ ts: middlewareTs })(async () =>
+            Response.json({ ok: true }),
+          )
+          return wrapped(_request, { params: Promise.resolve({}) })
+        },
+      },
+      requestPatcher(req) {
+        req.headers.set('x-api-key', 'tk_int_abc')
+      },
+      async test({ fetch }) {
+        const res = await fetch()
+        expect(res.status).toBe(200)
+        expect(res.headers.get('X-RateLimit-Limit-Daily')).toBe('100')
+        expect(res.headers.get('X-RateLimit-Remaining-Daily')).toBe('42')
+      },
+    })
+  })
+
+  it('logs an audit event and still succeeds through the real route', async () => {
+    middlewareTs.validateApiKey.mockResolvedValue(apiKey)
+    await testApiHandler({
+      appHandler: {
+        dynamic: 'force-dynamic',
+        async GET(_request) {
+          const wrapped = auditLog(
+            { ts: middlewareTs },
+            { action: 'tenant.list', resource: '/api/tenants' },
+          )(async () => Response.json({ ok: true }))
+          return wrapped(_request, { params: Promise.resolve({}) })
+        },
+      },
+      requestPatcher(req) {
+        req.headers.set('x-api-key', 'tk_int_abc')
+      },
+      async test({ fetch }) {
+        const res = await fetch()
+        expect(res.status).toBe(200)
+        expect(middlewareTs.logAuditEvent).toHaveBeenCalled()
+      },
     })
   })
 })
