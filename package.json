@@ -16,7 +16,7 @@
     "@commitlint/config-conventional": "21.2.3",
     "husky": "^9.1.7",
     "lint-staged": "17.6.0",
-    "oxlint": "^1.86.0",
+    "oxlint": "^1.87.0",
     "prettier": "3.9.9",
     "turbo": "2.11.7",
     "typescript": "7.0.2",
