@@ -44,6 +44,18 @@ export { authenticateApiKey, requirePortalSession } from './authenticate.js'
 // Route handler wrappers
 export { createHandler, withApiKey, withSession } from './handler.js'
 
+// Middleware (composable App Router middleware)
+export {
+  requireScope,
+  requirePortalRole,
+  requireSuperAdmin,
+  requirePlanLimit,
+  rateLimitByApiKey,
+  rateLimitByIp,
+  auditLog,
+} from './middleware.js'
+export type { AppRouterHandler, AppRouterMiddleware } from './middleware.js'
+
 // Error handling
 export { errorResponse } from './error-handler.js'
 
