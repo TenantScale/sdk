@@ -4,6 +4,8 @@
   "description": "Scaffold a full-stack multi-tenant SaaS app with Next.js, Hono, and TenantScale",
   "type": "module",
   "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "engines": {
     "node": ">=22"
   },
@@ -42,8 +44,13 @@
     "saas",
     "scaffold",
     "starter",
-    "create-app"
+    "create-app",
+    "tenantscale"
   ],
+  "bugs": {
+    "url": "https://github.com/TenantScale/sdk/issues"
+  },
+  "homepage": "https://github.com/TenantScale/sdk",
   "publishConfig": {
     "access": "public"
   }

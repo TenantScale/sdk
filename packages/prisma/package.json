@@ -45,6 +45,19 @@
     "url": "https://github.com/TenantScale/sdk.git",
     "directory": "packages/prisma"
   },
+  "keywords": [
+    "multi-tenant",
+    "saas",
+    "prisma",
+    "orm",
+    "tenant-isolation",
+    "b2b",
+    "tenantscale"
+  ],
+  "bugs": {
+    "url": "https://github.com/TenantScale/sdk/issues"
+  },
+  "homepage": "https://github.com/TenantScale/sdk",
   "engines": {
     "node": ">=22"
   }

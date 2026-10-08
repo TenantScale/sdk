@@ -44,8 +44,23 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TenantScale/sdk.git"
+    "url": "https://github.com/TenantScale/sdk.git",
+    "directory": "packages/next"
   },
+  "keywords": [
+    "multi-tenant",
+    "saas",
+    "nextjs",
+    "next",
+    "middleware",
+    "tenant-isolation",
+    "b2b",
+    "tenantscale"
+  ],
+  "bugs": {
+    "url": "https://github.com/TenantScale/sdk/issues"
+  },
+  "homepage": "https://github.com/TenantScale/sdk",
   "engines": {
     "node": ">=22"
   }

@@ -47,8 +47,13 @@
     "saas",
     "tenant-isolation",
     "b2b",
-    "supabase"
+    "supabase",
+    "tenantscale"
   ],
+  "bugs": {
+    "url": "https://github.com/TenantScale/sdk/issues"
+  },
+  "homepage": "https://github.com/TenantScale/sdk",
   "publishConfig": {
     "access": "public"
   },

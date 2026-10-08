@@ -5,6 +5,7 @@
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -45,6 +46,19 @@
     "url": "https://github.com/TenantScale/sdk.git",
     "directory": "packages/nestjs"
   },
+  "keywords": [
+    "multi-tenant",
+    "saas",
+    "nestjs",
+    "guard",
+    "tenant-isolation",
+    "b2b",
+    "tenantscale"
+  ],
+  "bugs": {
+    "url": "https://github.com/TenantScale/sdk/issues"
+  },
+  "homepage": "https://github.com/TenantScale/sdk",
   "publishConfig": {
     "access": "public"
   },
