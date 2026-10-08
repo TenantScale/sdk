@@ -52,7 +52,9 @@ export async function validateSession(
   options: ValidateSessionOptions = {},
 ): Promise<PortalSessionInfo> {
   if (!jwt) {
-    throw new AuthenticationError('Empty token')
+    throw new AuthenticationError(
+      'Empty token. Provide a session JWT: Authorization: Bearer <token>',
+    )
   }
 
   // Validate the JWT with Supabase Auth
@@ -62,7 +64,9 @@ export async function validateSession(
   } = await supabase.auth.getUser(jwt)
 
   if (authError || !user) {
-    throw new AuthenticationError('Invalid or expired session')
+    throw new AuthenticationError(
+      'Invalid or expired session token. The session may have expired; use the refresh endpoint to get a new one.',
+    )
   }
 
   // Check if user is a platform super_admin
@@ -129,7 +133,7 @@ export async function validateSession(
 export function requirePortalRole(session: PortalSessionInfo, ...roles: string[]): void {
   if (!session.role || !roles.includes(session.role)) {
     throw new AuthorizationError(
-      `This endpoint requires one of these roles: ${roles.join(', ')}`,
+      `This endpoint requires one of these roles: ${roles.join(', ')}. Ask a tenant admin to grant you one of these roles.`,
       'MISSING_ROLE',
     )
   }
@@ -141,6 +145,9 @@ export function requirePortalRole(session: PortalSessionInfo, ...roles: string[]
  */
 export function requireSuperAdmin(session: PortalSessionInfo): void {
   if (!session.is_super_admin) {
-    throw new AuthorizationError('Super admin access required', 'NOT_SUPER_ADMIN')
+    throw new AuthorizationError(
+      'Super admin access required. Only platform super admins can access this endpoint.',
+      'NOT_SUPER_ADMIN',
+    )
   }
 }

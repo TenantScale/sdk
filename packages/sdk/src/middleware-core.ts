@@ -55,7 +55,9 @@ export async function authenticateApiKeyCore(
   meta: RequestMeta,
 ): Promise<{ apiKey: ApiKeyInfo; tenantId: string }> {
   if (!token) {
-    throw new AuthenticationError(`Missing ${headerName} header`)
+    throw new AuthenticationError(
+      `Missing ${headerName} header. Include your API key: "${headerName}: <key>"`,
+    )
   }
 
   const apiKey = await ts.validateApiKey(token)
@@ -94,7 +96,9 @@ export function requireScopeCore(
   scopes: string[],
 ): void {
   if (!apiKey) {
-    throw new AuthenticationError('Authentication required')
+    throw new AuthenticationError(
+      'Authentication required. Run authenticateApiKey before this middleware.',
+    )
   }
   ts.requireScope(apiKey, ...scopes)
 }
@@ -115,7 +119,9 @@ export async function requirePortalSessionCore(
   headerName: string,
 ): Promise<{ session: PortalSessionInfo; tenantId: string | null }> {
   if (!authHeader) {
-    throw new AuthenticationError(`Missing ${headerName} header`)
+    throw new AuthenticationError(
+      `Missing ${headerName} header. Include your session token: "${headerName}: Bearer <token>"`,
+    )
   }
 
   const parts = authHeader.split(' ')
@@ -125,7 +131,9 @@ export async function requirePortalSessionCore(
 
   const jwt = parts[1].trim()
   if (!jwt) {
-    throw new AuthenticationError('Empty token')
+    throw new AuthenticationError(
+      'Empty token. Provide a session JWT after "Bearer " (e.g. Bearer <token>).',
+    )
   }
 
   const session = await ts.validateSession(jwt)
@@ -149,7 +157,9 @@ export function requirePortalRoleCore(
   roles: string[],
 ): void {
   if (!session) {
-    throw new AuthenticationError('Portal session required')
+    throw new AuthenticationError(
+      'Portal session required. Run requirePortalSession before this middleware.',
+    )
   }
   ts.requirePortalRole(session, ...roles)
 }
@@ -169,7 +179,9 @@ export function requireSuperAdminCore(
   session: PortalSessionInfo | undefined,
 ): void {
   if (!session) {
-    throw new AuthenticationError('Portal session required')
+    throw new AuthenticationError(
+      'Portal session required. Run requirePortalSession before this middleware.',
+    )
   }
   ts.requireSuperAdmin(session)
 }
@@ -226,7 +238,9 @@ export async function rateLimitByApiKeyCore(
   apiKey: ApiKeyInfo | undefined,
 ): Promise<{ remaining: number; limit: number }> {
   if (!apiKey) {
-    throw new AuthenticationError('Authentication required for rate limiting')
+    throw new AuthenticationError(
+      'Authentication required for rate limiting. Run authenticateApiKey before rateLimitByApiKey.',
+    )
   }
 
   const result = await ts.rateLimiter.checkDailyLimit(apiKey)

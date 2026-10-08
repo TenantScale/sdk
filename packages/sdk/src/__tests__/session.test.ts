@@ -553,3 +553,24 @@ describe('requireSuperAdmin', () => {
     }
   })
 })
+
+// ──────────────────────────────────────────────────────
+// Actionable error message hints (#1)
+// ──────────────────────────────────────────────────────
+
+describe('actionable error message hints', () => {
+  it('explains how to refresh an invalid or expired session', async () => {
+    const { supabase, mockGetUser } = makeMockSupabase()
+    mockGetUser.mockResolvedValue(makeMockUserResponse(null, new Error('JWT expired')))
+    await expect(validateSession(supabase as any, 'expired.jwt')).rejects.toThrow(
+      'use the refresh endpoint to get a new one',
+    )
+  })
+
+  it('shows the expected session token format on empty tokens', async () => {
+    const { supabase } = makeMockSupabase()
+    await expect(validateSession(supabase as any, '')).rejects.toThrow(
+      'Authorization: Bearer <token>',
+    )
+  })
+})

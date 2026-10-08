@@ -117,7 +117,9 @@ export class TenantScale {
         },
       })
     } else {
-      throw new Error('TenantScale requires either a Supabase client or supabaseUrl + supabaseKey')
+      throw new Error(
+        'TenantScale requires either a Supabase client or supabaseUrl + supabaseKey. Pass a pre-configured Supabase client or provide both supabaseUrl and supabaseKey in TenantScaleOptions.',
+      )
     }
 
     // Initialize modules

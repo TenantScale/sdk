@@ -213,7 +213,9 @@ export class StripeClient {
       .maybeSingle()
 
     if (!customer?.stripe_customer_id) {
-      throw new Error('No Stripe customer found for this tenant')
+      throw new Error(
+        'No Stripe customer found for this tenant. Create a Stripe customer for the tenant before creating a billing portal session.',
+      )
     }
 
     const session = await this.client.billingPortal.sessions.create({
