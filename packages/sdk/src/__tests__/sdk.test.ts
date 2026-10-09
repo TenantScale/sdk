@@ -33,7 +33,6 @@
 // stub that resolves canned rows, so the class is exercised end-to-end
 // without real credentials.
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { createHash } from 'node:crypto'
 import { TenantScale } from '../sdk.js'
 import { PlanStore } from '../plan.js'
 import { RateLimiter } from '../rate-limit.js'
@@ -342,14 +341,18 @@ describe('TenantScale', () => {
       const { client } = makeClient()
       const generated = client.generateApiKey()
       expect(generated.rawKey.startsWith('tk_')).toBe(true)
-      expect(generated.keyHash).toBe(createHash('sha256').update(generated.rawKey).digest('hex'))
+      // keyHash must match the SDK's own hashing contract and delegation
+      expect(generated.keyHash).toBe(client.hashApiKey(generated.rawKey))
+      expect(generated.keyHash).toMatch(/^[0-9a-f]{64}$/)
       expect(generated.keyPrefix).toBe(generated.rawKey.slice(0, 8))
     })
 
-    it('hashApiKey is deterministic', () => {
+    it('hashApiKey is deterministic and matches the SHA-256 contract', () => {
       const { client } = makeClient()
-      expect(client.hashApiKey('tk_abc')).toBe(client.hashApiKey('tk_abc'))
-      expect(client.hashApiKey('tk_abc')).toBe(createHash('sha256').update('tk_abc').digest('hex'))
+      const hash = client.hashApiKey('tk_abc')
+      expect(hash).toBe(client.hashApiKey('tk_abc'))
+      // Precomputed SHA-256 of 'tk_abc' (node:crypto createHash('sha256'))
+      expect(hash).toBe('c20d9bdb8c4b6e668ecf67ac3b47a2695fa7f358d80f7c20cb6a3c4c1ed1d1ab')
     })
 
     it('isValidApiKeyFormat accepts generated keys and rejects malformed input', () => {
