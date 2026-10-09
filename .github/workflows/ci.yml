@@ -59,6 +59,13 @@ jobs:
 
       - name: Update coverage summary
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.node-version == 24
+        # main is protected (all changes must go through a pull request), so the
+        # direct commit below can never succeed on a push to main. Keep the step
+        # non-fatal -- like the sibling coverage steps -- so the real quality
+        # gates (format/type/lint/build/test) still decide the CI result. The
+        # coverage badge reflects the last committed summary until this is
+        # reworked to publish through a pull request.
+        continue-on-error: true
         uses: actions/github-script@v9
         with:
           script: |
