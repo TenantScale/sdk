@@ -116,9 +116,9 @@ describe('authenticateApiKeyCore', () => {
   it('throws AuthenticationError when the token is missing', async () => {
     const ts = makeTs()
 
-    await expect(authenticateApiKeyCore(ts, undefined, 'X-Api-Key', false, { url: '/x' })).rejects.toThrow(
-      /Missing X-Api-Key header/,
-    )
+    await expect(
+      authenticateApiKeyCore(ts, undefined, 'X-Api-Key', false, { url: '/x' }),
+    ).rejects.toThrow(/Missing X-Api-Key header/)
     expect(ts.validateApiKey).not.toHaveBeenCalled()
   })
 
@@ -126,7 +126,9 @@ describe('authenticateApiKeyCore', () => {
     const ts = makeTs()
     ts.validateApiKey.mockResolvedValue(apiKeyInfo())
 
-    const result = await authenticateApiKeyCore(ts, 'tk_test_raw', 'X-Api-Key', false, { url: '/x' })
+    const result = await authenticateApiKeyCore(ts, 'tk_test_raw', 'X-Api-Key', false, {
+      url: '/x',
+    })
 
     expect(ts.validateApiKey).toHaveBeenCalledWith('tk_test_raw')
     expect(result.tenantId).toBe('tenant_acme')
