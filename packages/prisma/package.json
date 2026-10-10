@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Prisma ORM tenant query guard for TenantScale",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/cjs/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
