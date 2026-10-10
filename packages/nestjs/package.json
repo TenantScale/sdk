@@ -32,7 +32,7 @@
     "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
-    "@nestjs/common": "^11.0.0",
+    "@nestjs/common": "^12.1.2",
     "@nestjs/core": "^11.0.0",
     "@nestjs/testing": "^11.0.0",
     "@types/node": "^26.6.4",
