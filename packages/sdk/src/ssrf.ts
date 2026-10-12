@@ -105,17 +105,25 @@ export async function validateWebhookUrl(urlStr: string): Promise<URL> {
     return url // IP is public — safe
   }
 
-  // For hostnames, resolve DNS and check all resolved IPs
+  // For hostnames, resolve DNS and check all resolved IPs.
+  // SSRF protection FAILS CLOSED: if we cannot validate the resolved target
+  // (private IP, or DNS resolution failure), the URL is rejected. Never allow
+  // an unvalidated request through, and never swallow a private-IP rejection.
+  let resolvedIps: string[]
   try {
     const addresses = await lookup(hostname)
-    const ips = Array.isArray(addresses) ? addresses.map((a) => a.address) : [addresses.address]
-    for (const ip of ips) {
-      if (isPrivateIp(ip)) {
-        throw new Error(`Blocked private/resolved IP for ${hostname}: ${ip}`)
-      }
+    resolvedIps = Array.isArray(addresses) ? addresses.map((a) => a.address) : [addresses.address]
+  } catch (err) {
+    // Could not resolve / validate the target — block rather than allow through.
+    throw new Error(
+      `Failed to resolve ${hostname} for SSRF validation: ${err instanceof Error ? err.message : String(err)}`,
+    )
+  }
+
+  for (const ip of resolvedIps) {
+    if (isPrivateIp(ip)) {
+      throw new Error(`Blocked private/resolved IP for ${hostname}: ${ip}`)
     }
-  } catch {
-    // DNS failure could be transient — allow through
   }
 
   return url
