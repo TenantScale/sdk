@@ -28,7 +28,13 @@
 // ──────────────────────────────────────────────────────
 
 import { createHash, createHmac } from 'node:crypto'
-import { request as httpRequest, Agent as HttpAgent, type RequestOptions as HttpRequestOptions, type ClientRequest, type IncomingMessage } from 'node:http'
+import {
+  request as httpRequest,
+  Agent as HttpAgent,
+  type RequestOptions as HttpRequestOptions,
+  type ClientRequest,
+  type IncomingMessage,
+} from 'node:http'
 import { request as httpsRequest, Agent as HttpsAgent } from 'node:https'
 import type { LookupFunction } from 'node:net'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -253,10 +259,15 @@ export class WebhookDispatcher {
         servername: isHttps ? url.hostname : undefined,
       }
 
-      const requestFn: (o: HttpRequestOptions, h?: (res: IncomingMessage) => void) => ClientRequest =
-        isHttps
-          ? (httpsRequest as unknown as (o: HttpRequestOptions, h?: (res: IncomingMessage) => void) => ClientRequest)
-          : httpRequest
+      const requestFn: (
+        o: HttpRequestOptions,
+        h?: (res: IncomingMessage) => void,
+      ) => ClientRequest = isHttps
+        ? (httpsRequest as unknown as (
+            o: HttpRequestOptions,
+            h?: (res: IncomingMessage) => void,
+          ) => ClientRequest)
+        : httpRequest
 
       const req = requestFn(options, (res) => {
         const chunks: Buffer[] = []

@@ -31,27 +31,27 @@ import ipaddr from 'ipaddr.js'
 
 // Private/reserved IPv4 ranges a server must never fetch from.
 const ILLEGAL_IPV4 = [
-  '0.0.0.0/8',        // current network
-  '10.0.0.0/8',       // private
-  '100.64.0.0/10',    // carrier-grade NAT
-  '127.0.0.0/8',      // loopback
-  '169.254.0.0/16',   // link-local (incl. cloud metadata 169.254.169.254)
-  '172.16.0.0/12',    // private
-  '192.168.0.0/16',   // private
-  '198.18.0.0/15',    // benchmarking
-  '198.51.100.0/24',  // documentation
-  '203.0.113.0/24',   // documentation
-  '240.0.0.0/4',      // reserved/future
+  '0.0.0.0/8', // current network
+  '10.0.0.0/8', // private
+  '100.64.0.0/10', // carrier-grade NAT
+  '127.0.0.0/8', // loopback
+  '169.254.0.0/16', // link-local (incl. cloud metadata 169.254.169.254)
+  '172.16.0.0/12', // private
+  '192.168.0.0/16', // private
+  '198.18.0.0/15', // benchmarking
+  '198.51.100.0/24', // documentation
+  '203.0.113.0/24', // documentation
+  '240.0.0.0/4', // reserved/future
 ]
 
 // Private/reserved IPv6 ranges a server must never fetch from.
 const ILLEGAL_IPV6 = [
-  '::/128',         // unspecified
-  '::1/128',        // loopback
-  'fc00::/7',       // unique-local (ULA)
-  'fe80::/10',      // link-local
-  'ff00::/8',       // multicast
-  '2001:db8::/32',  // documentation
+  '::/128', // unspecified
+  '::1/128', // loopback
+  'fc00::/7', // unique-local (ULA)
+  'fe80::/10', // link-local
+  'ff00::/8', // multicast
+  '2001:db8::/32', // documentation
 ]
 
 /** Blocked internal hostnames that should never receive webhooks */

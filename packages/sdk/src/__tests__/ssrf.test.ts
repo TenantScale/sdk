@@ -364,7 +364,9 @@ describe('validateWebhookUrl', () => {
   })
 
   it('blocks IPv4-mapped IPv6 loopback literal (::ffff:127.0.0.1)', async () => {
-    await expect(validateWebhookUrl('http://[::ffff:127.0.0.1]/hook')).rejects.toThrow('Blocked private IP')
+    await expect(validateWebhookUrl('http://[::ffff:127.0.0.1]/hook')).rejects.toThrow(
+      'Blocked private IP',
+    )
   })
 
   // Test: public IPv6 literal is still allowed

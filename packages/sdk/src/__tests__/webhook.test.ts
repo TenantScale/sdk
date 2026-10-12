@@ -69,8 +69,7 @@ interface CapturedRequest {
 }
 
 type TransportBehavior =
-  | { kind: 'respond'; status: number; body: string }
-  | { kind: 'error'; message?: string }
+  { kind: 'respond'; status: number; body: string } | { kind: 'error'; message?: string }
 
 function makeLogger() {
   return { info: vi.fn(), warn: vi.fn(), error: vi.fn() }
@@ -180,7 +179,17 @@ function setup(
     retryDelays: [0, 0, 0],
     ...opts.options,
   })
-  return { dispatcher, logger, requestMock, httpsRequestMock, captured, from, chain, insert, deliveries }
+  return {
+    dispatcher,
+    logger,
+    requestMock,
+    httpsRequestMock,
+    captured,
+    from,
+    chain,
+    insert,
+    deliveries,
+  }
 }
 
 // ── Tests ──
@@ -394,7 +403,9 @@ describe('WebhookDispatcher', () => {
       { data: [hook], error: null },
       {
         behaviorFn: (_, attempt) =>
-          attempt < 2 ? { kind: 'error', message: 'transient' } : { kind: 'respond', status: 200, body: '{"ok":true}' },
+          attempt < 2
+            ? { kind: 'error', message: 'transient' }
+            : { kind: 'respond', status: 200, body: '{"ok":true}' },
       },
     )
 
@@ -520,7 +531,9 @@ describe('WebhookDispatcher', () => {
     const { supabase } = makeSupabase({ data: [hook], error: null })
     const captured: CapturedRequest[] = []
     const requestMock = vi.mocked(httpRequest)
-    requestMock.mockImplementation(createTransport(captured, { kind: 'error', message: 'down' }) as never)
+    requestMock.mockImplementation(
+      createTransport(captured, { kind: 'error', message: 'down' }) as never,
+    )
 
     const dispatcher = new WebhookDispatcher(supabase as never, {
       logger: logger as unknown as Logger,
