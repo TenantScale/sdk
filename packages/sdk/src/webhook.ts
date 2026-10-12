@@ -28,9 +28,12 @@
 // ──────────────────────────────────────────────────────
 
 import { createHash, createHmac } from 'node:crypto'
+import { request as httpRequest, Agent as HttpAgent, type RequestOptions as HttpRequestOptions, type ClientRequest, type IncomingMessage } from 'node:http'
+import { request as httpsRequest, Agent as HttpsAgent } from 'node:https'
+import type { LookupFunction } from 'node:net'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { WebhookPayload, WebhookDeliveryResult, Logger } from './types.js'
-import { validateWebhookUrl } from './ssrf.js'
+import { validateWebhookUrlPinned } from './ssrf.js'
 
 const DEFAULT_MAX_RETRIES = 3
 const DEFAULT_RETRY_DELAYS = [1_000, 4_000, 15_000] // 1s, 4s, 15s
@@ -139,12 +142,15 @@ export class WebhookDispatcher {
     const deliveryId = createHash('sha256').update(body).digest('hex').slice(0, 12)
 
     try {
-      // SSRF protection: validate the URL before fetching
-      const validatedUrl = await validateWebhookUrl(hook.url)
+      // SSRF protection: validate the URL, then deliver pinned to a validated
+      // IP. We connect to the resolved public IP (never re-resolve the
+      // hostname) which prevents DNS-rebinding attacks.
+      const { url, ip } = await validateWebhookUrlPinned(hook.url)
 
-      const response = await fetch(validatedUrl.href, {
-        method: 'POST',
-        headers: {
+      const res = await this.postPinned(
+        url,
+        ip,
+        {
           'Content-Type': 'application/json',
           'User-Agent': this.userAgent,
           'X-TenantScale-Event': event,
@@ -152,11 +158,10 @@ export class WebhookDispatcher {
           'X-TenantScale-Delivery': deliveryId,
         },
         body,
-        signal: AbortSignal.timeout(this.fetchTimeoutMs),
-      })
+      )
 
       const duration = Date.now() - start
-      const responseText = await response.text().catch(() => '')
+      const ok = res.status >= 200 && res.status < 300
 
       // Log delivery
       await this.logDelivery(
@@ -164,19 +169,19 @@ export class WebhookDispatcher {
         event,
         hook.url,
         null,
-        response.status,
-        responseText,
-        response.ok ? 'delivered' : 'failed',
-        response.ok ? null : `HTTP ${response.status}`,
+        res.status,
+        res.body,
+        ok ? 'delivered' : 'failed',
+        ok ? null : `HTTP ${res.status}`,
         duration,
       )
 
       return {
         webhook_id: hook.id,
-        status: response.ok ? 'delivered' : 'failed',
-        response_status: response.status,
+        status: ok ? 'delivered' : 'failed',
+        response_status: res.status,
         duration_ms: duration,
-        error_message: response.ok ? null : `HTTP ${response.status}`,
+        error_message: ok ? null : `HTTP ${res.status}`,
       }
     } catch (err) {
       const duration = Date.now() - start
@@ -219,6 +224,61 @@ export class WebhookDispatcher {
         error_message: `${errorMsg} (after ${this.maxRetries} attempts)`,
       }
     }
+  }
+
+  private async postPinned(
+    url: URL,
+    ip: string,
+    headers: Record<string, string>,
+    body: string,
+  ): Promise<{ status: number; body: string }> {
+    return new Promise<{ status: number; body: string }>((resolve, reject) => {
+      const isHttps = url.protocol === 'https:'
+      // Connect to the pinned validated IP, keep the original host for Host/SNI
+      // and TLS verification. Redirects are NOT followed (a 3xx is returned as
+      // a normal response) — following them could repoint to an internal host.
+      const connectHost = ip.includes(':') ? `[${ip}]` : ip
+      const family = ip.includes(':') ? 6 : 4
+      const lookup: LookupFunction = (_host, _opts, cb) => cb(null, ip, family)
+      const agent = isHttps ? new HttpsAgent({ lookup }) : new HttpAgent({ lookup })
+
+      const options: HttpRequestOptions & { agent: HttpAgent | HttpsAgent; servername?: string } = {
+        protocol: url.protocol,
+        hostname: connectHost,
+        port: url.port ? Number(url.port) : isHttps ? 443 : 80,
+        path: `${url.pathname}${url.search}`,
+        method: 'POST',
+        headers: { Host: url.host, ...headers },
+        agent,
+        servername: isHttps ? url.hostname : undefined,
+      }
+
+      const requestFn: (o: HttpRequestOptions, h?: (res: IncomingMessage) => void) => ClientRequest =
+        isHttps
+          ? (httpsRequest as unknown as (o: HttpRequestOptions, h?: (res: IncomingMessage) => void) => ClientRequest)
+          : httpRequest
+
+      const req = requestFn(options, (res) => {
+        const chunks: Buffer[] = []
+        res.on('data', (c) => chunks.push(c))
+        res.on('end', () =>
+          resolve({ status: res.statusCode ?? 0, body: Buffer.concat(chunks).toString('utf8') }),
+        )
+        res.on('error', (err) => reject(err))
+      })
+
+      const timer = setTimeout(() => {
+        req.destroy(new Error(`Webhook request timed out after ${this.fetchTimeoutMs}ms`))
+      }, this.fetchTimeoutMs)
+
+      req.on('error', (err) => {
+        clearTimeout(timer)
+        reject(err)
+      })
+      req.on('close', () => clearTimeout(timer))
+      req.write(body)
+      req.end()
+    })
   }
 
   private async logDelivery(

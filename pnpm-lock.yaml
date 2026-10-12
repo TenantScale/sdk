@@ -407,6 +407,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.117.2
         version: 2.117.2
+      ipaddr.js:
+        specifier: ^2.2.0
+        version: 2.5.0
       stripe:
         specifier: ^22.6.1
         version: 22.6.2(@types/node@26.6.4)
