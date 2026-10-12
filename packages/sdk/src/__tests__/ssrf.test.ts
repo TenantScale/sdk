@@ -25,12 +25,16 @@
 // ──────────────────────────────────────────────────────
 // SSRF Protection — Comprehensive Unit Tests
 // ──────────────────────────────────────────────────────
-// NOTE: node:dns/promises is not mockable via vi.spyOn (read-only property).
-// DNS-dependent tests (hostname → private IP resolution) are covered by
-// the private IP range tests below → they test the actual isPrivateIp logic
-// which is identical to what the DNS path calls.
+// node:dns/promises is resolved here (not mockable via vi.spyOn on the read-only
+// `lookup` export property), so the whole module is vi.mock'd instead. By default
+// `lookup` resolves to a public IP so hostname-based acceptance tests are
+// deterministic (no real network); specific tests override the mock to prove the
+// fail-closed paths (private resolved IP, DNS failure).
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { lookup } from 'node:dns/promises'
 import { validateWebhookUrl } from '../ssrf.js'
+
+vi.mock('node:dns/promises', () => ({ lookup: vi.fn() }))
 
 const PUBLIC_IP = '8.8.8.8'
 const PRIVATE_IP_A = '10.0.0.1'
@@ -43,6 +47,8 @@ const RESERVED = '240.0.0.1'
 describe('validateWebhookUrl', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Default: hostnames resolve to a public IP so hostname acceptance tests pass.
+    vi.mocked(lookup).mockResolvedValue([{ address: PUBLIC_IP, family: 4 }])
   })
 
   // ══════════════════════════════════════════════════════
@@ -358,30 +364,46 @@ describe('validateWebhookUrl', () => {
   })
 
   // ══════════════════════════════════════════════════════
-  // Error Handling — Graceful Degradation
+  // Error Handling — Fail Closed (SSRF)
   // ══════════════════════════════════════════════════════
 
-  // Test: DNS lookup failure allows through
-  // Category: Error Handling — Graceful Degradation
-  // What it proves: When DNS fails, the URL is allowed (fail-open) rather than throwing
-  // Risk if missing: A transient DNS failure would block all webhook deliveries
-  // NOTE: This test uses a public IP literal so no DNS is needed.
-  //       The actual DNS fail-open behavior requires integration testing.
+  // Test: hostname resolving to a private IP is rejected
+  // Category: Security — SSRF / DNS rebinding
+  // What it proves: A hostname whose DNS resolution is a private/reserved IP is
+  // blocked (previously the rejection was swallowed and the URL was returned).
+  it('rejects a hostname that resolves to a private IP', async () => {
+    vi.mocked(lookup).mockResolvedValue([{ address: PRIVATE_IP_A, family: 4 }])
+    await expect(validateWebhookUrl('http://ssrf-repro.invalid/hook')).rejects.toThrow(
+      'Blocked private/resolved IP',
+    )
+  })
+
+  // Test: ANY private address in the resolution blocks the URL
+  it('rejects a hostname when any resolved address is private', async () => {
+    vi.mocked(lookup).mockResolvedValue([
+      { address: PUBLIC_IP, family: 4 },
+      { address: PRIVATE_IP_C, family: 4 },
+    ])
+    await expect(validateWebhookUrl('http://mixed-hosts.example/hook')).rejects.toThrow(
+      'Blocked private/resolved IP',
+    )
+  })
+
+  // Test: DNS resolution failure fails CLOSED
+  // Category: Error Handling — Fail Closed
+  // What it proves: When the target cannot be resolved, the URL is rejected
+  // rather than allowed through unvalidated.
+  it('rejects a hostname when DNS resolution fails (fail closed)', async () => {
+    vi.mocked(lookup).mockRejectedValue(new Error('ENOTFOUND ssrf-repro.invalid'))
+    await expect(validateWebhookUrl('http://ssrf-repro.invalid/hook')).rejects.toThrow(
+      'Failed to resolve',
+    )
+  })
+
+  // Test: public IP literal is still allowed (no DNS needed)
   it('allows public IP literal (DNS not needed for IPs)', async () => {
     const url = await validateWebhookUrl('http://8.8.8.8/hook')
     expect(url.hostname).toBe('8.8.8.8')
-  })
-
-  // Test: Graceful DNS failure behavior described
-  // Category: Error Handling — Documentation
-  // What it proves: Source code documents fail-open for DNS errors
-  // Risk if missing: Undocumented fail-open behavior is a security concern
-  it('documents DNS fail-open behavior (see ssrf.ts catch block)', async () => {
-    // The source ssrf.ts has: } catch { // DNS failure could be transient — allow through }
-    // This is a known design decision: fail-open for transient DNS errors
-    // rather than blocking legitimate traffic during DNS outages.
-    // This test exists as documentation of that decision.
-    expect(true).toBe(true)
   })
 
   // ══════════════════════════════════════════════════════
