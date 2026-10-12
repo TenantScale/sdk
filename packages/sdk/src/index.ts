@@ -52,7 +52,8 @@ export { logAuditEvent, getClientIp, createAuditEvent } from './audit.js'
 export { parsePaginationParams, paginationResponse } from './pagination.js'
 
 // SSRF
-export { validateWebhookUrl } from './ssrf.js'
+export { validateWebhookUrl, validateWebhookUrlPinned, isPrivateIp } from './ssrf.js'
+export type { PinnedWebhookUrl } from './ssrf.js'
 
 // Middleware core (framework-agnostic)
 export {

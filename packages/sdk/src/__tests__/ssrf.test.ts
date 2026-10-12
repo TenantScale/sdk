@@ -32,7 +32,7 @@
 // fail-closed paths (private resolved IP, DNS failure).
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { lookup } from 'node:dns/promises'
-import { validateWebhookUrl } from '../ssrf.js'
+import { validateWebhookUrl, validateWebhookUrlPinned } from '../ssrf.js'
 
 vi.mock('node:dns/promises', () => ({ lookup: vi.fn() }))
 
@@ -351,16 +351,44 @@ describe('validateWebhookUrl', () => {
     )
   })
 
-  // Test: IPv6 addresses are documented limitation
-  // Category: Unhappy Path — Known Limitation
-  // What it proves: IPv6 addresses are NOT validated for private ranges (isPrivateIp skips IPv6)
-  // Risk if missing: IPv6 SSRF is a known gap; this test documents the decision
-  it('allows IPv6 (known limitation — isPrivateIp skips IPv6)', async () => {
-    // The source code isPrivateIp has: if (ip.includes(':')) return false
-    // IPv6 private-range validation is not implemented. This is a documented
-    // trade-off: IPv6 SSRF attacks are currently possible with private IPv6 addresses.
-    const url = await validateWebhookUrl('http://[fe80::1]/hook')
-    expect(url.hostname).toBe('[fe80::1]')
+  // Test: private/reserved IPv6 literals are blocked
+  // Category: Security — IPv6
+  // What it proves: IPv6 private/reserved ranges (link-local, ULA, IPv4-mapped
+  // loopback) are now validated and rejected, closing the previous IPv6 gap.
+  it('blocks private IPv6 link-local literal', async () => {
+    await expect(validateWebhookUrl('http://[fe80::1]/hook')).rejects.toThrow('Blocked private IP')
+  })
+
+  it('blocks IPv6 unique-local (ULA) literal', async () => {
+    await expect(validateWebhookUrl('http://[fc00::1]/hook')).rejects.toThrow('Blocked private IP')
+  })
+
+  it('blocks IPv4-mapped IPv6 loopback literal (::ffff:127.0.0.1)', async () => {
+    await expect(validateWebhookUrl('http://[::ffff:127.0.0.1]/hook')).rejects.toThrow(
+      'Blocked private IP',
+    )
+  })
+
+  // Test: public IPv6 literal is still allowed
+  it('allows a public IPv6 literal', async () => {
+    const url = await validateWebhookUrl('http://[2606:4700:4700::1111]/hook')
+    expect(url.hostname).toBe('[2606:4700:4700::1111]')
+  })
+
+  // Test: hostname resolving to private/reserved IPv6 is blocked
+  it('rejects a hostname that resolves to a private IPv6 (ULA)', async () => {
+    vi.mocked(lookup).mockResolvedValue([{ address: 'fc00::1', family: 6 }])
+    await expect(validateWebhookUrl('http://ipv6.invalid/hook')).rejects.toThrow(
+      'Blocked private/resolved IP',
+    )
+  })
+
+  // Test: hostname resolving to IPv4-mapped IPv6 loopback is blocked
+  it('rejects a hostname that resolves to IPv4-mapped IPv6 loopback', async () => {
+    vi.mocked(lookup).mockResolvedValue([{ address: '::ffff:127.0.0.1', family: 6 }])
+    await expect(validateWebhookUrl('http://ipv4mapped.invalid/hook')).rejects.toThrow(
+      'Blocked private/resolved IP',
+    )
   })
 
   // ══════════════════════════════════════════════════════
@@ -465,6 +493,42 @@ describe('validateWebhookUrl', () => {
   it('handles IP with leading zeros', async () => {
     await expect(validateWebhookUrl('http://192.168.001.001/hook')).rejects.toThrow(
       'Blocked private IP',
+    )
+  })
+})
+
+// ══════════════════════════════════════════════════════
+// validateWebhookUrlPinned — DNS-rebinding protection
+// ══════════════════════════════════════════════════════
+
+describe('validateWebhookUrlPinned', () => {
+  it('returns the URL and the pinned public IP for a public hostname', async () => {
+    vi.mocked(lookup).mockResolvedValue([
+      { address: PUBLIC_IP, family: 4 },
+      { address: '1.1.1.1', family: 4 },
+    ])
+    const { url, ip } = await validateWebhookUrlPinned('http://public.invalid/hook')
+    expect(url.hostname).toBe('public.invalid')
+    expect(ip).toBe(PUBLIC_IP) // first validated public address is the pin
+  })
+
+  it('pins an IP literal to itself', async () => {
+    const { url, ip } = await validateWebhookUrlPinned(`http://${PUBLIC_IP}/hook`)
+    expect(ip).toBe(PUBLIC_IP)
+    expect(url.href).toBe(`http://${PUBLIC_IP}/hook`)
+  })
+
+  it('rejects a hostname resolving to a private IPv6 (pinned is never private)', async () => {
+    vi.mocked(lookup).mockResolvedValue([{ address: 'fc00::1', family: 6 }])
+    await expect(validateWebhookUrlPinned('http://ipv6.invalid/hook')).rejects.toThrow(
+      'Blocked private/resolved IP',
+    )
+  })
+
+  it('rejects a hostname resolving to no public address (fail closed)', async () => {
+    vi.mocked(lookup).mockResolvedValue([])
+    await expect(validateWebhookUrlPinned('http://empty.invalid/hook')).rejects.toThrow(
+      'No addresses resolved',
     )
   })
 })

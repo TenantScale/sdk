@@ -25,14 +25,28 @@
 // ──────────────────────────────────────────────────────
 // WebhookDispatcher — Comprehensive Unit Tests
 // ──────────────────────────────────────────────────────
-// NOTE: No real network calls are made. The Supabase query chain is stubbed
-// and global fetch is replaced with a spy. SSRF validation is exercised with
-// IP literals only (public 8.8.8.8 / private 10.0.0.1) so no DNS is required,
-// and retry delays are set to 0 so backoff never slows the suite.
+// NOTE: No real network calls are made. The Supabase query chain is stubbed and
+// the `node:http`/`node:https` `request` functions are mocked so the dispatcher
+// never touches the network. Delivery now connects to the SSRF-validated IP via
+// `http(s).request` (pinning), so tests exercise that path and capture the
+// request options. SSRF validation is exercised with IP literals (public
+// 8.8.8.8 / private 10.0.0.1) and retry delays are zeroed out.
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { EventEmitter } from 'node:events'
 import { createHash, createHmac } from 'node:crypto'
+import { request as httpRequest } from 'node:http'
+import { request as httpsRequest } from 'node:https'
 import { WebhookDispatcher } from '../webhook.js'
 import type { Logger } from '../types.js'
+
+vi.mock('node:http', async () => {
+  const actual = await vi.importActual<typeof import('node:http')>('node:http')
+  return { ...actual, request: vi.fn() }
+})
+vi.mock('node:https', async () => {
+  const actual = await vi.importActual<typeof import('node:https')>('node:https')
+  return { ...actual, request: vi.fn() }
+})
 
 // ── Fixtures & helpers ──
 
@@ -48,6 +62,14 @@ const DATA = { userId: 'u_1', plan: 'hobby' }
 const PUBLIC_URL = 'http://8.8.8.8/hook'
 const PRIVATE_URL = 'http://10.0.0.1/hook'
 const SECRET = 'whsec_test_secret'
+
+interface CapturedRequest {
+  options: Record<string, unknown>
+  body?: string
+}
+
+type TransportBehavior =
+  { kind: 'respond'; status: number; body: string } | { kind: 'error'; message?: string }
 
 function makeLogger() {
   return { info: vi.fn(), warn: vi.fn(), error: vi.fn() }
@@ -78,11 +100,51 @@ function makeSupabase(
   return { supabase: { from } as never, from, chain, insert, deliveries }
 }
 
-function fetchResponse(status: number, bodyText = '{"ok":true}') {
-  return {
-    ok: status >= 200 && status < 300,
-    status,
-    text: async () => bodyText,
+/**
+ * Build a fake `http(s).request` implementation. Captures the request options
+ * (and body via the written chunks) into `captured`. Success mode invokes the
+ * response callback with a fake IncomingMessage emitting the given body; error
+ * mode emits `error` on the request. Always emits `close` so the dispatcher's
+ * timeout is cleaned up.
+ */
+function createTransport(
+  captured: CapturedRequest[],
+  behavior: TransportBehavior = { kind: 'respond', status: 200, body: '{"ok":true}' },
+) {
+  return (options: unknown, onResponse?: (res: unknown) => void): unknown => {
+    captured.push({ options: options as Record<string, unknown> })
+    const req = new EventEmitter() as EventEmitter & {
+      write: (c: string) => boolean
+      end: () => void
+      destroy: (err?: Error) => void
+    }
+    req.write = (c: string) => {
+      const last = captured[captured.length - 1]
+      if (last) last.body = c
+      return true
+    }
+    req.end = () => {}
+    req.destroy = (err?: Error) => {
+      if (err) req.emit('error', err)
+      req.emit('close')
+    }
+
+    if (behavior.kind === 'respond') {
+      const res = new EventEmitter() as EventEmitter & { statusCode: number }
+      res.statusCode = behavior.status
+      setImmediate(() => {
+        res.emit('data', Buffer.from(behavior.body))
+        res.emit('end')
+        req.emit('close')
+      })
+      onResponse?.(res)
+    } else {
+      setImmediate(() => {
+        req.emit('error', new Error(behavior.message ?? 'ECONNREFUSED'))
+        req.emit('close')
+      })
+    }
+    return req
   }
 }
 
@@ -90,21 +152,44 @@ function setup(
   result: { data: unknown; error: unknown },
   opts: {
     options?: Record<string, unknown>
-    fetchImpl?: (...args: unknown[]) => Promise<unknown>
+    behavior?: TransportBehavior
+    behaviorFn?: (options: Record<string, unknown>, attempt: number) => TransportBehavior
     insertImpl?: (row: unknown) => Promise<{ error: unknown }>
   } = {},
 ) {
   const logger = makeLogger()
   const { supabase, from, chain, insert, deliveries } = makeSupabase(result, opts.insertImpl)
-  const fetchMock = vi.fn(opts.fetchImpl ?? (async () => fetchResponse(200)))
-  vi.stubGlobal('fetch', fetchMock)
+  const captured: CapturedRequest[] = []
+  const requestMock = vi.mocked(httpRequest)
+  const httpsRequestMock = vi.mocked(httpsRequest)
+
+  const impl = (o: unknown, cb?: unknown) => {
+    const behavior = opts.behaviorFn
+      ? opts.behaviorFn(o as Record<string, unknown>, captured.length)
+      : (opts.behavior ?? { kind: 'respond', status: 200, body: '{"ok":true}' })
+    return createTransport(captured, behavior)(o, cb)
+  }
+
+  requestMock.mockImplementation(impl as never)
+  httpsRequestMock.mockImplementation(impl as never)
+
   const dispatcher = new WebhookDispatcher(supabase as never, {
     logger: logger as unknown as Logger,
     // Three zero delays so the default maxRetries (3) never actually waits.
     retryDelays: [0, 0, 0],
     ...opts.options,
   })
-  return { dispatcher, logger, fetchMock, from, chain, insert, deliveries }
+  return {
+    dispatcher,
+    logger,
+    requestMock,
+    httpsRequestMock,
+    captured,
+    from,
+    chain,
+    insert,
+    deliveries,
+  }
 }
 
 // ── Tests ──
@@ -123,18 +208,18 @@ describe('WebhookDispatcher', () => {
   // ══════════════════════════════════════════════════════
 
   it('returns an empty array when no webhooks are subscribed', async () => {
-    const { dispatcher, fetchMock } = setup({ data: [], error: null })
+    const { dispatcher, requestMock } = setup({ data: [], error: null })
 
     await expect(dispatcher.deliver(EVENT, TENANT, DATA)).resolves.toEqual([])
-    expect(fetchMock).not.toHaveBeenCalled()
+    expect(requestMock).not.toHaveBeenCalled()
   })
 
   it('returns an empty array and logs when the subscription query errors', async () => {
-    const { dispatcher, logger, fetchMock } = setup({ data: null, error: { message: 'boom' } })
+    const { dispatcher, logger, requestMock } = setup({ data: null, error: { message: 'boom' } })
 
     await expect(dispatcher.deliver(EVENT, TENANT, DATA)).resolves.toEqual([])
     expect(logger.error).toHaveBeenCalled()
-    expect(fetchMock).not.toHaveBeenCalled()
+    expect(requestMock).not.toHaveBeenCalled()
   })
 
   it('returns an empty array when the query yields null data without an error', async () => {
@@ -160,7 +245,7 @@ describe('WebhookDispatcher', () => {
 
   it('DELIVERS a signed POST to a subscribed webhook and reports delivered', async () => {
     const hook: WebhookRow = { id: 'wh_1', url: PUBLIC_URL, secret: SECRET }
-    const { dispatcher, fetchMock } = setup({ data: [hook], error: null })
+    const { dispatcher, requestMock, captured } = setup({ data: [hook], error: null })
 
     const results = await dispatcher.deliver(EVENT, TENANT, DATA)
 
@@ -172,20 +257,19 @@ describe('WebhookDispatcher', () => {
       duration_ms: expect.any(Number),
       error_message: null,
     })
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
-    expect(url).toBe(PUBLIC_URL)
-    expect(init.method).toBe('POST')
+    expect(requestMock).toHaveBeenCalledTimes(1)
+    // Connects to the validated (pinned) IP literal, not a re-resolved hostname.
+    expect(captured[0].options.hostname).toBe('8.8.8.8')
+    expect(captured[0].options.method).toBe('POST')
   })
 
   it('sends the webhook payload shape (event, tenant_id, created_at, data)', async () => {
     const hook: WebhookRow = { id: 'wh_1', url: PUBLIC_URL, secret: SECRET }
-    const { dispatcher, fetchMock } = setup({ data: [hook], error: null })
+    const { dispatcher, captured } = setup({ data: [hook], error: null })
 
     await dispatcher.deliver(EVENT, TENANT, DATA)
 
-    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
-    const body = JSON.parse(init.body as string)
+    const body = JSON.parse(captured[0].body as string)
     expect(body.event).toBe(EVENT)
     expect(body.tenant_id).toBe(TENANT)
     expect(body.data).toEqual(DATA)
@@ -194,28 +278,26 @@ describe('WebhookDispatcher', () => {
 
   it('signs the payload with an HMAC-SHA256 of the body using the webhook secret', async () => {
     const hook: WebhookRow = { id: 'wh_1', url: PUBLIC_URL, secret: SECRET }
-    const { dispatcher, fetchMock } = setup({ data: [hook], error: null })
+    const { dispatcher, captured } = setup({ data: [hook], error: null })
 
     await dispatcher.deliver(EVENT, TENANT, DATA)
 
-    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
-    const headers = init.headers as Record<string, string>
+    const headers = captured[0].options.headers as Record<string, string>
     const expected = createHmac('sha256', SECRET)
-      .update(init.body as string)
+      .update(captured[0].body as string)
       .digest('hex')
     expect(headers['X-TenantScale-Signature']).toBe(expected)
   })
 
   it('derives the delivery id from the first 12 hex chars of the body hash', async () => {
     const hook: WebhookRow = { id: 'wh_1', url: PUBLIC_URL, secret: SECRET }
-    const { dispatcher, fetchMock } = setup({ data: [hook], error: null })
+    const { dispatcher, captured } = setup({ data: [hook], error: null })
 
     await dispatcher.deliver(EVENT, TENANT, DATA)
 
-    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
-    const headers = init.headers as Record<string, string>
+    const headers = captured[0].options.headers as Record<string, string>
     const expectedId = createHash('sha256')
-      .update(init.body as string)
+      .update(captured[0].body as string)
       .digest('hex')
       .slice(0, 12)
     expect(headers['X-TenantScale-Delivery']).toBe(expectedId)
@@ -224,12 +306,11 @@ describe('WebhookDispatcher', () => {
 
   it('sets the event, content-type and default user-agent headers', async () => {
     const hook: WebhookRow = { id: 'wh_1', url: PUBLIC_URL, secret: SECRET }
-    const { dispatcher, fetchMock } = setup({ data: [hook], error: null })
+    const { dispatcher, captured } = setup({ data: [hook], error: null })
 
     await dispatcher.deliver(EVENT, TENANT, DATA)
 
-    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
-    const headers = init.headers as Record<string, string>
+    const headers = captured[0].options.headers as Record<string, string>
     expect(headers['X-TenantScale-Event']).toBe(EVENT)
     expect(headers['Content-Type']).toBe('application/json')
     expect(headers['User-Agent']).toBe('TenantScale-Webhook/1.0')
@@ -237,15 +318,15 @@ describe('WebhookDispatcher', () => {
 
   it('honours a custom user-agent', async () => {
     const hook: WebhookRow = { id: 'wh_1', url: PUBLIC_URL, secret: SECRET }
-    const { dispatcher, fetchMock } = setup(
+    const { dispatcher, captured } = setup(
       { data: [hook], error: null },
       { options: { userAgent: 'Acme-Hooks/9' } },
     )
 
     await dispatcher.deliver(EVENT, TENANT, DATA)
 
-    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
-    expect((init.headers as Record<string, string>)['User-Agent']).toBe('Acme-Hooks/9')
+    const headers = captured[0].options.headers as Record<string, string>
+    expect(headers['User-Agent']).toBe('Acme-Hooks/9')
   })
 
   it('delivers to every subscribed webhook in parallel', async () => {
@@ -253,11 +334,12 @@ describe('WebhookDispatcher', () => {
       { id: 'wh_1', url: PUBLIC_URL, secret: 'sec_1' },
       { id: 'wh_2', url: 'http://1.1.1.1/hook', secret: 'sec_2' },
     ]
-    const { dispatcher, fetchMock } = setup({ data: hooks, error: null })
+    const { dispatcher, requestMock, captured } = setup({ data: hooks, error: null })
 
     const results = await dispatcher.deliver(EVENT, TENANT, DATA)
 
-    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(requestMock).toHaveBeenCalledTimes(2)
+    expect(captured).toHaveLength(2)
     expect(results.map((r) => r.webhook_id)).toEqual(['wh_1', 'wh_2'])
     expect(results.every((r) => r.status === 'delivered')).toBe(true)
   })
@@ -268,11 +350,11 @@ describe('WebhookDispatcher', () => {
 
   it('does not fetch a webhook whose URL fails SSRF validation', async () => {
     const hook: WebhookRow = { id: 'wh_1', url: PRIVATE_URL, secret: SECRET }
-    const { dispatcher, fetchMock } = setup({ data: [hook], error: null })
+    const { dispatcher, requestMock } = setup({ data: [hook], error: null })
 
     const results = await dispatcher.deliver(EVENT, TENANT, DATA)
 
-    expect(fetchMock).not.toHaveBeenCalled()
+    expect(requestMock).not.toHaveBeenCalled()
     expect(results[0].status).toBe('failed')
     expect(results[0].error_message).toContain('Blocked private IP')
   })
@@ -283,9 +365,9 @@ describe('WebhookDispatcher', () => {
 
   it('marks a delivery failed on a non-2xx response without retrying', async () => {
     const hook: WebhookRow = { id: 'wh_1', url: PUBLIC_URL, secret: SECRET }
-    const { dispatcher, fetchMock } = setup(
+    const { dispatcher, requestMock } = setup(
       { data: [hook], error: null },
-      { fetchImpl: async () => fetchResponse(500, 'server error') },
+      { behavior: { kind: 'respond', status: 500, body: 'server error' } },
     )
 
     const results = await dispatcher.deliver(EVENT, TENANT, DATA)
@@ -297,19 +379,19 @@ describe('WebhookDispatcher', () => {
       duration_ms: expect.any(Number),
       error_message: 'HTTP 500',
     })
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(requestMock).toHaveBeenCalledTimes(1)
   })
 
   it('retries a thrown network error up to maxRetries and reports failure', async () => {
     const hook: WebhookRow = { id: 'wh_1', url: PUBLIC_URL, secret: SECRET }
-    const fetchMock = vi.fn(async () => {
-      throw new Error('ECONNREFUSED')
-    })
-    const { dispatcher } = setup({ data: [hook], error: null }, { fetchImpl: fetchMock })
+    const { dispatcher, requestMock } = setup(
+      { data: [hook], error: null },
+      { behavior: { kind: 'error', message: 'ECONNREFUSED' } },
+    )
 
     const results = await dispatcher.deliver(EVENT, TENANT, DATA)
 
-    expect(fetchMock).toHaveBeenCalledTimes(3)
+    expect(requestMock).toHaveBeenCalledTimes(3)
     expect(results[0].status).toBe('failed')
     expect(results[0].response_status).toBeNull()
     expect(results[0].error_message).toBe('ECONNREFUSED (after 3 attempts)')
@@ -317,34 +399,33 @@ describe('WebhookDispatcher', () => {
 
   it('stops retrying once a later attempt succeeds', async () => {
     const hook: WebhookRow = { id: 'wh_1', url: PUBLIC_URL, secret: SECRET }
-    let attempts = 0
-    const fetchMock = vi.fn(async () => {
-      attempts += 1
-      if (attempts < 3) throw new Error('transient')
-      return fetchResponse(200)
-    })
-    const { dispatcher } = setup({ data: [hook], error: null }, { fetchImpl: fetchMock })
+    const { dispatcher, requestMock } = setup(
+      { data: [hook], error: null },
+      {
+        behaviorFn: (_, attempt) =>
+          attempt < 2
+            ? { kind: 'error', message: 'transient' }
+            : { kind: 'respond', status: 200, body: '{"ok":true}' },
+      },
+    )
 
     const results = await dispatcher.deliver(EVENT, TENANT, DATA)
 
-    expect(fetchMock).toHaveBeenCalledTimes(3)
+    expect(requestMock).toHaveBeenCalledTimes(3)
     expect(results[0].status).toBe('delivered')
     expect(results[0].response_status).toBe(200)
   })
 
   it('honours a custom maxRetries', async () => {
     const hook: WebhookRow = { id: 'wh_1', url: PUBLIC_URL, secret: SECRET }
-    const fetchMock = vi.fn(async () => {
-      throw new Error('nope')
-    })
-    const { dispatcher } = setup(
+    const { dispatcher, requestMock } = setup(
       { data: [hook], error: null },
-      { fetchImpl: fetchMock, options: { maxRetries: 1 } },
+      { behavior: { kind: 'error', message: 'nope' }, options: { maxRetries: 1 } },
     )
 
     const results = await dispatcher.deliver(EVENT, TENANT, DATA)
 
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(requestMock).toHaveBeenCalledTimes(1)
     expect(results[0].error_message).toBe('nope (after 1 attempts)')
   })
 
@@ -376,7 +457,7 @@ describe('WebhookDispatcher', () => {
     const hook: WebhookRow = { id: 'wh_1', url: PUBLIC_URL, secret: SECRET }
     const { dispatcher, deliveries } = setup(
       { data: [hook], error: null },
-      { fetchImpl: async () => fetchResponse(200, 'x'.repeat(1500)) },
+      { behavior: { kind: 'respond', status: 200, body: 'x'.repeat(1500) } },
     )
 
     await dispatcher.deliver(EVENT, TENANT, DATA)
@@ -386,12 +467,9 @@ describe('WebhookDispatcher', () => {
 
   it('records a failed delivery row with the error message', async () => {
     const hook: WebhookRow = { id: 'wh_1', url: PUBLIC_URL, secret: SECRET }
-    const fetchMock = vi.fn(async () => {
-      throw new Error('boom')
-    })
     const { dispatcher, logger, deliveries } = setup(
       { data: [hook], error: null },
-      { fetchImpl: fetchMock },
+      { behavior: { kind: 'error', message: 'boom' } },
     )
 
     await dispatcher.deliver(EVENT, TENANT, DATA)
@@ -451,10 +529,11 @@ describe('WebhookDispatcher', () => {
     const hook: WebhookRow = { id: 'wh_1', url: PUBLIC_URL, secret: SECRET }
     const logger = makeLogger()
     const { supabase } = makeSupabase({ data: [hook], error: null })
-    const fetchMock = vi.fn(async () => {
-      throw new Error('down')
-    })
-    vi.stubGlobal('fetch', fetchMock)
+    const captured: CapturedRequest[] = []
+    const requestMock = vi.mocked(httpRequest)
+    requestMock.mockImplementation(
+      createTransport(captured, { kind: 'error', message: 'down' }) as never,
+    )
 
     const dispatcher = new WebhookDispatcher(supabase as never, {
       logger: logger as unknown as Logger,
@@ -463,7 +542,7 @@ describe('WebhookDispatcher', () => {
 
     const results = await dispatcher.deliver(EVENT, TENANT, DATA)
 
-    expect(fetchMock).toHaveBeenCalledTimes(3)
+    expect(requestMock).toHaveBeenCalledTimes(3)
     expect(results[0].error_message).toBe('down (after 3 attempts)')
   })
 })
