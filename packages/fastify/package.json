@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.6.4",
-    "fastify": "^5.12.5",
+    "fastify": "^5.12.6",
     "typescript": "^7.0.2"
   },
   "license": "MIT",
